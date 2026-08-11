@@ -7,7 +7,7 @@ This roadmap outlines the 10-phase build sequence for a production-minded multi-
 ## Phases
 
 - [ ] **Phase 1: Project Foundation & Base Architecture** - Django project setup, PostgreSQL, Tailwind CSS compilation, core apps structure, and base layouts.
-- [ ] **Phase 2: Public Landing Page & School Registration** - Public marketing landing page (`ourapp.com`) and school self-registration onboarding.
+- [x] **Phase 2: Public Landing Page & School Registration** - Public marketing landing page (`ourapp.com`) and school self-registration onboarding.
 - [ ] **Phase 3: Multi-Tenant Subdomain Infrastructure** - Subdomain resolution middleware (`school.ourapp.com`), tenant context manager, and database isolation enforcement.
 - [ ] **Phase 4: Authentication & Role-Based Access Control (RBAC)** - School Admin login, Super Admin platform isolation, RBAC permission enforcers, and session security.
 - [ ] **Phase 5: Faculty Management Suite** - School Admin faculty CRUD, department tagging, and active/deactive status management scoped to tenant.
@@ -44,8 +44,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Public landing page view, marketing sections (Hero, Features, Security, Pricing, FAQ), and CTA layout
-- [ ] 02-02: School self-registration form, validation, tenant creation service, and admin user initialization
+- [x] 02-01: Public landing page view, marketing sections (Hero, Features, Security, Pricing, FAQ), and CTA layout
+- [x] 02-02: School self-registration form, validation, tenant creation service, and admin user initialization
 
 ### Phase 3: Multi-Tenant Subdomain Infrastructure
 **Goal**: Build subdomain-based tenant resolution middleware (`school.ourapp.com`) and tenant-aware database query scoping to ensure total tenant isolation.
@@ -168,7 +168,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Project Foundation & Base Architecture | 0/2 | Not started | - |
-| 2. Public Landing Page & School Registration | 0/2 | Not started | - |
+| 2. Public Landing Page & School Registration | 2/2 | Complete | 2026-08-11 |
 | 3. Multi-Tenant Subdomain Infrastructure | 0/2 | Not started | - |
 | 4. Authentication & Role-Based Access Control (RBAC) | 0/2 | Not started | - |
 | 5. Faculty Management Suite | 0/2 | Not started | - |

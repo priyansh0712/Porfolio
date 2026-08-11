@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Registration Successful - StudentERP{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-12 px-4 sm:px-6">
+    <div class="bg-white p-8 sm:p-10 rounded-2xl border border-gray-200/80 shadow-2xl text-center space-y-6">
+        <!-- Success Badge -->
+        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+            <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+
+        <div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 inline-block mb-2">
+                Tenant Environment Provisioned
+            </span>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">School Registration Complete!</h1>
+            <p class="mt-2 text-sm text-gray-600">Your school account and administrator credentials have been created successfully.</p>
+        </div>
+
+        {% if school %}
+        <!-- Tenant Details Box -->
+        <div class="bg-slate-900 text-white p-6 rounded-xl text-left border border-slate-800 space-y-3">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <span class="text-xs text-slate-400 font-semibold uppercase">School Organization</span>
+                <span class="text-sm font-bold text-indigo-400">{{ school.name }}</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <span class="text-xs text-slate-400 font-semibold uppercase">Allocated Subdomain</span>
+                <span class="text-sm font-mono text-emerald-400 font-bold">{{ school.full_domain }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-400 font-semibold uppercase">Contact Email</span>
+                <span class="text-sm font-mono text-slate-300">{{ school.contact_email }}</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-indigo-50 p-4 rounded-xl text-indigo-900 text-sm font-medium">
+            Your school environment has been initialized. You can now access your tenant subdomain.
+        </div>
+        {% endif %}
+
+        <!-- Next Steps -->
+        <div class="text-left space-y-4 pt-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Next Steps for School Administrator</h3>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center mb-2">1</span>
+                    <h4 class="font-bold text-gray-900 text-sm">Access Subdomain</h4>
+                    <p class="text-xs text-gray-500 mt-1">Navigate to your school portal at <code class="text-indigo-600 font-mono">{% if school %}{{ school.subdomain }}{% else %}your-school{% endif %}.ourapp.com</code></p>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center mb-2">2</span>
+                    <h4 class="font-bold text-gray-900 text-sm">Enroll Faculty</h4>
+                    <p class="text-xs text-gray-500 mt-1">Log in with your administrator email and launch webcam face enrollment.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-6">
+            <a href="{% url 'public:landing' %}" class="inline-flex items-center justify-center px-6 py-3 font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">
+                Return to Public Homepage
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
