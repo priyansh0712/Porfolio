@@ -1,0 +1,12 @@
+{
+  "name": "studenterp1",
+  "version": "1.0.0",
+  "description": "School Faculty Face Attendance SaaS Platform",
+  "scripts": {
+    "build:css": "npx tailwindcss -i ./static/css/src/input.css -o ./static/css/dist/styles.css --minify",
+    "watch:css": "npx tailwindcss -i ./static/css/src/input.css -o ./static/css/dist/styles.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}
