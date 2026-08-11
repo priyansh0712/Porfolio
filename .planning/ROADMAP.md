@@ -30,8 +30,8 @@ This roadmap outlines the 10-phase build sequence for a production-minded multi-
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Django project initialization, environment settings (`config/settings/`), PostgreSQL DB connection, and app directory setup
-- [ ] 01-02: Tailwind CSS 3.4 setup, base layout templates (`base.html`, navigation, footer), and static asset pipeline
+- [x] 01-01: Django project initialization, environment settings (`config/settings/`), PostgreSQL DB connection, and app directory setup
+- [x] 01-02: Tailwind CSS 3.4 setup, base layout templates (`base.html`, navigation, footer), and static asset pipeline
 
 ### Phase 2: Public Landing Page & School Registration
 **Goal**: Deliver public landing page (`ourapp.com`) and school self-registration flow creating school tenant records and initial School Admin accounts.
