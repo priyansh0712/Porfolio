@@ -58,8 +58,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: Subdomain resolution middleware (`TenantMiddleware`), domain model, and request context binding
-- [ ] 03-02: Tenant-aware ORM manager/model mixin (`TenantModelMixin`), view enforcers, and cross-tenant isolation test suite
+- [x] 03-01: Subdomain resolution middleware (`TenantMiddleware`), domain model, and request context binding
+- [x] 03-02: Tenant-aware ORM manager/model mixin (`TenantModelMixin`), view enforcers, and cross-tenant isolation test suite
 
 ### Phase 4: Authentication & Role-Based Access Control (RBAC)
 **Goal**: Implement strict role-based access control (Platform Super Admin, School Admin, Faculty) with Argon2id password security, session protection, and Super Admin privacy boundaries.
