@@ -16,6 +16,8 @@ Allow school faculty to mark accurate check-in and check-out attendance using fa
 
 ### Current State
 - **Phase 1 Complete**: Django 5.1 foundation initialized with split settings (`django-environ`), PostgreSQL DB config, modular `apps/` structure, `TimeStampedModel` mixin, Tailwind CSS 3.4 CLI compilation, and Minimal White & Gray `base.html` template layout.
+- **Phase 2 Complete**: Public marketing landing page (`/`), School self-registration workflow (`/register/`), registration success view (`/register/success/`), `SchoolRegistrationService`, and `School` tenant model with 8 passing unit tests.
+
 
 ### Active
 
