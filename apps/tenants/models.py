@@ -1,5 +1,9 @@
 from django.db import models
 
+from apps.core.models import TimeStampedModel
+from apps.tenants.managers import TenantManager
+
+
 class School(models.Model):
     """
     Represents a school tenant organization in the multi-tenant SaaS application.
@@ -27,3 +31,26 @@ class School(models.Model):
     @property
     def full_domain(self):
         return f"{self.subdomain}.ourapp.com"
+
+
+class TenantModel(TimeStampedModel):
+    """
+    Abstract base class for all tenant-scoped entities.
+
+    Provides:
+      - school ForeignKey for tenant association
+      - TenantManager as default manager (auto-scopes queries to active tenant)
+      - Inherits created_at / updated_at from TimeStampedModel
+    """
+    school = models.ForeignKey(
+        'tenants.School',
+        on_delete=models.CASCADE,
+        related_name='%(class)s_set',
+        verbose_name='School Tenant',
+    )
+
+    objects = TenantManager()
+
+    class Meta:
+        abstract = True
+
