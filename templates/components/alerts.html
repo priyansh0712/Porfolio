@@ -1,5 +1,4 @@
-{% if messages %}
-<!-- Apple-Style Floating Toast Container -->
+<!-- Apple-Style Floating Toast Container (Always present in DOM) -->
 <div id="toast-container" aria-live="polite" aria-atomic="true" style="
     position: fixed;
     top: 72px;
@@ -49,6 +48,7 @@
         }
     </style>
 
+    {% if messages %}
     {% for message in messages %}
     {% if message.tags == 'error' %}
         {% with icon_color="#ef4444" bg_color="rgba(255,255,255,0.95)" border_color="#fecaca" text_color="#7f1d1d" icon_bg="#fef2f2" %}
@@ -138,6 +138,7 @@
         </div>
     {% endif %}
     {% endfor %}
+    {% endif %}
 </div>
 
 <script>
@@ -161,4 +162,3 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-{% endif %}
