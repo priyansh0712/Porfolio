@@ -2,19 +2,36 @@
 
 ## Executive Summary
 
-Phase 5 introduces tenant-scoped **Faculty Management** for School Administrators. It establishes the `Faculty` model, race-condition-safe employee code auto-generation service, 3-layer defense-in-depth CRUD views (List, Create, Edit, Toggle Status), and an Apple Design System table interface with real-time client-side search, department filtering, and status badges.
+Phase 5 introduces tenant-scoped **Faculty Management** for School Administrators. It establishes the `Faculty` model, tenant-scoped sequence counter with `select_for_update()` DB row locking for employee code auto-generation, 3-layer defense-in-depth CRUD views (List, Create, Edit, Toggle Status), and an Apple Design System table interface with real-time client-side search, department filtering, and status badges.
 
 ---
 
 ## 1. Architecture & Data Model Patterns
 
-### 1.1 `Faculty` Model Structure
+### 1.1 `Faculty` & `TenantSequence` Model Structure
 The `Faculty` model inherits from `TenantModel` (defined in `apps/tenants/models.py`), automatically securing all queries with `TenantManager` and binding a `school` ForeignKey.
 
 ```python
 from django.db import models
 from apps.tenants.models import TenantModel
 from apps.accounts.models import User
+
+class TenantSequence(TenantModel):
+    """
+    Tenant-scoped sequence counter for concurrency-safe sequential code generation.
+    Uses select_for_update() row-level locking to prevent race conditions.
+    """
+    sequence_type = models.CharField(max_length=50, default='FACULTY')
+    last_value = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['school', 'sequence_type'],
+                name='unique_tenant_sequence_type'
+            )
+        ]
+
 
 class Faculty(TenantModel):
     user = models.OneToOneField(
@@ -45,25 +62,32 @@ class Faculty(TenantModel):
         ]
 ```
 
-### 1.2 Race-Condition-Safe Employee Code Auto-Generation Algorithm
-To prevent race conditions during concurrent faculty creation requests:
-- Pattern: `{SUBDOMAIN_UPPER}-FAC-{COUNTER:03d}` (e.g., `GREENWOOD-FAC-001`).
-- Atomic candidate generation with DB collision retry loop (`IntegrityError` catch) inside `@transaction.atomic`.
+### 1.2 Tenant-Scoped Sequence Generator with DB Row Locking (`select_for_update`)
+To guarantee 100% concurrency safety and zero sequence gaps during high-traffic faculty creation:
+- Pattern: `{SUBDOMAIN_UPPER}-FAC-{SEQUENCE_VALUE:03d}` (e.g., `GREENWOOD-FAC-001`).
+- Algorithm obtains a DB row lock on `TenantSequence` using `select_for_update()` inside `@transaction.atomic`.
 
 ```python
-@staticmethod
-def generate_employee_code(school):
-    prefix = f"{school.subdomain.upper()}-FAC-"
-    # Start sequence from highest existing numeric suffix + 1
-    existing_codes = Faculty.objects.filter(school=school, employee_code__startswith=prefix)\
-                                    .values_list('employee_code', flat=True)
-    numbers = []
-    for code in existing_codes:
-        suffix = code.replace(prefix, '')
-        if suffix.isdigit():
-            numbers.append(int(suffix))
-    next_num = max(numbers, default=0) + 1
-    return f"{prefix}{next_num:03d}"
+from django.db import transaction
+
+class FacultyCodeService:
+    @staticmethod
+    @transaction.atomic
+    def generate_next_code(school) -> str:
+        """
+        Generates the next sequential employee code for the given tenant school.
+        Uses select_for_update() row lock to eliminate race conditions under load.
+        """
+        seq, created = TenantSequence.objects.select_for_update().get_or_create(
+            school=school,
+            sequence_type='FACULTY',
+            defaults={'last_value': 0}
+        )
+        seq.last_value += 1
+        seq.save(update_fields=['last_value', 'updated_at'])
+        
+        prefix = school.subdomain.upper()
+        return f"{prefix}-FAC-{seq.last_value:03d}"
 ```
 
 ### 1.3 Faculty User Account Security Boundary ( AUTH-02 / Privacy Directive )
@@ -97,7 +121,7 @@ Security for all Faculty CRUD operations is enforced across 3 distinct layers:
 ## 3. Don't Hand-Roll
 
 - **Do NOT hand-roll tenant filtering**: Use `TenantModel` and `TenantManager` (`Faculty.objects.for_tenant(request.tenant)`) + explicit `school=request.tenant` query filters — never issue raw `Faculty.objects.all()` queries.
-- **Do NOT hand-roll modal JS framework**: Use simple, robust vanilla JS modal toggle handlers with backdrop blur and Esc key dismiss listeners.
+- **Do NOT hand-roll sequence locking**: Use `TenantSequence` with `select_for_update()` inside `@transaction.atomic`.
 - **Do NOT create fake face enrollment logic**: Keep `is_face_enrolled` as a clean boolean field on the model; Phase 6 will attach the webcam vector engine.
 
 ---
@@ -120,7 +144,7 @@ Security for all Faculty CRUD operations is enforced across 3 distinct layers:
 
 - **Automated Tests (`tests_faculty.py`)**:
   - Verify tenant isolation (School A admin attempting ID manipulation on School B faculty receives HTTP 404/403).
-  - Verify Employee Code auto-generation logic (`GREENWOOD-FAC-001`) and race-condition safety.
+  - Verify `FacultyCodeService` sequence counter and `select_for_update()` locking under concurrent calls (`GREENWOOD-FAC-001`, `GREENWOOD-FAC-002`).
   - Verify linked `User` creation with `set_unusable_password()` and `FACULTY` role.
   - Verify `on_delete=SET_NULL` integrity (deleting User retains Faculty record).
   - Verify `SchoolAdminRequiredMixin` protects all faculty endpoints.

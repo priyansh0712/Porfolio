@@ -10,7 +10,7 @@ Provide School Admins with comprehensive faculty management capabilities (create
 ### 1. Data Model & Employee Code Assignment
 - **Email Uniqueness**: `Faculty.email` is **globally unique** (`unique=True`), matching `User.email` to maintain global authentication consistency and eliminate account resolution ambiguity across tenants.
 - **Employee Code Pattern**: Auto-generate Employee Code using format `[SUBDOMAIN-UPPER]-FAC-[NUMBER]` (e.g. `GREENWOOD-FAC-001`) with optional manual override by School Admin.
-- **Race Condition Prevention**: Employee code generation must be atomic — uses candidate generation with a retry loop catching `IntegrityError` to guarantee safety against concurrent creation requests.
+- **Production Sequence Counter (DB Row Locking)**: Uses a dedicated `TenantSequence` model (or tenant sequence counter) with PostgreSQL `select_for_update()` row-level locking inside `@transaction.atomic`. This guarantees 100% race-condition safety, zero sequence gaps, and predictable scalability.
 - **Uniqueness**: Employee Code must be strictly unique within the active school tenant.
 - **Fields**:
   - `first_name`, `last_name`
