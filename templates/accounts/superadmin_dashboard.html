@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Platform Super Admin — School Management{% endblock %}
+
+{% block extra_css %}
+<style>
+  .admin-card {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+  }
+  .stat-chip {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+  }
+  .table-row {
+    transition: background 0.15s ease;
+  }
+  .table-row:hover {
+    background: #f9fafb;
+  }
+  .privacy-badge {
+    background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">
+        Platform <span class="gradient-text">Management</span>
+      </h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Logged in as Super Admin:
+        <strong class="text-purple-700">{{ request.user.email }}</strong>
+      </p>
+    </div>
+    <div class="flex items-center gap-4">
+      <!-- Privacy boundary badge -->
+      <div class="privacy-badge text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm stat-chip uppercase">
+        🔒 No Faculty Data Access
+      </div>
+      <!-- Logout -->
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button type="submit" id="super-logout-btn"
+          class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-gray-600
+          border border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200
+          transition-all duration-200 font-medium">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Sign Out
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="grid grid-cols-3 gap-6 mb-8">
+    <div class="admin-card rounded-2xl border border-gray-100 shadow-sm p-6">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider stat-chip">Total Schools</p>
+      <p class="mt-2 text-4xl font-bold text-gray-900">{{ school_count }}</p>
+      <p class="mt-1 text-xs text-gray-400">Registered tenants</p>
+    </div>
+    <div class="admin-card rounded-2xl border border-gray-100 shadow-sm p-6">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider stat-chip">Active</p>
+      <p class="mt-2 text-4xl font-bold text-green-600">{{ active_count }}</p>
+      <p class="mt-1 text-xs text-gray-400">Schools currently active</p>
+    </div>
+    <div class="admin-card rounded-2xl border border-gray-100 shadow-sm p-6">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider stat-chip">Inactive</p>
+      <p class="mt-2 text-4xl font-bold text-red-400">{{ inactive_count }}</p>
+      <p class="mt-1 text-xs text-gray-400">Schools deactivated</p>
+    </div>
+  </div>
+
+  <!-- Privacy Notice -->
+  <div class="mb-6 p-4 rounded-xl bg-orange-50 border border-orange-200 flex items-start gap-3">
+    <svg class="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    </svg>
+    <div>
+      <p class="text-sm font-semibold text-orange-800">AUTH-02 Privacy Boundary Active</p>
+      <p class="text-xs text-orange-600 mt-0.5">
+        Super Admin cannot view faculty records, biometric data, face embeddings, or attendance records.
+        Only school-level metadata is visible here.
+      </p>
+    </div>
+  </div>
+
+  <!-- School Tenant Table -->
+  <div class="admin-card rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="text-base font-semibold text-gray-800">Registered School Tenants</h2>
+      <span class="text-xs text-gray-400">School metadata only &bull; No faculty data</span>
+    </div>
+
+    {% if schools %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-gray-50/70 border-b border-gray-100">
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">School Name</th>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Subdomain</th>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact Email</th>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Created</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          {% for school in schools %}
+          <tr class="table-row" id="school-row-{{ school.pk }}">
+            <td class="px-6 py-4 text-gray-400 text-xs">{{ forloop.counter }}</td>
+            <td class="px-6 py-4 font-medium text-gray-900">{{ school.name }}</td>
+            <td class="px-6 py-4">
+              <span class="font-mono text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-lg">
+                {{ school.subdomain }}.ourapp.com
+              </span>
+            </td>
+            <td class="px-6 py-4 text-gray-500">{{ school.contact_email }}</td>
+            <td class="px-6 py-4">
+              {% if school.is_active %}
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Active
+                </span>
+              {% else %}
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-xs font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>Inactive
+                </span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 text-gray-400 text-xs">
+              {{ school.created_at|date:"M d, Y" }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="px-6 py-12 text-center">
+      <svg class="w-12 h-12 text-gray-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
+      </svg>
+      <p class="text-sm text-gray-400 font-medium">No schools registered yet.</p>
+      <p class="text-xs text-gray-300 mt-1">Schools will appear here after self-registration.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
