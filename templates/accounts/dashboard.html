@@ -4,6 +4,17 @@
 
 {% block extra_css %}
 <style>
+  .dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  @media (min-width: 640px) {
+    .dashboard-stats-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
   .apple-stat-card {
     background: #ffffff;
     border: 1px solid #e0e0e0;
@@ -22,52 +33,50 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto">
+<div class="w-full max-w-5xl mx-auto">
 
-  <!-- Welcome Header -->
-  <div class="mb-8">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-semibold text-[#1d1d1f] tracking-tight">
-          Good morning, <span class="text-[#0066cc]">{{ user.first_name|default:user.email }}</span> 👋
-        </h1>
-        <div class="flex items-center gap-3 mt-2">
-          {% if tenant %}
-            <span class="text-xs text-[#86868b]">{{ tenant.name }}</span>
-            <span class="text-gray-300">•</span>
-          {% endif %}
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full
-            {% if user.role == 'SCHOOL_ADMIN' %}bg-blue-50 text-[#0066cc] border border-blue-100
-            {% elif user.role == 'FACULTY' %}bg-emerald-50 text-emerald-700 border border-emerald-100
-            {% else %}bg-purple-50 text-purple-700 border border-purple-100{% endif %}
-            text-xs font-medium role-chip uppercase">
-            {{ user.get_role_display }}
-          </span>
+  <!-- Welcome Header (Mobile Responsive) -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-semibold text-[#1d1d1f] tracking-tight">
+        Good morning, <span class="text-[#0066cc]">{{ user.first_name|default:user.email }}</span> 👋
+      </h1>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5 sm:mt-2">
+        {% if tenant %}
+          <span class="text-xs text-[#86868b]">{{ tenant.name }}</span>
           <span class="text-gray-300">•</span>
-          <span class="text-xs text-[#86868b]">{{ user.email }}</span>
-        </div>
+        {% endif %}
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full
+          {% if user.role == 'SCHOOL_ADMIN' %}bg-blue-50 text-[#0066cc] border border-blue-100
+          {% elif user.role == 'FACULTY' %}bg-emerald-50 text-emerald-700 border border-emerald-100
+          {% else %}bg-purple-50 text-purple-700 border border-purple-100{% endif %}
+          text-xs font-medium role-chip uppercase">
+          {{ user.get_role_display }}
+        </span>
+        <span class="text-gray-300">•</span>
+        <span class="text-xs text-[#86868b] break-all sm:break-normal">{{ user.email }}</span>
       </div>
-      <!-- Logout Button -->
-      <form method="post" action="{% url 'accounts:logout' %}">
-        {% csrf_token %}
-        <button type="submit" id="logout-btn"
-          class="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-[#1d1d1f]
-          bg-white border border-[#e0e0e0] hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200
-          transition-all duration-200">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Sign Out
-        </button>
-      </form>
     </div>
+    <!-- Logout Button -->
+    <form method="post" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}
+      <button type="submit" id="logout-btn"
+        class="self-start sm:self-auto flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium text-[#1d1d1f]
+        bg-white border border-[#e0e0e0] hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200
+        transition-all duration-200">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        Sign Out
+      </button>
+    </form>
   </div>
 
-  <!-- Status Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+  <!-- Status Cards Grid -->
+  <div class="dashboard-stats-grid mb-6 sm:mb-8">
     <!-- School Tenant Card -->
-    <div class="apple-stat-card p-5">
+    <div class="apple-stat-card p-4 sm:p-5">
       <div class="flex items-start justify-between">
         <div>
           <p class="text-xs font-medium text-[#86868b] uppercase tracking-wider">School</p>
@@ -75,10 +84,10 @@
             {% if tenant %}{{ tenant.name }}{% else %}—{% endif %}
           </p>
           {% if tenant %}
-            <p class="mt-0.5 text-xs text-[#0066cc] font-mono">{{ tenant.subdomain }}.ourapp.com</p>
+            <p class="mt-0.5 text-xs text-[#0066cc] font-mono break-all sm:break-normal">{{ tenant.subdomain }}.ourapp.com</p>
           {% endif %}
         </div>
-        <div class="w-9 h-9 rounded-xl bg-[#f5f5f7] border border-[#e0e0e0] flex items-center justify-center">
+        <div class="w-9 h-9 rounded-xl bg-[#f5f5f7] border border-[#e0e0e0] flex items-center justify-center flex-shrink-0">
           <svg class="w-4 h-4 text-[#0066cc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -88,14 +97,14 @@
     </div>
 
     <!-- Role Card -->
-    <div class="apple-stat-card p-5">
+    <div class="apple-stat-card p-4 sm:p-5">
       <div class="flex items-start justify-between">
         <div>
           <p class="text-xs font-medium text-[#86868b] uppercase tracking-wider">Role</p>
           <p class="mt-1.5 text-base font-semibold text-[#1d1d1f]">{{ user.get_role_display }}</p>
           <p class="mt-0.5 text-xs text-[#86868b]">Access Level</p>
         </div>
-        <div class="w-9 h-9 rounded-xl bg-[#f5f5f7] border border-[#e0e0e0] flex items-center justify-center">
+        <div class="w-9 h-9 rounded-xl bg-[#f5f5f7] border border-[#e0e0e0] flex items-center justify-center flex-shrink-0">
           <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -105,7 +114,7 @@
     </div>
 
     <!-- Account Status Card -->
-    <div class="apple-stat-card p-5">
+    <div class="apple-stat-card p-4 sm:p-5">
       <div class="flex items-start justify-between">
         <div>
           <p class="text-xs font-medium text-[#86868b] uppercase tracking-wider">Status</p>
@@ -115,7 +124,7 @@
             <span class="text-xs text-[#86868b]">Account Online</span>
           </div>
         </div>
-        <div class="w-9 h-9 rounded-xl bg-[#f5f5f7] border border-[#e0e0e0] flex items-center justify-center">
+        <div class="w-9 h-9 rounded-xl bg-[#f5f5f7] border border-[#e0e0e0] flex items-center justify-center flex-shrink-0">
           <svg class="w-4 h-4 text-[#0066cc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -130,24 +139,24 @@
     <h2 class="text-sm font-semibold text-[#1d1d1f] mb-3">Quick Actions</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-      <!-- Faculty Management (Phase 5) -->
-      <div class="apple-stat-card p-5 opacity-75 select-none">
+      <!-- Faculty Management (Phase 5 — Active) -->
+      <a href="{% url 'faculty:list' %}" class="apple-stat-card p-4 sm:p-5 hover:shadow-md group block" style="text-decoration: none;">
         <div class="flex items-center gap-3 mb-2">
-          <div class="w-8 h-8 rounded-lg bg-[#f5f5f7] border border-[#e0e0e0] flex items-center justify-center">
+          <div class="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
             <svg class="w-4 h-4 text-[#0066cc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
-          <span class="text-sm font-semibold text-[#1d1d1f]">Faculty Management</span>
+          <span class="text-sm font-semibold text-[#1d1d1f]">Faculty Directory</span>
         </div>
-        <p class="text-xs text-[#86868b]">Add and manage faculty members. Coming in Phase 5.</p>
-      </div>
+        <p class="text-xs text-[#86868b] leading-relaxed">Add, manage, and organize faculty members across departments.</p>
+      </a>
 
       <!-- Face Enrollment (Phase 6) -->
-      <div class="apple-stat-card p-5 opacity-75 select-none">
+      <div class="apple-stat-card p-4 sm:p-5 opacity-75 select-none">
         <div class="flex items-center gap-3 mb-2">
-          <div class="w-8 h-8 rounded-lg bg-[#f5f5f7] border border-[#e0e0e0] flex items-center justify-center">
+          <div class="w-8 h-8 rounded-lg bg-[#f5f5f7] border border-[#e0e0e0] flex items-center justify-center flex-shrink-0">
             <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -155,21 +164,21 @@
           </div>
           <span class="text-sm font-semibold text-[#1d1d1f]">Face Enrollment</span>
         </div>
-        <p class="text-xs text-[#86868b]">Webcam face registration pipeline. Coming in Phase 6.</p>
+        <p class="text-xs text-[#86868b] leading-relaxed">Webcam face registration pipeline. Coming in Phase 6.</p>
       </div>
 
       <!-- Attendance (Phase 7) -->
-      <div class="apple-stat-card p-5 opacity-75 select-none">
+      <div class="apple-stat-card p-4 sm:p-5 opacity-75 select-none">
         <div class="flex items-center gap-3 mb-2">
-          <div class="w-8 h-8 rounded-lg bg-[#f5f5f7] border border-[#e0e0e0] flex items-center justify-center">
+          <div class="w-8 h-8 rounded-lg bg-[#f5f5f7] border border-[#e0e0e0] flex items-center justify-center flex-shrink-0">
             <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           </div>
           <span class="text-sm font-semibold text-[#1d1d1f]">Attendance</span>
         </div>
-        <p class="text-xs text-[#86868b]">Face-based check-in / check-out. Coming in Phase 7.</p>
+        <p class="text-xs text-[#86868b] leading-relaxed">Face-based check-in / check-out. Coming in Phase 7.</p>
       </div>
     </div>
   </div>

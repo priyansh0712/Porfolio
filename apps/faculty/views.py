@@ -1,0 +1,190 @@
+"""
+Faculty Management Views — 3-Layer Security Architecture.
+
+Layer 1: TenantMiddleware (request.tenant)
+Layer 2: SchoolAdminRequiredMixin (role-based access)
+Layer 3: Queryset scoping (school=request.tenant)
+"""
+from django.contrib import messages
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import ListView, CreateView, UpdateView
+
+from apps.accounts.permissions import SchoolAdminRequiredMixin
+from apps.faculty.forms import FacultyForm
+from apps.faculty.models import Faculty
+from apps.faculty.services import FacultyService
+
+
+class FacultyListView(SchoolAdminRequiredMixin, ListView):
+    """
+    Faculty directory with tenant-scoped queryset.
+    Passes department list and form for the modal drawer.
+    """
+    model = Faculty
+    template_name = 'faculty/faculty_list.html'
+    context_object_name = 'faculty_list'
+
+    def get_queryset(self):
+        """Layer 3: Scope to current tenant."""
+        return Faculty.objects.filter(school=self.request.tenant)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        qs = self.get_queryset()
+        ctx['departments'] = sorted(
+            qs.values_list('department', flat=True).distinct()
+        )
+        ctx['total_count'] = qs.count()
+        ctx['active_count'] = qs.filter(is_active=True).count()
+        ctx['inactive_count'] = qs.filter(is_active=False).count()
+        ctx['form'] = FacultyForm(tenant=self.request.tenant)
+        return ctx
+
+
+class FacultyCreateView(SchoolAdminRequiredMixin, CreateView):
+    """
+    Handles both modal AJAX and standard POST faculty creation.
+    Delegates to FacultyService for atomic User + Faculty creation.
+    """
+    model = Faculty
+    form_class = FacultyForm
+    template_name = 'faculty/faculty_list.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['tenant'] = self.request.tenant
+        return kwargs
+
+    def form_valid(self, form):
+        try:
+            faculty = FacultyService.create_faculty(
+                school=self.request.tenant,
+                data=form.cleaned_data,
+            )
+            if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': f'{faculty.full_name} added successfully.',
+                    'faculty': {
+                        'id': faculty.pk,
+                        'full_name': faculty.full_name,
+                        'email': faculty.email,
+                        'employee_code': faculty.employee_code,
+                        'department': faculty.department,
+                        'designation': faculty.designation,
+                        'is_active': faculty.is_active,
+                        'is_face_enrolled': faculty.is_face_enrolled,
+                    },
+                })
+            messages.success(
+                self.request,
+                f'{faculty.full_name} has been added as faculty.'
+            )
+            return redirect('faculty:list')
+        except Exception as e:
+            if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': str(e)}, status=400)
+            messages.error(self.request, f'Error creating faculty: {e}')
+            return redirect('faculty:list')
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors,
+            }, status=400)
+        messages.error(self.request, 'Please correct the errors below.')
+        return redirect('faculty:list')
+
+
+class FacultyUpdateView(SchoolAdminRequiredMixin, UpdateView):
+    """
+    Handles faculty edit via modal/AJAX.
+    Layer 3: queryset scoped to tenant.
+    """
+    model = Faculty
+    form_class = FacultyForm
+    template_name = 'faculty/faculty_list.html'
+
+    def get_queryset(self):
+        """Layer 3: Only allow editing within own tenant."""
+        return Faculty.objects.filter(school=self.request.tenant)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['tenant'] = self.request.tenant
+        return kwargs
+
+    def form_valid(self, form):
+        try:
+            faculty = FacultyService.update_faculty(
+                faculty=self.get_object(),
+                data=form.cleaned_data,
+            )
+            if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': f'{faculty.full_name} updated successfully.',
+                })
+            messages.success(self.request, f'{faculty.full_name} updated.')
+            return redirect('faculty:list')
+        except Exception as e:
+            if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': str(e)}, status=400)
+            messages.error(self.request, f'Error updating faculty: {e}')
+            return redirect('faculty:list')
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors,
+            }, status=400)
+        messages.error(self.request, 'Please correct the errors below.')
+        return redirect('faculty:list')
+
+
+class FacultyToggleStatusView(SchoolAdminRequiredMixin, View):
+    """POST-only: Toggle faculty active/inactive status. Tenant-scoped."""
+
+    def post(self, request, pk):
+        faculty = get_object_or_404(
+            Faculty, pk=pk, school=request.tenant
+        )
+        faculty = FacultyService.toggle_status(faculty)
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'is_active': faculty.is_active,
+                'message': (
+                    f'{faculty.full_name} has been '
+                    f'{"activated" if faculty.is_active else "deactivated"}.'
+                ),
+            })
+        status_str = 'activated' if faculty.is_active else 'deactivated'
+        messages.success(request, f'{faculty.full_name} has been {status_str}.')
+        return redirect('faculty:list')
+
+
+class FacultyDetailAPIView(SchoolAdminRequiredMixin, View):
+    """GET-only: Returns faculty details as JSON for edit modal pre-fill."""
+
+    def get(self, request, pk):
+        faculty = get_object_or_404(
+            Faculty, pk=pk, school=request.tenant
+        )
+        return JsonResponse({
+            'id': faculty.pk,
+            'first_name': faculty.first_name,
+            'last_name': faculty.last_name,
+            'email': faculty.email,
+            'phone_number': faculty.phone_number,
+            'employee_code': faculty.employee_code,
+            'department': faculty.department,
+            'designation': faculty.designation,
+            'is_active': faculty.is_active,
+        })
