@@ -6,10 +6,10 @@ This roadmap outlines the 10-phase build sequence for a production-minded multi-
 
 ## Phases
 
-- [ ] **Phase 1: Project Foundation & Base Architecture** - Django project setup, PostgreSQL, Tailwind CSS compilation, core apps structure, and base layouts.
+- [x] **Phase 1: Project Foundation & Base Architecture** - Django project setup, PostgreSQL, Tailwind CSS compilation, core apps structure, and base layouts.
 - [x] **Phase 2: Public Landing Page & School Registration** - Public marketing landing page (`ourapp.com`) and school self-registration onboarding.
-- [ ] **Phase 3: Multi-Tenant Subdomain Infrastructure** - Subdomain resolution middleware (`school.ourapp.com`), tenant context manager, and database isolation enforcement.
-- [ ] **Phase 4: Authentication & Role-Based Access Control (RBAC)** - School Admin login, Super Admin platform isolation, RBAC permission enforcers, and session security.
+- [x] **Phase 3: Multi-Tenant Subdomain Infrastructure** - Subdomain resolution middleware (`school.ourapp.com`), tenant context manager, and database isolation enforcement.
+- [x] **Phase 4: Authentication & Role-Based Access Control (RBAC)** - School Admin login, Super Admin platform isolation, RBAC permission enforcers, and session security.
 - [ ] **Phase 5: Faculty Management Suite** - School Admin faculty CRUD, department tagging, and active/deactive status management scoped to tenant.
 - [ ] **Phase 6: Face Registration & Biometric Pipeline** - Webcam face enrollment interface, InsightFace ArcFace 512-d vector extraction, and zero-raw-photo biometric pipeline.
 - [ ] **Phase 7: Face-Based Check-In & Check-Out Engine** - Real-time webcam scanning interface, face matching, scan state transition engine, and debounce locks.
