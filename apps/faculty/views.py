@@ -171,7 +171,7 @@ class FacultyToggleStatusView(SchoolAdminRequiredMixin, View):
 
 
 class FacultyDetailAPIView(SchoolAdminRequiredMixin, View):
-    """GET-only: Returns faculty details as JSON for edit modal pre-fill."""
+    """GET-only: Returns faculty details as JSON for edit/view modal."""
 
     def get(self, request, pk):
         faculty = get_object_or_404(
@@ -181,13 +181,76 @@ class FacultyDetailAPIView(SchoolAdminRequiredMixin, View):
             'id': faculty.pk,
             'first_name': faculty.first_name,
             'last_name': faculty.last_name,
+            'full_name': faculty.full_name,
             'email': faculty.email,
             'phone_number': faculty.phone_number,
             'employee_code': faculty.employee_code,
             'department': faculty.department,
             'designation': faculty.designation,
             'is_active': faculty.is_active,
+            'is_face_enrolled': faculty.is_face_enrolled,
+            'date_joined': faculty.date_joined.strftime('%B %d, %Y') if faculty.date_joined else '—',
         })
+
+
+class FacultyDeleteView(SchoolAdminRequiredMixin, View):
+    """POST-only: Safely deletes a faculty member and linked user account."""
+
+    def post(self, request, pk):
+        faculty = get_object_or_404(
+            Faculty, pk=pk, school=request.tenant
+        )
+        name = faculty.full_name
+        user = faculty.user
+
+        # Delete faculty and linked user
+        faculty.delete()
+        if user:
+            user.delete()
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': f'{name} has been removed from faculty directory.',
+            })
+        messages.success(request, f'{name} has been deleted.')
+        return redirect('faculty:list')
+
+
+class FacultyExportCSVView(SchoolAdminRequiredMixin, View):
+    """GET: Exports tenant's faculty directory to a CSV file."""
+
+    def get(self, request):
+        from django.http import HttpResponse
+        import csv
+
+        filename = f"{request.tenant.subdomain}_faculty_directory.csv"
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'employee_code', 'first_name', 'last_name', 'email',
+            'phone_number', 'department', 'designation', 'date_joined',
+            'is_active', 'is_face_enrolled',
+        ])
+
+        qs = Faculty.objects.filter(school=request.tenant).order_by('first_name', 'last_name')
+        for f in qs:
+            writer.writerow([
+                f.employee_code,
+                f.first_name,
+                f.last_name,
+                f.email,
+                f.phone_number,
+                f.department,
+                f.designation,
+                f.date_joined.strftime('%Y-%m-%d') if f.date_joined else '',
+                'Active' if f.is_active else 'Inactive',
+                'Enrolled' if f.is_face_enrolled else 'Pending',
+            ])
+
+        return response
 
 
 class FacultyBulkImportView(SchoolAdminRequiredMixin, View):
