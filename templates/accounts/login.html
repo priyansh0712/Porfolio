@@ -153,6 +153,8 @@
 
   </div>
 </div>
+{% endblock %}
+
 {% block extra_js %}
 <script>
 function togglePassword() {
@@ -175,7 +177,14 @@ function togglePassword() {
 document.addEventListener('DOMContentLoaded', function () {
   var errData = document.getElementById('form-errors-data');
   if (!errData) return;
-  var msgs = errData.textContent.trim().split('|||');
+  var rawText = errData.textContent.trim();
+  if (!rawText) return;
+
+  // Prevent double toast if DOMContentLoaded or script runs multiple times
+  if (errData.dataset.toastSpawned) return;
+  errData.dataset.toastSpawned = 'true';
+
+  var msgs = rawText.split('|||');
   var container = document.getElementById('toast-container');
   if (!container) return;
 
@@ -183,6 +192,8 @@ document.addEventListener('DOMContentLoaded', function () {
     msg = msg.trim();
     if (!msg) return;
     var id = 'form-error-toast-' + i;
+    if (document.getElementById(id)) return;
+
     var el = document.createElement('div');
     el.id = id;
     el.className = 'apple-toast';
@@ -211,5 +222,4 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
-{% endblock %}
 {% endblock %}
