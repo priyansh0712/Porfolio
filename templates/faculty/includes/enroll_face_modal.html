@@ -1,0 +1,291 @@
+<!-- ===== Face Enrollment Modal Drawer ===== -->
+<div class="modal-backdrop" id="enroll-face-backdrop" onclick="closeEnrollFaceModal()"></div>
+<div class="modal-drawer" id="enroll-face-drawer" style="max-width: 520px;">
+  <div class="modal-header">
+    <h2 id="enroll-face-title">📷 Enroll Face ID</h2>
+    <button class="modal-close-btn" onclick="closeEnrollFaceModal()" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  <div class="modal-body" style="padding: 16px 20px;">
+    <!-- Camera Container -->
+    <div id="enroll-camera-container" style="
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #1d1d1f;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    ">
+      <video id="enroll-video" autoplay playsinline muted style="
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      "></video>
+
+      <!-- Face Guide Overlay -->
+      <div id="face-guide-overlay" style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 250px;
+        border: 3px dashed rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        pointer-events: none;
+        transition: border-color 0.3s ease;
+      "></div>
+
+      <!-- Status Banner -->
+      <div id="enroll-status-banner" style="
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px 16px;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 500;
+        text-align: center;
+        letter-spacing: -0.01em;
+      ">
+        Center your face inside the oval guide
+      </div>
+    </div>
+
+    <!-- Camera Error State -->
+    <div id="enroll-camera-error" style="display: none; text-align: center; padding: 40px 20px;">
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: #fef2f2; border: 1px solid #fecaca; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #dc2626; font-size: 24px;">
+        ⚠️
+      </div>
+      <p style="color: #1d1d1f; font-weight: 600; margin-bottom: 4px;">Camera Access Required</p>
+      <p id="enroll-camera-error-msg" style="color: #86868b; font-size: 13px;">Unable to access camera. Please allow camera permissions and try again.</p>
+    </div>
+
+    <!-- Processing State -->
+    <div id="enroll-processing" style="display: none; text-align: center; padding: 40px 20px;">
+      <div style="width: 48px; height: 48px; border: 3px solid #e0e0e0; border-top-color: #0066cc; border-radius: 50%; margin: 0 auto 16px; animation: spin 0.8s linear infinite;"></div>
+      <p style="color: #1d1d1f; font-weight: 600;">Processing Face Data...</p>
+      <p style="color: #86868b; font-size: 13px;">Capturing 3 frames and extracting biometric vectors</p>
+    </div>
+
+    <!-- Faculty Info Card -->
+    <div style="
+      background: #f5f5f7;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    ">
+      <div style="
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e8f0fe, #d2e3fc);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 15px;
+        color: #1967d2;
+        flex-shrink: 0;
+      " id="enroll-faculty-avatar">?</div>
+      <div style="min-width: 0;">
+        <div id="enroll-faculty-name" style="font-weight: 600; color: #1d1d1f; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">—</div>
+        <div id="enroll-faculty-code" style="font-size: 12px; color: #86868b;">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer" style="flex-direction: column; gap: 8px;">
+    <button type="button" class="btn-submit" id="btn-enroll-capture" onclick="captureAndEnrollFace()" style="width: 100%; font-weight: 600;">
+      📸 Capture & Enroll Face
+    </button>
+    <button type="button" class="btn-cancel" onclick="closeEnrollFaceModal()" style="width: 100%;">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<style>
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+// ── Face Enrollment Modal Controller ──
+let enrollFacultyId = null;
+let enrollStream = null;
+
+function openEnrollFaceModal(facultyId, facultyName, employeeCode, isReenroll) {
+  enrollFacultyId = facultyId;
+
+  // Set faculty info
+  document.getElementById('enroll-faculty-name').textContent = facultyName || '—';
+  document.getElementById('enroll-faculty-code').textContent = employeeCode || '—';
+  document.getElementById('enroll-faculty-avatar').textContent =
+    (facultyName || '?').charAt(0).toUpperCase();
+
+  // Set title based on enroll vs re-enroll
+  document.getElementById('enroll-face-title').textContent =
+    isReenroll ? '🔄 Re-enroll Face ID' : '📷 Enroll Face ID';
+
+  // Reset UI states
+  document.getElementById('enroll-camera-container').style.display = 'block';
+  document.getElementById('enroll-camera-error').style.display = 'none';
+  document.getElementById('enroll-processing').style.display = 'none';
+  document.getElementById('btn-enroll-capture').disabled = false;
+  document.getElementById('enroll-status-banner').textContent = 'Center your face inside the oval guide';
+
+  // Show modal
+  document.getElementById('enroll-face-backdrop').classList.add('active');
+  document.getElementById('enroll-face-drawer').classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Start camera
+  startEnrollmentCamera();
+}
+
+function closeEnrollFaceModal() {
+  // Stop camera stream
+  if (enrollStream) {
+    enrollStream.getTracks().forEach(function(track) { track.stop(); });
+    enrollStream = null;
+  }
+  var video = document.getElementById('enroll-video');
+  if (video) video.srcObject = null;
+
+  enrollFacultyId = null;
+
+  document.getElementById('enroll-face-backdrop').classList.remove('active');
+  document.getElementById('enroll-face-drawer').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+async function startEnrollmentCamera() {
+  try {
+    enrollStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        facingMode: 'user',
+      },
+    });
+    var video = document.getElementById('enroll-video');
+    video.srcObject = enrollStream;
+  } catch (err) {
+    console.error('Camera access error:', err);
+    document.getElementById('enroll-camera-container').style.display = 'none';
+    document.getElementById('enroll-camera-error').style.display = 'block';
+    document.getElementById('enroll-camera-error-msg').textContent =
+      'Camera error: ' + (err.message || 'Permission denied');
+    document.getElementById('btn-enroll-capture').disabled = true;
+  }
+}
+
+async function captureAndEnrollFace() {
+  if (!enrollFacultyId || !enrollStream) return;
+
+  var captureBtn = document.getElementById('btn-enroll-capture');
+  captureBtn.disabled = true;
+
+  // Show processing state
+  document.getElementById('enroll-camera-container').style.display = 'none';
+  document.getElementById('enroll-processing').style.display = 'block';
+
+  var video = document.getElementById('enroll-video');
+  var canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  var ctx = canvas.getContext('2d');
+
+  // Capture 3 frames spaced 300ms apart
+  var frames = [];
+  for (var i = 0; i < 3; i++) {
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    frames.push(canvas.toDataURL('image/jpeg', 0.85));
+    if (i < 2) {
+      await new Promise(function(r) { setTimeout(r, 300); });
+    }
+  }
+
+  // Send AJAX request with strict Content-Type: application/json
+  try {
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    var response = await fetch('/faculty/' + enrollFacultyId + '/enroll-face/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify({ frames: frames }),
+    });
+
+    var data = await response.json();
+
+    if (data.success) {
+      closeEnrollFaceModal();
+      spawnToast(data.message || 'Face enrolled successfully!', 'success');
+      // Refresh page to update enrollment status badges
+      setTimeout(function() { window.location.reload(); }, 800);
+    } else {
+      // Show error, re-show camera
+      document.getElementById('enroll-processing').style.display = 'none';
+      document.getElementById('enroll-camera-container').style.display = 'block';
+      document.getElementById('enroll-status-banner').textContent = data.error || 'Enrollment failed. Try again.';
+      document.getElementById('enroll-status-banner').style.background = 'rgba(220, 38, 38, 0.75)';
+      captureBtn.disabled = false;
+    }
+  } catch (err) {
+    document.getElementById('enroll-processing').style.display = 'none';
+    document.getElementById('enroll-camera-container').style.display = 'block';
+    document.getElementById('enroll-status-banner').textContent = 'Network error. Please try again.';
+    document.getElementById('enroll-status-banner').style.background = 'rgba(220, 38, 38, 0.75)';
+    captureBtn.disabled = false;
+  }
+}
+
+// ── Face Reset Handler ──
+async function resetFacultyFace(facultyId, facultyName) {
+  if (!confirm('Are you sure you want to remove face biometric data for ' + facultyName + '?')) {
+    return;
+  }
+
+  try {
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    var response = await fetch('/faculty/' + facultyId + '/reset-face/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify({}),
+    });
+
+    var data = await response.json();
+    if (data.success) {
+      spawnToast(data.message || 'Face biometric removed.', 'success');
+      setTimeout(function() { window.location.reload(); }, 800);
+    } else {
+      spawnToast(data.error || 'Reset failed.', 'error');
+    }
+  } catch (err) {
+    spawnToast('Network error during face reset.', 'error');
+  }
+}
+</script>

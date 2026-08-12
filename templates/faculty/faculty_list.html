@@ -789,6 +789,15 @@
         Toggle Status
       </button>
     </div>
+    <!-- Face ID Action Button (dynamic: Enroll / Re-enroll + Reset) -->
+    <div id="prof-face-actions" style="display: flex; gap: 8px; width: 100%;">
+      <button type="button" class="btn-cancel" id="btn-prof-enroll-face" style="flex: 1; font-weight: 600; color: #0066cc; border-color: #b3d4fc; background: #e8f0fe;">
+        📷 Enroll Face ID
+      </button>
+      <button type="button" class="btn-cancel" id="btn-prof-reset-face" style="flex: 0; display: none; font-weight: 600; color: #dc2626; border-color: #fecaca; background: #fef2f2; white-space: nowrap; padding: 9px 14px;">
+        ❌ Reset
+      </button>
+    </div>
     <button type="button" class="btn-cancel" id="btn-prof-delete" style="width: 100%; color: #dc2626; border-color: #fecaca; background: #fef2f2; font-weight: 600;">
       🗑️ Delete Faculty
     </button>
@@ -1175,6 +1184,26 @@ function openProfileModal(facultyId) {
       openDeleteModal(facultyId, fullName);
     };
 
+    // Face ID Buttons — dynamic based on enrollment status
+    var enrollBtn = document.getElementById('btn-prof-enroll-face');
+    var resetBtn = document.getElementById('btn-prof-reset-face');
+    if (d.is_face_enrolled) {
+      enrollBtn.innerHTML = '🔄 Re-enroll Face';
+      resetBtn.style.display = 'inline-flex';
+      resetBtn.style.flex = '0 0 auto';
+    } else {
+      enrollBtn.innerHTML = '📷 Enroll Face ID';
+      resetBtn.style.display = 'none';
+    }
+    enrollBtn.onclick = function() {
+      closeProfileModal();
+      openEnrollFaceModal(facultyId, fullName, d.employee_code, d.is_face_enrolled);
+    };
+    resetBtn.onclick = function() {
+      closeProfileModal();
+      resetFacultyFace(facultyId, fullName);
+    };
+
     document.getElementById('profile-modal-backdrop').classList.add('active');
     document.getElementById('profile-modal-drawer').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -1248,7 +1277,10 @@ document.addEventListener('keydown', function(e) {
     closeCSVModal();
     closeProfileModal();
     closeDeleteModal();
+    closeEnrollFaceModal();
   }
 });
 </script>
+
+{% include 'faculty/includes/enroll_face_modal.html' %}
 {% endblock %}
