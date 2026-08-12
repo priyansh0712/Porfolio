@@ -7,88 +7,79 @@
 
 {% block extra_css %}
 <style>
-  .login-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+  .apple-card-login {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
   }
-  .gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  .btn-action-blue {
+    background-color: #0066cc;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .input-field {
-    transition: all 0.2s ease;
+  .btn-action-blue:hover {
+    background-color: #0071e3;
+    transform: scale(1.005);
   }
-  .input-field:focus {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
-  }
-  .btn-login {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    transition: all 0.25s ease;
-  }
-  .btn-login:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.45);
-  }
-  .btn-login:active {
-    transform: translateY(0);
+  .apple-input-focus:focus {
+    border-color: #0066cc !important;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15) !important;
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="min-h-[calc(100vh-160px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 -mt-8">
+<div class="min-h-[calc(100vh-180px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
   <div class="w-full max-w-md">
 
     <!-- School branding or Platform badge -->
     <div class="text-center mb-8">
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-bg shadow-lg mb-4">
-        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#0066cc] shadow-sm mb-4">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
       </div>
       {% if tenant %}
-        <h1 class="text-2xl font-bold text-gray-900">{{ tenant.name }}</h1>
-        <p class="text-sm text-gray-500 mt-1">School Admin Login</p>
-        <div class="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100">
-          <div class="w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse"></div>
-          <span class="text-xs font-medium text-indigo-700">{{ tenant.subdomain }}.ourapp.com</span>
+        <h1 class="text-2xl font-semibold text-[#1d1d1f] tracking-tight">{{ tenant.name }}</h1>
+        <p class="text-xs text-[#86868b] mt-1">School Admin Login</p>
+        <div class="inline-flex items-center mt-2.5 px-3 py-1 rounded-full bg-[#fafafc] border border-[#e0e0e0]">
+          <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></div>
+          <span class="text-xs font-medium text-[#0066cc]">{{ tenant.subdomain }}.ourapp.com</span>
         </div>
       {% else %}
-        <h1 class="text-2xl font-bold text-gray-900">Platform Login</h1>
-        <p class="text-sm text-gray-500 mt-1">Super Admin Access</p>
-        <div class="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-purple-50 border border-purple-100">
-          <span class="text-xs font-medium text-purple-700">Platform Administrator Only</span>
+        <h1 class="text-2xl font-semibold text-[#1d1d1f] tracking-tight">Platform Login</h1>
+        <p class="text-xs text-[#86868b] mt-1">Super Admin Access</p>
+        <div class="inline-flex items-center mt-2.5 px-3 py-1 rounded-full bg-[#fafafc] border border-[#e0e0e0]">
+          <span class="text-xs font-medium text-[#1d1d1f]">Platform Administrator Only</span>
         </div>
       {% endif %}
     </div>
 
     <!-- Login Card -->
-    <div class="login-card rounded-3xl shadow-xl border border-white/50 overflow-hidden">
+    <div class="apple-card-login rounded-3xl overflow-hidden">
       <div class="p-8">
 
         <!-- Error alerts -->
         {% if form.non_field_errors %}
-          <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3" role="alert">
-            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="mb-6 p-3.5 rounded-xl bg-rose-50 border border-rose-200/80 flex items-start gap-3" role="alert">
+            <svg class="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <div class="text-sm text-red-700 font-medium">
+            <div class="text-xs text-rose-700 font-medium">
               {% for error in form.non_field_errors %}{{ error }}{% endfor %}
             </div>
           </div>
         {% endif %}
 
-        <!-- Django messages (e.g. tenant not found flash) -->
+        <!-- Django messages -->
         {% for message in messages %}
-          <div class="mb-6 p-4 rounded-xl
-            {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-700
+          <div class="mb-6 p-3.5 rounded-xl
+            {% if message.tags == 'error' %}bg-rose-50 border border-rose-200 text-rose-700
             {% elif message.tags == 'warning' %}bg-amber-50 border border-amber-200 text-amber-700
             {% else %}bg-blue-50 border border-blue-200 text-blue-700{% endif %}
             flex items-start gap-3" role="alert">
-            <span class="text-sm font-medium">{{ message }}</span>
+            <span class="text-xs font-medium">{{ message }}</span>
           </div>
         {% endfor %}
 
@@ -98,47 +89,46 @@
 
           <!-- Email Field -->
           <div class="mb-5">
-            <label for="id_email" class="block text-sm font-semibold text-gray-700 mb-2">
+            <label for="id_email" class="block text-xs font-medium text-[#1d1d1f] mb-1.5">
               Email Address
             </label>
             {{ form.username }}
             {% if form.username.errors %}
-              <p class="mt-1 text-xs text-red-600">{{ form.username.errors.as_text }}</p>
+              <p class="mt-1 text-xs text-rose-600">{{ form.username.errors.as_text }}</p>
             {% endif %}
           </div>
 
           <!-- Password Field -->
           <div class="mb-6">
-            <label for="id_password" class="block text-sm font-semibold text-gray-700 mb-2">
+            <label for="id_password" class="block text-xs font-medium text-[#1d1d1f] mb-1.5">
               Password
             </label>
             {{ form.password }}
             {% if form.password.errors %}
-              <p class="mt-1 text-xs text-red-600">{{ form.password.errors.as_text }}</p>
+              <p class="mt-1 text-xs text-rose-600">{{ form.password.errors.as_text }}</p>
             {% endif %}
           </div>
 
           <!-- Submit Button -->
           <button type="submit" id="submit-login"
-            class="btn-login w-full py-3.5 px-6 rounded-xl text-white font-semibold text-sm tracking-wide shadow-lg">
+            class="btn-action-blue w-full py-3 px-6 rounded-full text-white font-medium text-sm tracking-tight shadow-sm">
             Sign In
           </button>
         </form>
       </div>
 
       <!-- Card Footer -->
-      <div class="px-8 py-4 bg-gray-50/60 border-t border-gray-100">
-        <p class="text-center text-xs text-gray-400">
-          Secured with Argon2id encryption &bull; Multi-Tenant SaaS
+      <div class="px-8 py-3.5 bg-[#fafafc] border-t border-[#e0e0e0]">
+        <p class="text-center text-[11px] text-[#86868b]">
+          Argon2id encryption &bull; Multi-Tenant Security
         </p>
       </div>
     </div>
 
     <!-- Footer note -->
-    <p class="text-center text-xs text-gray-400 mt-6">
+    <p class="text-center text-xs text-[#86868b] mt-6">
       {% if tenant %}
         School Admin access only for <strong>{{ tenant.name }}</strong>.
-        Cross-tenant access is prohibited.
       {% else %}
         Platform Super Admin access only. School Admins log in via their school subdomain.
       {% endif %}
