@@ -2,7 +2,6 @@ from django.db import transaction
 from django.contrib.auth import get_user_model
 from .models import School
 
-User = get_user_model()
 
 class SchoolRegistrationService:
     """
@@ -11,10 +10,11 @@ class SchoolRegistrationService:
     """
     @staticmethod
     @transaction.atomic
-    def register_school(data: dict) -> tuple[School, User]:
+    def register_school(data: dict):
         """
         Creates a School tenant record and associated primary School Admin user account.
         """
+        User = get_user_model()
         school = School.objects.create(
             name=data['school_name'],
             subdomain=data['subdomain'],
