@@ -195,12 +195,12 @@ async function captureAndEnrollFace(facultyId) {
     if (i < 2) await new Promise(r => setTimeout(r, 300));
   }
 
-  // Send AJAX request
+  // Send AJAX request with strict Content-Type: application/json
   const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
   const response = await fetch(`/faculty/${facultyId}/enroll-face/`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'json/application',
+      'Content-Type': 'application/json',
       'X-Requested-With': 'XMLHttpRequest',
       'X-CSRFToken': csrfToken
     },
@@ -214,6 +214,22 @@ async function captureAndEnrollFace(facultyId) {
   }
 }
 ```
+
+---
+
+## Production & Security Notes
+
+1. **Strict Payload & Frame Validation**:
+   - Endpoint MUST validate `len(frames) == 3`. Reject requests with `< 3` or `> 3` frames.
+   - Max body size validation (e.g. 5MB total payload limit).
+   - Base64 format validation, invalid image format handling, and graceful HTTP 400 error responses.
+2. **Prototype vs Production Biometric Architecture Separation**:
+   - **Prototype (Phase 6 & 7)**: Browser Webcam → In-Memory OpenCV → InsightFace (ArcFace 512-d) → JSONB Vector → Attendance Engine.
+   - **Production (Future Phase)**: Dedicated Kiosk/Hardware Device → Device Adapter → Biometric Verification → Attendance Engine.
+   - Commercial licensing / model validation deferred to pre-production review.
+3. **WSGI Worker Memory Footprint**:
+   - Process-level lazy singleton (`_app = None`) is acceptable for local dev and single-worker execution.
+   - Multi-worker Gunicorn deployments will load model weights per worker process (~300MB RAM each). Re-evaluating standalone microservice / shared worker memory is deferred to deployment phase.
 
 ---
 
