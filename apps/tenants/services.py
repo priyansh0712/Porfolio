@@ -33,7 +33,9 @@ class SchoolRegistrationService:
             password=data['password'],
             first_name=first_name,
             last_name=last_name,
-            is_staff=True
+            role=User.Role.SCHOOL_ADMIN,
+            school=school,
+            is_staff=True,
         )
 
         return school, admin_user
