@@ -77,16 +77,10 @@
     <div class="apple-card-login rounded-3xl overflow-hidden">
       <div class="p-8">
 
-        <!-- Error alerts -->
+        <!-- Form errors rendered as floating toasts via JS -->
         {% if form.non_field_errors %}
-          <div class="mb-6 p-3.5 rounded-xl bg-rose-50 border border-rose-200/80 flex items-start gap-3" role="alert">
-            <svg class="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div class="text-xs text-rose-700 font-medium">
-              {% for error in form.non_field_errors %}{{ error }}{% endfor %}
-            </div>
+          <div id="form-errors-data" style="display:none;" aria-hidden="true">
+            {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}|||{% endif %}{% endfor %}
           </div>
         {% endif %}
 
@@ -176,6 +170,46 @@ function togglePassword() {
     eyeOff.style.display = 'none';
   }
 }
+
+// Spawn form.non_field_errors as floating error toasts
+document.addEventListener('DOMContentLoaded', function () {
+  var errData = document.getElementById('form-errors-data');
+  if (!errData) return;
+  var msgs = errData.textContent.trim().split('|||');
+  var container = document.getElementById('toast-container');
+  if (!container) return;
+
+  msgs.forEach(function (msg, i) {
+    msg = msg.trim();
+    if (!msg) return;
+    var id = 'form-error-toast-' + i;
+    var el = document.createElement('div');
+    el.id = id;
+    el.className = 'apple-toast';
+    el.setAttribute('role', 'alert');
+    el.style.cssText = 'background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid #fecaca;box-shadow:0 8px 32px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);border-radius:14px;overflow:hidden;';
+    el.innerHTML =
+      '<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;">' +
+        '<div style="flex-shrink:0;width:32px;height:32px;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;">' +
+          '<svg width="16" height="16" fill="none" stroke="#ef4444" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' +
+        '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<p style="font-size:0.75rem;font-weight:600;color:#7f1d1d;margin:0 0 2px 0;letter-spacing:-0.01em;">Invalid Credentials</p>' +
+          '<p style="font-size:0.7rem;color:#991b1b;margin:0;line-height:1.4;word-break:break-word;">' + msg + '</p>' +
+        '</div>' +
+        '<button onclick="dismissToast(\'' + id + '\')" style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.06);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#86868b;font-size:0.7rem;transition:background 0.15s;" onmouseover="this.style.background=\'rgba(0,0,0,0.12)\'" onmouseout="this.style.background=\'rgba(0,0,0,0.06)\'" aria-label="Dismiss">✕</button>' +
+      '</div>';
+    container.appendChild(el);
+
+    // Auto-dismiss after 6 seconds
+    setTimeout(function () {
+      if (el && el.parentElement) {
+        el.classList.add('toast-exiting');
+        setTimeout(function () { el.remove(); }, 300);
+      }
+    }, 6000);
+  });
+});
 </script>
 {% endblock %}
 {% endblock %}
