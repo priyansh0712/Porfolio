@@ -36,10 +36,13 @@ Build custom user model, Argon2id security, email authentication, role-based acc
   - `SCHOOL_ADMIN` / `FACULTY` → `/dashboard/` on tenant subdomain.
   - `SUPER_ADMIN` → `/superadmin/` on root domain.
 
-### 3. Super Admin Privacy Boundaries (AUTH-02)
+### 3. Super Admin Privacy Boundaries & Defense-in-Depth Security (AUTH-02, AUTH-03)
 - **Privacy Rule**: Super Admin manages school tenant lifecycles but is strictly BLOCKED from accessing individual faculty profiles, biometrics, or attendance logs.
-- **Enforcement**: Central RBAC Middleware (`TenantRoleAccessMiddleware`) + Decorators (`@school_admin_required`, `@super_admin_required`).
-- **Forbidden Routes**: Any request by a `SUPER_ADMIN` to `/faculty/*`, `/biometrics/*`, `/attendance/*`, or `/reports/*` returns `HTTP 403 Forbidden` or redirects to `/superadmin/` with a privacy warning.
+- **Defense-in-Depth Security Strategy** (Multiple Security Layers — Never single point of failure):
+  - **Layer 1 (Middleware Guard)**: Central `TenantRoleAccessMiddleware` inspecting host header and user role on incoming requests.
+  - **Layer 2 (View-Level Mixin/Decorator Guard)**: View-level permission classes (`SchoolAdminRequiredMixin`, `@school_admin_required`, `@super_admin_required`) explicitly enforcing role checks on every view.
+  - **Layer 3 (Query/Service-Level Scoping)**: Views and services explicitly scope queries with `.filter(school=request.tenant)` and validate object ownership, without relying solely on `TenantManager` or Middleware alone.
+- **Forbidden Routes for Super Admin**: Any request by a `SUPER_ADMIN` to `/faculty/*`, `/biometrics/*`, `/attendance/*`, or `/reports/*` returns `HTTP 403 Forbidden` or redirects to `/superadmin/` with a privacy warning alert.
 
 ### 4. Session Security & Cookie Isolation
 - **Session Duration**: 8-hour fixed session timeout (`SESSION_COOKIE_AGE = 28800`).
