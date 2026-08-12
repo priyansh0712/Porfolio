@@ -115,10 +115,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Authentication Backends
+# Authentication Backends — TenantAwareAuthBackend is the sole backend
 AUTHENTICATION_BACKENDS = [
     'apps.accounts.auth_backends.TenantAwareAuthBackend',
-    'django.contrib.auth.backends.ModelBackend',
 ]
 
 # Session Security & Isolation

@@ -199,6 +199,13 @@ class TenantAwareAuthBackendTests(TestCase):
         )
         self.assertIsNone(user)
 
+    def test_django_auth_authenticate_full_loop_rejects_cross_tenant(self):
+        """django.contrib.auth.authenticate via settings.AUTHENTICATION_BACKENDS must reject cross-tenant login."""
+        from django.contrib.auth import authenticate
+        request = self._make_request(tenant=self.school_b)
+        user = authenticate(request, username='admin@schoola.com', password='SchoolPass123!')
+        self.assertIsNone(user)
+
     def test_wrong_password_fails(self):
         """Incorrect password must return None regardless of role."""
         request = self._make_request(tenant=self.school_a)
