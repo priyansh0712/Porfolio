@@ -224,3 +224,42 @@ class StatusToggleSetNullTests(FacultyTestBase):
         self.assertTrue(Faculty.objects.filter(pk=faculty.pk).exists())
         # User is gone
         self.assertFalse(User.objects.filter(pk=user_id).exists())
+
+
+class OptionalDesignationAndCSVImportTests(FacultyTestBase):
+    """Test 7: Optional Designation + CSV Bulk Import Service."""
+
+    def test_create_faculty_without_designation(self):
+        """Designation is optional and defaults to empty string."""
+        faculty = FacultyService.create_faculty(self.school_a, {
+            'first_name': 'Optional', 'last_name': 'Designation',
+            'email': 'optional@greenwood.edu', 'phone_number': '',
+            'department': 'Library',
+            # designation is omitted
+        })
+        self.assertEqual(faculty.designation, '')
+        self.assertEqual(faculty.department, 'Library')
+
+    def test_import_faculty_from_csv(self):
+        """CSV Bulk Import parses rows, skips invalid/duplicates, and auto-creates faculty."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        csv_content = (
+            "first_name,last_name,email,department,designation,phone_number,employee_code\n"
+            "Aarav,Shah,aarav@greenwood.edu,Science,Teacher,+919876543210,\n"
+            "Bhavya,Mehta,bhavya@greenwood.edu,Maths,,+919876543211,\n"
+            "Aarav,Shah,aarav@greenwood.edu,Science,Teacher,, Duplicate Email Row\n"
+        ).encode('utf-8')
+
+        csv_file = SimpleUploadedFile("test_import.csv", csv_content, content_type="text/csv")
+        result = FacultyService.import_from_csv(self.school_a, csv_file)
+
+        self.assertEqual(result['success_count'], 2)
+        self.assertEqual(result['skipped_count'], 1)
+        self.assertEqual(Faculty.objects.filter(school=self.school_a).count(), 2)
+
+        # Check optional designation on Bhavya
+        bhavya = Faculty.objects.get(email='bhavya@greenwood.edu')
+        self.assertEqual(bhavya.designation, '')
+        self.assertTrue(bhavya.employee_code.startswith('GREENWOOD-FAC-'))
+

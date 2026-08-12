@@ -3,8 +3,10 @@ Faculty Services — business logic layer.
 
 FacultyCodeService:  Race-condition-safe employee code generation
                      using PostgreSQL select_for_update() row locking.
-FacultyService:      Faculty CRUD with linked User account management.
+FacultyService:      Faculty CRUD with linked User account management and CSV Bulk Import.
 """
+import csv
+import io
 from django.db import transaction, IntegrityError
 
 from apps.accounts.models import User
@@ -61,7 +63,7 @@ class FacultyService:
         Args:
             school: School tenant instance
             data: dict with first_name, last_name, email, phone_number,
-                  department, designation, and optional employee_code.
+                  department, designation (optional), and optional employee_code.
 
         Returns:
             Faculty instance
@@ -85,7 +87,7 @@ class FacultyService:
         user.set_unusable_password()
         user.save()
 
-        # Create Faculty record
+        # Create Faculty record (designation is optional)
         faculty = Faculty.objects.create(
             school=school,
             user=user,
@@ -95,7 +97,7 @@ class FacultyService:
             phone_number=data.get('phone_number', '').strip(),
             employee_code=employee_code,
             department=data['department'].strip(),
-            designation=data['designation'].strip(),
+            designation=data.get('designation', '').strip(),
         )
         return faculty
 
@@ -144,3 +146,79 @@ class FacultyService:
             faculty.user.save(update_fields=['is_active'])
 
         return faculty
+
+    @staticmethod
+    def import_from_csv(school, csv_file):
+        """
+        Imports faculty members in bulk from an uploaded CSV file.
+
+        Expected headers (case-insensitive):
+          first_name, last_name, email, department, designation (optional),
+          phone_number (optional), employee_code (optional)
+
+        Returns dict:
+          {
+            'success_count': int,
+            'skipped_count': int,
+            'errors': list of str
+          }
+        """
+        decoded = csv_file.read().decode('utf-8-sig')
+        reader = csv.DictReader(io.StringIO(decoded))
+
+        success_count = 0
+        skipped_count = 0
+        errors = []
+
+        row_num = 1
+        for row in reader:
+            row_num += 1
+            # Clean keys to lowercase
+            clean_row = {k.strip().lower(): (v or '').strip() for k, v in row.items() if k}
+
+            first_name = clean_row.get('first_name', '')
+            last_name = clean_row.get('last_name', '')
+            email = clean_row.get('email', '').lower()
+            department = clean_row.get('department', '')
+            designation = clean_row.get('designation', '')
+            phone_number = clean_row.get('phone_number', '')
+            employee_code = clean_row.get('employee_code', '')
+
+            # Validation
+            if not first_name or not last_name or not email or not department:
+                errors.append(f"Row {row_num}: Missing required fields (First Name, Last Name, Email, Department).")
+                skipped_count += 1
+                continue
+
+            # Email uniqueness check
+            if User.objects.filter(email__iexact=email).exists():
+                errors.append(f"Row {row_num}: Email '{email}' is already registered.")
+                skipped_count += 1
+                continue
+
+            # Code per-school uniqueness check (if code provided)
+            if employee_code and Faculty.objects.filter(school=school, employee_code__iexact=employee_code).exists():
+                errors.append(f"Row {row_num}: Employee code '{employee_code}' already exists in this school.")
+                skipped_count += 1
+                continue
+
+            try:
+                FacultyService.create_faculty(school, {
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'email': email,
+                    'department': department,
+                    'designation': designation,
+                    'phone_number': phone_number,
+                    'employee_code': employee_code,
+                })
+                success_count += 1
+            except Exception as e:
+                errors.append(f"Row {row_num}: Failed to import {email} ({e}).")
+                skipped_count += 1
+
+        return {
+            'success_count': success_count,
+            'skipped_count': skipped_count,
+            'errors': errors,
+        }

@@ -82,7 +82,9 @@ class Faculty(TenantModel):
     )
     designation = models.CharField(
         max_length=100,
-        help_text='Job title (e.g. Senior Teacher, HOD)',
+        blank=True,
+        default='',
+        help_text='Job title (e.g. Senior Teacher, HOD) — optional',
     )
     date_joined = models.DateField(auto_now_add=True)
     is_active = models.BooleanField(

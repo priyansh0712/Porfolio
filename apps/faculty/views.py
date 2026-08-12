@@ -188,3 +188,56 @@ class FacultyDetailAPIView(SchoolAdminRequiredMixin, View):
             'designation': faculty.designation,
             'is_active': faculty.is_active,
         })
+
+
+class FacultyBulkImportView(SchoolAdminRequiredMixin, View):
+    """POST: Handles CSV bulk upload for faculty creation."""
+
+    def post(self, request):
+        if 'csv_file' not in request.FILES:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': 'No CSV file uploaded.'}, status=400)
+            messages.error(request, 'Please select a CSV file to upload.')
+            return redirect('faculty:list')
+
+        csv_file = request.FILES['csv_file']
+        if not csv_file.name.endswith('.csv'):
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': 'File must be a .csv file.'}, status=400)
+            messages.error(request, 'Uploaded file must be a .csv file.')
+            return redirect('faculty:list')
+
+        result = FacultyService.import_from_csv(request.tenant, csv_file)
+
+        msg = f"Bulk import complete: {result['success_count']} added, {result['skipped_count']} skipped."
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': msg,
+                'details': result,
+            })
+
+        if result['success_count'] > 0:
+            messages.success(request, msg)
+        if result['errors']:
+            for err in result['errors'][:5]:  # Show first 5 errors
+                messages.warning(request, err)
+
+        return redirect('faculty:list')
+
+
+class FacultySampleCSVView(SchoolAdminRequiredMixin, View):
+    """GET: Downloads sample CSV file for bulk faculty upload."""
+
+    def get(self, request):
+        from django.http import HttpResponse
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="sample_faculty_import.csv"'
+
+        import csv
+        writer = csv.writer(response)
+        writer.writerow(['first_name', 'last_name', 'email', 'department', 'designation', 'phone_number', 'employee_code'])
+        writer.writerow(['Rajesh', 'Sharma', 'rajesh.sharma@school.edu', 'Science', 'Senior Teacher', '+919876543210', ''])
+        writer.writerow(['Priya', 'Patel', 'priya.patel@school.edu', 'Mathematics', '', '+919876543211', ''])
+        return response
+

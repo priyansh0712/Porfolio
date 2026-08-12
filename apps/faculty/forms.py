@@ -57,7 +57,7 @@ class FacultyForm(forms.ModelForm):
             }),
             'designation': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc] transition-all placeholder:text-[#86868b]',
-                'placeholder': 'e.g. Senior Teacher, HOD',
+                'placeholder': 'e.g. Senior Teacher (Optional)',
             }),
         }
 
@@ -65,6 +65,7 @@ class FacultyForm(forms.ModelForm):
         self.tenant = kwargs.pop('tenant', None)
         super().__init__(*args, **kwargs)
         self.fields['employee_code'].required = False
+        self.fields['designation'].required = False
 
     def clean_email(self):
         """Enforce global email uniqueness (matches User.email constraint)."""

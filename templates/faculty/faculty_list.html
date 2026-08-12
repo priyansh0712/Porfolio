@@ -438,13 +438,23 @@
         Manage faculty members for {% if tenant %}{{ tenant.name }}{% else %}your school{% endif %}
       </p>
     </div>
-    <button class="btn-add-faculty" onclick="openFacultyModal('create')" id="btn-add-faculty">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-      </svg>
-      Add Faculty
-    </button>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="action-btn" onclick="openCSVModal()" style="padding: 9px 16px; border-radius: 980px; font-size: 0.8rem; font-weight: 600;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align: -1px; margin-right: 4px;">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        Import CSV
+      </button>
+      <button class="btn-add-faculty" onclick="openFacultyModal('create')" id="btn-add-faculty">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Add Faculty
+      </button>
+    </div>
   </div>
 
   <!-- Filter Toolbar -->
@@ -643,7 +653,7 @@
           <div class="form-error" id="err-department"></div>
         </div>
         <div class="form-group">
-          <label class="form-label" for="id_designation">Designation *</label>
+          <label class="form-label" for="id_designation">Designation (Optional)</label>
           {{ form.designation }}
           <div class="form-error" id="err-designation"></div>
         </div>
@@ -652,6 +662,64 @@
     <div class="modal-footer">
       <button type="button" class="btn-cancel" onclick="closeFacultyModal()">Cancel</button>
       <button type="submit" class="btn-submit" id="btn-submit">Add Faculty</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===== CSV Import Modal Drawer ===== -->
+<div class="modal-backdrop" id="csv-modal-backdrop" onclick="closeCSVModal()"></div>
+<div class="modal-drawer" id="csv-modal-drawer">
+  <div class="modal-header">
+    <h2>Bulk Import Faculty (CSV)</h2>
+    <button class="modal-close-btn" onclick="closeCSVModal()" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+  <form id="csv-upload-form" method="post" action="{% url 'faculty:bulk_import' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="modal-body">
+      <div id="csv-messages"></div>
+
+      <!-- Sample Download Box -->
+      <div style="padding: 14px 16px; background: #f5f5f7; border: 1px solid #e0e0e0; border-radius: 14px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div>
+          <div style="font-weight: 600; font-size: 0.8rem; color: #1d1d1f;">Download Sample CSV Template</div>
+          <div style="font-size: 0.7rem; color: #86868b; margin-top: 2px;">Includes required headers & example rows</div>
+        </div>
+        <a href="{% url 'faculty:sample_csv' %}" class="action-btn" style="text-decoration: none; font-weight: 600; background: #fff;">
+          📥 Download Template
+        </a>
+      </div>
+
+      <!-- File Drop Area -->
+      <div style="border: 2px dashed #0066cc/40; border-radius: 16px; padding: 32px 20px; text-align: center; background: #f5f5f7/50; cursor: pointer; transition: all 0.2s;" id="csv-drop-area" onclick="document.getElementById('csv-file-input').click()">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" style="margin: 0 auto 12px;">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <div style="font-size: 0.85rem; font-weight: 600; color: #1d1d1f;" id="csv-file-name-display">Click to select CSV file</div>
+        <div style="font-size: 0.72rem; color: #86868b; margin-top: 4px;">Must be a valid .csv file</div>
+        <input type="file" id="csv-file-input" name="csv_file" accept=".csv" style="display: none;" onchange="onCSVFileSelected(this)">
+      </div>
+
+      <!-- Instructions List -->
+      <div style="margin-top: 20px; font-size: 0.72rem; color: #86868b; line-height: 1.5;">
+        <div style="font-weight: 600; color: #1d1d1f; margin-bottom: 6px;">CSV Import Guidelines:</div>
+        <ul style="padding-left: 16px; margin: 0;">
+          <li>Required columns: <code>first_name</code>, <code>last_name</code>, <code>email</code>, <code>department</code></li>
+          <li>Optional columns: <code>designation</code>, <code>phone_number</code>, <code>employee_code</code></li>
+          <li>Leave <code>employee_code</code> blank to auto-generate codes.</li>
+          <li>Duplicate emails or duplicate codes will be skipped automatically.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" onclick="closeCSVModal()">Cancel</button>
+      <button type="submit" class="btn-submit" id="btn-csv-submit" disabled>Upload & Import</button>
     </div>
   </form>
 </div>
@@ -884,9 +952,90 @@ function spawnToast(message, type) {
   }, 4000);
 }
 
-// Escape key closes modal
+// ── CSV Modal Management ──
+function openCSVModal() {
+  document.getElementById('csv-messages').innerHTML = '';
+  document.getElementById('csv-file-name-display').textContent = 'Click to select CSV file';
+  document.getElementById('csv-file-input').value = '';
+  document.getElementById('btn-csv-submit').disabled = true;
+
+  document.getElementById('csv-modal-backdrop').classList.add('active');
+  document.getElementById('csv-modal-drawer').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCSVModal() {
+  document.getElementById('csv-modal-backdrop').classList.remove('active');
+  document.getElementById('csv-modal-drawer').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function onCSVFileSelected(input) {
+  var file = input.files[0];
+  var submitBtn = document.getElementById('btn-csv-submit');
+  var display = document.getElementById('csv-file-name-display');
+
+  if (file) {
+    if (!file.name.endsWith('.csv')) {
+      display.textContent = 'Invalid file type (.csv required)';
+      display.style.color = '#dc2626';
+      submitBtn.disabled = true;
+    } else {
+      display.textContent = 'Selected: ' + file.name;
+      display.style.color = '#0066cc';
+      submitBtn.disabled = false;
+    }
+  } else {
+    display.textContent = 'Click to select CSV file';
+    display.style.color = '#1d1d1f';
+    submitBtn.disabled = true;
+  }
+}
+
+document.getElementById('csv-upload-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var form = this;
+  var submitBtn = document.getElementById('btn-csv-submit');
+  var originalText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Importing...';
+  document.getElementById('csv-messages').innerHTML = '';
+
+  var formData = new FormData(form);
+
+  fetch(form.action, {
+    method: 'POST',
+    body: formData,
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
+
+    if (data.success) {
+      spawnToast(data.message || 'Import complete.', 'success');
+      closeCSVModal();
+      setTimeout(function() { location.reload(); }, 900);
+    } else {
+      document.getElementById('csv-messages').innerHTML =
+        '<div style="padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; font-size: 0.78rem; color: #dc2626; margin-bottom: 12px;">' +
+        (data.error || 'Failed to import CSV.') + '</div>';
+    }
+  })
+  .catch(function() {
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
+    spawnToast('Network error during CSV upload.', 'error');
+  });
+});
+
+// Escape key closes modals
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeFacultyModal();
+  if (e.key === 'Escape') {
+    closeFacultyModal();
+    closeCSVModal();
+  }
 });
 </script>
 {% endblock %}
