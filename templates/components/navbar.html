@@ -1,9 +1,9 @@
-<header class="bg-white/80 backdrop-blur-xl border-b border-[#e0e0e0]/80 sticky top-0 z-50 transition-all duration-200">
+<header class="bg-white/90 backdrop-blur-xl border-b border-[#e0e0e0] sticky top-0 z-50 transition-all duration-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-14 items-center">
+        <div class="flex justify-between h-16 items-center">
             <!-- Brand Logo -->
-            <div class="flex items-center space-x-2.5">
-                <div class="w-8 h-8 rounded-xl bg-[#0066cc] flex items-center justify-center text-white font-semibold text-base shadow-sm">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-[#0066cc] flex items-center justify-center text-white font-semibold text-base shadow-sm">
                     S
                 </div>
                 <a href="{% url 'public:landing' %}" class="text-base font-semibold text-[#1d1d1f] tracking-tight hover:opacity-80 transition-opacity">
@@ -12,12 +12,12 @@
             </div>
 
             <!-- Desktop Nav Links -->
-            <nav class="hidden md:flex space-x-7 items-center">
-                <a href="{% url 'public:landing' %}#features" class="text-xs font-normal text-[#1d1d1f]/70 hover:text-[#0066cc] transition-colors">Features</a>
-                <a href="{% url 'public:landing' %}#security" class="text-xs font-normal text-[#1d1d1f]/70 hover:text-[#0066cc] transition-colors">Biometric Security</a>
-                <a href="{% url 'public:landing' %}#pricing" class="text-xs font-normal text-[#1d1d1f]/70 hover:text-[#0066cc] transition-colors">Pricing</a>
-                <a href="{% url 'public:landing' %}#faq" class="text-xs font-normal text-[#1d1d1f]/70 hover:text-[#0066cc] transition-colors">FAQ</a>
-                <a href="{% url 'public:register' %}" class="inline-flex items-center text-xs font-medium text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full px-4 py-1.5 transition-all shadow-sm transform hover:scale-[1.02]">
+            <nav class="hidden md:flex items-center space-x-6">
+                <a href="{% url 'public:landing' %}#features" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Features</a>
+                <a href="{% url 'public:landing' %}#security" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Biometric Security</a>
+                <a href="{% url 'public:landing' %}#pricing" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Pricing</a>
+                <a href="{% url 'public:landing' %}#faq" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">FAQ</a>
+                <a href="{% url 'public:register' %}" class="inline-flex items-center text-xs font-medium text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full px-4 py-2 transition-all shadow-sm transform hover:scale-[1.02]">
                     Register School
                 </a>
             </nav>
@@ -25,7 +25,7 @@
             <!-- Mobile menu button -->
             <div class="md:hidden flex items-center">
                 <button type="button" id="mobile-menu-btn" class="text-[#1d1d1f] hover:text-[#0066cc] p-2 rounded-lg focus:outline-none" aria-label="Toggle menu">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
                 </button>
@@ -34,11 +34,11 @@
     </div>
 
     <!-- Mobile Navigation Drawer -->
-    <div id="mobile-menu" class="hidden md:hidden border-b border-[#e0e0e0] bg-white/95 backdrop-blur-xl px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
+    <div id="mobile-menu" class="hidden md:hidden border-b border-[#e0e0e0] bg-white px-4 pt-3 pb-5 space-y-3 shadow-lg">
         <a href="{% url 'public:landing' %}#features" class="block px-3 py-2 text-sm font-medium text-[#1d1d1f] rounded-xl hover:bg-[#f5f5f7]">Features</a>
         <a href="{% url 'public:landing' %}#security" class="block px-3 py-2 text-sm font-medium text-[#1d1d1f] rounded-xl hover:bg-[#f5f5f7]">Biometric Security</a>
         <a href="{% url 'public:landing' %}#pricing" class="block px-3 py-2 text-sm font-medium text-[#1d1d1f] rounded-xl hover:bg-[#f5f5f7]">Pricing</a>
         <a href="{% url 'public:landing' %}#faq" class="block px-3 py-2 text-sm font-medium text-[#1d1d1f] rounded-xl hover:bg-[#f5f5f7]">FAQ</a>
-        <a href="{% url 'public:register' %}" class="block text-center px-4 py-2 text-sm font-medium text-white bg-[#0066cc] rounded-full shadow-sm">Register School</a>
+        <a href="{% url 'public:register' %}" class="block text-center px-4 py-2.5 text-sm font-medium text-white bg-[#0066cc] rounded-full shadow-sm">Register School</a>
     </div>
 </header>

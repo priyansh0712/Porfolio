@@ -22,7 +22,7 @@ class TenantLoginView(LoginView):
         user = self.request.user
         if user.role == User.Role.SUPER_ADMIN:
             return '/superadmin/'
-        return '/dashboard/'
+        return self.get_redirect_url() or '/dashboard/'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
