@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  {% if tenant %}{{ tenant.name }} — Login{% else %}Platform Login{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .login-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  .input-field {
+    transition: all 0.2s ease;
+  }
+  .input-field:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+  }
+  .btn-login {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: all 0.25s ease;
+  }
+  .btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.45);
+  }
+  .btn-login:active {
+    transform: translateY(0);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-160px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 -mt-8">
+  <div class="w-full max-w-md">
+
+    <!-- School branding or Platform badge -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-bg shadow-lg mb-4">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+      {% if tenant %}
+        <h1 class="text-2xl font-bold text-gray-900">{{ tenant.name }}</h1>
+        <p class="text-sm text-gray-500 mt-1">School Admin Login</p>
+        <div class="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100">
+          <div class="w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse"></div>
+          <span class="text-xs font-medium text-indigo-700">{{ tenant.subdomain }}.ourapp.com</span>
+        </div>
+      {% else %}
+        <h1 class="text-2xl font-bold text-gray-900">Platform Login</h1>
+        <p class="text-sm text-gray-500 mt-1">Super Admin Access</p>
+        <div class="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-purple-50 border border-purple-100">
+          <span class="text-xs font-medium text-purple-700">Platform Administrator Only</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Login Card -->
+    <div class="login-card rounded-3xl shadow-xl border border-white/50 overflow-hidden">
+      <div class="p-8">
+
+        <!-- Error alerts -->
+        {% if form.non_field_errors %}
+          <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3" role="alert">
+            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div class="text-sm text-red-700 font-medium">
+              {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Django messages (e.g. tenant not found flash) -->
+        {% for message in messages %}
+          <div class="mb-6 p-4 rounded-xl
+            {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-700
+            {% elif message.tags == 'warning' %}bg-amber-50 border border-amber-200 text-amber-700
+            {% else %}bg-blue-50 border border-blue-200 text-blue-700{% endif %}
+            flex items-start gap-3" role="alert">
+            <span class="text-sm font-medium">{{ message }}</span>
+          </div>
+        {% endfor %}
+
+        <!-- Login Form -->
+        <form method="post" id="login-form" novalidate>
+          {% csrf_token %}
+
+          <!-- Email Field -->
+          <div class="mb-5">
+            <label for="id_email" class="block text-sm font-semibold text-gray-700 mb-2">
+              Email Address
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}
+              <p class="mt-1 text-xs text-red-600">{{ form.username.errors.as_text }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Password Field -->
+          <div class="mb-6">
+            <label for="id_password" class="block text-sm font-semibold text-gray-700 mb-2">
+              Password
+            </label>
+            {{ form.password }}
+            {% if form.password.errors %}
+              <p class="mt-1 text-xs text-red-600">{{ form.password.errors.as_text }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="submit-login"
+            class="btn-login w-full py-3.5 px-6 rounded-xl text-white font-semibold text-sm tracking-wide shadow-lg">
+            Sign In
+          </button>
+        </form>
+      </div>
+
+      <!-- Card Footer -->
+      <div class="px-8 py-4 bg-gray-50/60 border-t border-gray-100">
+        <p class="text-center text-xs text-gray-400">
+          Secured with Argon2id encryption &bull; Multi-Tenant SaaS
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer note -->
+    <p class="text-center text-xs text-gray-400 mt-6">
+      {% if tenant %}
+        School Admin access only for <strong>{{ tenant.name }}</strong>.
+        Cross-tenant access is prohibited.
+      {% else %}
+        Platform Super Admin access only. School Admins log in via their school subdomain.
+      {% endif %}
+    </p>
+
+  </div>
+</div>
+{% endblock %}
