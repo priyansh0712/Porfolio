@@ -32,6 +32,9 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 
+# Custom User Model (must be set before auth app processes)
+AUTH_USER_MODEL = 'accounts.User'
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -110,3 +113,19 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    'apps.accounts.auth_backends.TenantAwareAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Session Security & Isolation
+# 8-hour fixed session timeout
+SESSION_COOKIE_AGE = 28800
+# Subdomain-isolated sessions (prevents cross-school session reuse)
+SESSION_COOKIE_DOMAIN = None
+# Redirect unauthenticated users to subdomain login
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/login/'
