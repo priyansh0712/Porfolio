@@ -67,14 +67,19 @@ class PunctualityCalculator:
                 'reason': "Non-working day",
             }
 
+        from django.utils import timezone
+        if timezone_is_aware(check_in_time):
+            check_in_time = timezone.localtime(check_in_time)
+        if check_out_time and timezone_is_aware(check_out_time):
+            check_out_time = timezone.localtime(check_out_time)
+
         # ── 3. Grace Period & Late Check ──
         start_time = schedule.start_time
         grace = timedelta(minutes=schedule.grace_period_minutes)
 
-        # Combine date and start_time into datetime for accurate timedelta math
+        # Combine date and start_time into datetime in local timezone
         start_dt = datetime.combine(date, start_time)
         if timezone_is_aware(check_in_time):
-            from django.utils import timezone
             start_dt = timezone.make_aware(start_dt, check_in_time.tzinfo)
 
         late_cutoff = start_dt + grace
