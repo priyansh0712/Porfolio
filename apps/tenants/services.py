@@ -38,4 +38,8 @@ class SchoolRegistrationService:
             is_staff=True,
         )
 
+        # Initialize 7 default day-of-week working schedule records
+        from apps.schedules.services import ScheduleService
+        ScheduleService.initialize_default_schedules(school)
+
         return school, admin_user

@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Attendance Reports — {{ request.tenant.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+    <!-- Header Title & Export Button -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-[#1d1d1f] tracking-tight">Attendance Reports</h1>
+            <p class="text-sm text-[#86868b] mt-1">Filter, audit, and export date-wise and faculty-wise attendance records.</p>
+        </div>
+        <a href="{% url 'reports:export-csv' %}?start_date={{ selected_start_date }}&end_date={{ selected_end_date }}&department={{ selected_department }}&status={{ selected_status }}&search={{ search_query }}" class="apple-btn-primary px-5 py-2.5 inline-flex items-center gap-2 text-sm font-medium">
+            <span>📥 Export to CSV</span>
+        </a>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="apple-card p-6">
+        <form method="get" action="{% url 'reports:report-list' %}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <!-- Start Date -->
+            <div>
+                <label class="block text-xs font-semibold text-[#1d1d1f] uppercase tracking-wider mb-1.5">Start Date</label>
+                <input type="date" name="start_date" value="{{ selected_start_date }}" class="w-full px-3.5 py-2 rounded-xl border border-[#e0e0e0] focus:ring-2 focus:ring-[#0066cc] text-sm">
+            </div>
+
+            <!-- End Date -->
+            <div>
+                <label class="block text-xs font-semibold text-[#1d1d1f] uppercase tracking-wider mb-1.5">End Date</label>
+                <input type="date" name="end_date" value="{{ selected_end_date }}" class="w-full px-3.5 py-2 rounded-xl border border-[#e0e0e0] focus:ring-2 focus:ring-[#0066cc] text-sm">
+            </div>
+
+            <!-- Department -->
+            <div>
+                <label class="block text-xs font-semibold text-[#1d1d1f] uppercase tracking-wider mb-1.5">Department</label>
+                <select name="department" class="w-full px-3.5 py-2 rounded-xl border border-[#e0e0e0] focus:ring-2 focus:ring-[#0066cc] text-sm">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                        <option value="{{ dept }}" {% if selected_department == dept %}selected{% endif %}>{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Status -->
+            <div>
+                <label class="block text-xs font-semibold text-[#1d1d1f] uppercase tracking-wider mb-1.5">Status</label>
+                <select name="status" class="w-full px-3.5 py-2 rounded-xl border border-[#e0e0e0] focus:ring-2 focus:ring-[#0066cc] text-sm">
+                    <option value="">All Statuses</option>
+                    {% for val, label in status_choices %}
+                        <option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="flex items-end gap-2">
+                <button type="submit" class="w-full apple-btn-primary py-2 text-sm font-medium">
+                    Filter
+                </button>
+                <a href="{% url 'reports:report-list' %}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] rounded-xl text-sm font-medium transition-all">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Reports Data Table -->
+    <div class="apple-card p-6 sm:p-8">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-xs text-[#86868b]">Showing {{ attendance_logs|length }} of {{ total_count }} total records</div>
+        </div>
+
+        {% if attendance_logs %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead>
+                        <tr class="border-b border-[#e0e0e0] text-xs font-semibold text-[#86868b] uppercase tracking-wider">
+                            <th class="pb-3 pr-4">Date</th>
+                            <th class="pb-3 px-4">Faculty</th>
+                            <th class="pb-3 px-4">Department</th>
+                            <th class="pb-3 px-4">Check In</th>
+                            <th class="pb-3 px-4">Check Out</th>
+                            <th class="pb-3 px-4">Duration</th>
+                            <th class="pb-3 px-4">Status</th>
+                            <th class="pb-3 pl-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for log in attendance_logs %}
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="py-3.5 pr-4 text-xs font-mono text-[#1d1d1f]">
+                                    {{ log.date }}
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <div class="font-medium text-[#1d1d1f]">{{ log.faculty.full_name }}</div>
+                                    <div class="text-xs text-[#86868b]">{{ log.faculty.employee_code }}</div>
+                                </td>
+                                <td class="py-3.5 px-4 text-xs text-[#86868b]">
+                                    {{ log.faculty.department }}
+                                </td>
+                                <td class="py-3.5 px-4 text-xs font-mono text-[#1d1d1f]">
+                                    {{ log.check_in_time|time:"H:i:s" }}
+                                </td>
+                                <td class="py-3.5 px-4 text-xs font-mono text-[#1d1d1f]">
+                                    {% if log.check_out_time %}
+                                        {{ log.check_out_time|time:"H:i:s" }}
+                                    {% else %}
+                                        <span class="text-[#86868b] italic">--</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-4 text-xs font-mono text-[#86868b]">
+                                    {% if log.duration %}
+                                        {{ log.duration }}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    {% if log.status == 'PRESENT' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Present</span>
+                                    {% elif log.status == 'LATE' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Late</span>
+                                    {% elif log.status == 'HALF_DAY' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">Half Day</span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ log.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 pl-4 text-right">
+                                    <button type="button" onclick="openCorrectionModal({{ log.pk }}, '{{ log.faculty.full_name|escapejs }}', '{{ log.status }}')" class="text-xs text-[#0066cc] font-medium hover:underline">
+                                        Correct
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="py-12 text-center text-[#86868b]">
+                <div class="text-3xl mb-2">📋</div>
+                <div class="text-sm font-medium text-[#1d1d1f]">No attendance records found</div>
+                <div class="text-xs mt-1">Try adjusting your date range or filter criteria.</div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Manual Correction Modal -->
+<div id="correction-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="apple-card max-w-md w-full p-6 space-y-4 m-4">
+        <div class="flex items-center justify-between">
+            <h3 class="font-semibold text-[#1d1d1f]" id="modal-title">Manual Correction</h3>
+            <button type="button" onclick="closeCorrectionModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+
+        <form id="correction-form" method="post" action="" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-[#1d1d1f] uppercase tracking-wider mb-1.5">New Status</label>
+                <select name="new_status" id="modal-status" required class="w-full px-3.5 py-2.5 rounded-xl border border-[#e0e0e0] focus:ring-2 focus:ring-[#0066cc] text-sm">
+                    {% for val, label in status_choices %}
+                        <option value="{{ val }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-[#1d1d1f] uppercase tracking-wider mb-1.5">
+                    Correction Reason (Mandatory)
+                </label>
+                <textarea name="reason" placeholder="Explain why this record is being corrected..." required class="w-full px-3.5 py-2.5 rounded-xl border border-[#e0e0e0] focus:ring-2 focus:ring-[#0066cc] text-sm h-24"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button type="button" onclick="closeCorrectionModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] rounded-xl text-sm font-medium">
+                    Cancel
+                </button>
+                <button type="submit" class="apple-btn-primary px-5 py-2 text-sm font-medium">
+                    Save Correction
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openCorrectionModal(logId, facultyName, currentStatus) {
+        const modal = document.getElementById('correction-modal');
+        const form = document.getElementById('correction-form');
+        const title = document.getElementById('modal-title');
+        const statusSelect = document.getElementById('modal-status');
+
+        title.textContent = `Correct Attendance — ${facultyName}`;
+        form.action = `/reports/correct/${logId}/`;
+        statusSelect.value = currentStatus;
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeCorrectionModal() {
+        document.getElementById('correction-modal').classList.add('hidden');
+    }
+</script>
+{% endblock %}

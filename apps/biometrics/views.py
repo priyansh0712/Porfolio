@@ -16,11 +16,13 @@ from django.views import View
 
 from apps.accounts.permissions import SchoolAdminRequiredMixin
 from apps.biometrics.services import BiometricService, MAX_PAYLOAD_SIZE_BYTES
-from apps.faculty.models import Faculty
+from django.utils.decorators import method_decorator
+from apps.core.ratelimit import rate_limit
 
 logger = logging.getLogger(__name__)
 
 
+@method_decorator(rate_limit(key_prefix='enroll', limit=10, period_seconds=60), name='dispatch')
 class FacultyFaceEnrollView(SchoolAdminRequiredMixin, View):
     """
     POST-only AJAX endpoint for face enrollment.

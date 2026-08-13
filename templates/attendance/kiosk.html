@@ -1,0 +1,382 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Attendance Scanner — {{ school.name }} | StudentERP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+    <style>
+        :root {
+            --apple-canvas: #f5f5f7;
+            --apple-surface: #ffffff;
+            --apple-ink: #1d1d1f;
+            --apple-muted: #86868b;
+            --apple-blue: #0066cc;
+            --apple-blue-hover: #0071e3;
+            --apple-hairline: #e0e0e0;
+            --kiosk-bg: #000000;
+            --kiosk-surface: rgba(255, 255, 255, 0.08);
+            --kiosk-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+            background: var(--kiosk-bg);
+            color: #ffffff;
+        }
+
+        /* ── Layout ── */
+        .kiosk-container {
+            display: grid;
+            grid-template-rows: 72px 1fr 80px;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ── Header Bar ── */
+        .kiosk-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--kiosk-border);
+            z-index: 10;
+        }
+        .kiosk-header .school-badge {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .kiosk-header .school-badge .logo-circle {
+            width: 40px; height: 40px;
+            background: var(--apple-blue);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 18px; color: #fff;
+        }
+        .kiosk-header .school-badge .school-name {
+            font-size: 17px; font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        .kiosk-header .school-badge .school-label {
+            font-size: 12px; color: rgba(255,255,255,0.5);
+            letter-spacing: 0.04em; text-transform: uppercase;
+        }
+        .kiosk-clock {
+            font-size: 32px; font-weight: 300;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+        }
+        .kiosk-date {
+            font-size: 13px; color: rgba(255,255,255,0.5);
+            text-align: right;
+        }
+
+        /* ── Camera Viewport ── */
+        .kiosk-viewport {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0a;
+            overflow: hidden;
+        }
+        #camera-video {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror for natural interaction */
+        }
+        #camera-canvas { display: none; }
+
+        /* ── Scan Overlay Frame ── */
+        .scan-frame {
+            position: absolute;
+            width: 280px; height: 340px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        .scan-frame.detecting {
+            border-color: var(--apple-blue);
+            box-shadow: 0 0 40px rgba(0, 102, 204, 0.3);
+        }
+        .scan-frame.success {
+            border-color: #34c759;
+            box-shadow: 0 0 60px rgba(52, 199, 89, 0.4);
+        }
+        .scan-frame.warning {
+            border-color: #ff9500;
+            box-shadow: 0 0 40px rgba(255, 149, 0, 0.3);
+        }
+        .scan-frame.error {
+            border-color: #ff3b30;
+            box-shadow: 0 0 40px rgba(255, 59, 48, 0.3);
+        }
+
+        /* ── Corner Brackets ── */
+        .scan-frame::before, .scan-frame::after,
+        .scan-corner-bl, .scan-corner-br {
+            content: '';
+            position: absolute;
+            width: 24px; height: 24px;
+            border-color: inherit;
+            border-style: solid;
+            border-width: 0;
+        }
+        .scan-frame::before {
+            top: -1px; left: -1px;
+            border-top-width: 3px; border-left-width: 3px;
+            border-top-left-radius: 24px;
+        }
+        .scan-frame::after {
+            top: -1px; right: -1px;
+            border-top-width: 3px; border-right-width: 3px;
+            border-top-right-radius: 24px;
+        }
+        .scan-corner-bl {
+            bottom: -1px; left: -1px;
+            border-bottom-width: 3px; border-left-width: 3px;
+            border-bottom-left-radius: 24px;
+        }
+        .scan-corner-br {
+            bottom: -1px; right: -1px;
+            border-bottom-width: 3px; border-right-width: 3px;
+            border-bottom-right-radius: 24px;
+        }
+
+        /* ── Scan Pulse Animation ── */
+        .scan-pulse {
+            position: absolute;
+            width: 280px; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--apple-blue), transparent);
+            border-radius: 2px;
+            animation: scanPulse 2s ease-in-out infinite;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        @keyframes scanPulse {
+            0%, 100% { top: 30%; opacity: 0; }
+            50% { top: 70%; opacity: 0.8; }
+        }
+
+        /* ── Status Badge Overlay ── */
+        .status-overlay {
+            position: absolute;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            min-width: 360px;
+            padding: 20px 28px;
+            border-radius: 20px;
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--kiosk-border);
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+        }
+        .status-overlay.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        .status-overlay.scanning {
+            background: rgba(0, 102, 204, 0.15);
+            border-color: rgba(0, 102, 204, 0.3);
+        }
+        .status-overlay.success {
+            background: rgba(52, 199, 89, 0.15);
+            border-color: rgba(52, 199, 89, 0.3);
+        }
+        .status-overlay.warning {
+            background: rgba(255, 149, 0, 0.15);
+            border-color: rgba(255, 149, 0, 0.3);
+        }
+        .status-overlay.error {
+            background: rgba(255, 59, 48, 0.15);
+            border-color: rgba(255, 59, 48, 0.3);
+        }
+        .status-overlay.cooldown {
+            background: rgba(142, 142, 147, 0.15);
+            border-color: rgba(142, 142, 147, 0.3);
+        }
+        .status-icon { font-size: 36px; margin-bottom: 8px; }
+        .status-title {
+            font-size: 20px; font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+        .status-subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+        .status-time {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 6px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── Footer Status Bar ── */
+        .kiosk-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--kiosk-border);
+        }
+        .kiosk-footer .status-indicator {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: rgba(255,255,255,0.5);
+        }
+        .kiosk-footer .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #34c759;
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+        .kiosk-footer .status-dot.error {
+            background: #ff3b30;
+            animation: none;
+        }
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .kiosk-footer .scan-count {
+            font-size: 13px; color: rgba(255,255,255,0.4);
+            font-variant-numeric: tabular-nums;
+        }
+        .kiosk-fullscreen-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: #fff;
+            padding: 6px 14px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .kiosk-fullscreen-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* ── Camera Error State ── */
+        .camera-error {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 40px;
+        }
+        .camera-error .error-icon { font-size: 48px; }
+        .camera-error .error-title {
+            font-size: 20px; font-weight: 600;
+            color: #fff;
+        }
+        .camera-error .retry-btn {
+            background: var(--apple-blue);
+            color: #fff;
+            border: none;
+            border-radius: 980px;
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .camera-error .retry-btn:hover {
+            background: var(--apple-blue-hover);
+        }
+    </style>
+</head>
+<body>
+    <div class="kiosk-container">
+        <!-- Header -->
+        <header class="kiosk-header">
+            <div class="school-badge">
+                <div class="logo-circle" id="school-initial">{{ school.name|first }}</div>
+                <div>
+                    <div class="school-name">{{ school.name }}</div>
+                    <div class="school-label">Attendance Scanner</div>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div class="kiosk-clock" id="live-clock">--:--:--</div>
+                <div class="kiosk-date" id="live-date">Loading...</div>
+            </div>
+        </header>
+
+        <!-- Camera Viewport -->
+        <section class="kiosk-viewport" id="camera-viewport">
+            <video id="camera-video" autoplay playsinline muted></video>
+            <canvas id="camera-canvas"></canvas>
+
+            <!-- Scan Frame Overlay -->
+            <div class="scan-frame" id="scan-frame">
+                <div class="scan-corner-bl"></div>
+                <div class="scan-corner-br"></div>
+            </div>
+            <div class="scan-pulse" id="scan-pulse"></div>
+
+            <!-- Status Badge -->
+            <div class="status-overlay" id="status-overlay">
+                <div class="status-icon" id="status-icon">📷</div>
+                <div class="status-title" id="status-title">Scanning...</div>
+                <div class="status-subtitle" id="status-subtitle">Position your face within the frame</div>
+                <div class="status-time" id="status-time"></div>
+            </div>
+
+            <!-- Camera Error State -->
+            <div class="camera-error" id="camera-error">
+                <div class="error-icon">📷</div>
+                <div class="error-title">Camera Unavailable</div>
+                <div>Please allow camera access and ensure your webcam is connected.</div>
+                <button class="retry-btn" onclick="window.AttendanceScanner.initCamera()">
+                    Retry Connection
+                </button>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="kiosk-footer">
+            <div class="status-indicator">
+                <div class="status-dot" id="camera-status-dot"></div>
+                <span id="camera-status-text">Initializing camera...</span>
+            </div>
+            <div class="scan-count" id="scan-count">Scans today: 0</div>
+            <button class="kiosk-fullscreen-btn" id="fullscreen-btn" onclick="window.AttendanceScanner.toggleFullscreen()">
+                ⛶ Fullscreen
+            </button>
+        </footer>
+    </div>
+
+    <!-- CSRF Token -->
+    <script>
+        window.KIOSK_CONFIG = {
+            scanApiUrl: '{% url "attendance:api-scan" %}',
+            csrfToken: '{{ csrf_token }}',
+            schoolName: '{{ school.name|escapejs }}',
+            scanIntervalMs: 500,
+            cooldownMs: 30000,
+            statusResetMs: 3000,
+        };
+    </script>
+    <script src="{% static 'js/attendance_scanner.js' %}"></script>
+</body>
+</html>

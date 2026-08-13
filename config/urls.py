@@ -7,4 +7,7 @@ urlpatterns = [
     path('', include('apps.accounts.urls', namespace='accounts')),
     path('faculty/', include('apps.faculty.urls', namespace='faculty')),
     path('faculty/', include('apps.biometrics.urls', namespace='biometrics')),
+    path('attendance/', include('apps.attendance.urls', namespace='attendance')),
+    path('', include('apps.schedules.urls', namespace='schedules')),
+    path('', include('apps.reports.urls', namespace='reports')),
 ]

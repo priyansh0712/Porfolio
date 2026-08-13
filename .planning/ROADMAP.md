@@ -114,9 +114,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 07-01: Real-time attendance camera scanning screen template, Vanilla JS video loop, and visual status badges
-- [ ] 07-02: Face identification & scan engine (matching vector against tenant vectors, scan state determination)
-- [ ] 07-03: Attendance record state machine (Check-In vs Check-Out), scan debounce lock, and edge case error handlers
+- [x] 07-01: Real-time attendance camera scanning screen template, Vanilla JS video loop, and visual status badges
+- [x] 07-02: Face identification & scan engine (matching vector against tenant vectors, scan state determination)
+- [x] 07-03: Attendance record state machine (Check-In vs Check-Out), scan debounce lock, and edge case error handlers
 
 ### Phase 8: Working Schedules & Attendance Business Rules
 **Goal**: Implement configurable school working schedule engine (days of week, start/end times, full/half-day flags, grace periods, holidays) and status calculation.
@@ -129,8 +129,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 08-01: `WorkingSchedule` and `HolidayException` models, admin schedule configuration UI, and day-of-week settings
-- [ ] 08-02: Punctuality calculator engine (evaluating scan timestamps against schedule, grace period, late threshold, half-day, holiday)
+- [x] 08-01: `WorkingSchedule` and `HolidayException` models, admin schedule configuration UI, and day-of-week settings
+- [x] 08-02: Punctuality calculator engine (evaluating scan timestamps against schedule, grace period, late threshold, half-day, holiday)
 
 ### Phase 9: Admin Dashboard, Reports & Audit Log
 **Goal**: Deliver School Admin attendance dashboard, daily summaries, faculty history views, and immutable correction audit trail.
@@ -143,8 +143,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 09-01: School Admin dashboard metrics widgets, today's attendance feed, and date-range / faculty-wise reporting tables
-- [ ] 09-02: Attendance correction modal, `AttendanceCorrection` audit log model, and immutable audit history viewer
+- [x] 09-01: School Admin dashboard metrics widgets, today's attendance feed, and date-range / faculty-wise reporting tables
+- [x] 09-02: Attendance correction modal, `AttendanceCorrection` audit log model, and immutable audit history viewer
 
 ### Phase 10: Security Hardening, Verification & Production Readiness
 **Goal**: Complete full security audit (CSRF, XSS, SQLi, rate limiting, host validation), automated test suite execution, Docker containerization, and production documentation.
@@ -157,8 +157,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 10-01: Django security hardening (rate limiting, security headers, input sanitization enforcers, CSRF validation) and test suite execution
-- [ ] 10-02: Production Docker setup (`Dockerfile`, `docker-compose.yml`, Nginx config, Gunicorn WSGI), secrets configuration, and deployment documentation
+- [x] 10-01: Django security hardening (rate limiting, security headers, input sanitization enforcers, CSRF validation) and test suite execution
+- [x] 10-02: Production Docker setup (`Dockerfile`, `docker-compose.yml`, Nginx config, Gunicorn WSGI), secrets configuration, and deployment documentation
 
 ## Progress
 

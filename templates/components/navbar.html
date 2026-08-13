@@ -13,13 +13,23 @@
 
             <!-- Desktop Nav Links -->
             <nav class="hidden md:flex items-center space-x-6">
-                <a href="{% url 'public:landing' %}#features" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Features</a>
-                <a href="{% url 'public:landing' %}#security" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Biometric Security</a>
-                <a href="{% url 'public:landing' %}#pricing" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Pricing</a>
-                <a href="{% url 'public:landing' %}#faq" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">FAQ</a>
-                <a href="{% url 'public:register' %}" class="inline-flex items-center text-xs font-medium text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full px-4 py-2 transition-all shadow-sm transform hover:scale-[1.02]">
-                    Register School
-                </a>
+                {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}
+                    <a href="{% url 'reports:dashboard' %}" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Dashboard</a>
+                    <a href="{% url 'faculty:list' %}" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Faculty</a>
+                    <a href="{% url 'reports:report-list' %}" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Reports</a>
+                    <a href="{% url 'schedules:settings' %}" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Schedules</a>
+                    <a href="{% url 'attendance:kiosk' %}" target="_blank" class="inline-flex items-center text-xs font-medium text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full px-4 py-2 transition-all shadow-sm">
+                        📷 Kiosk
+                    </a>
+                {% else %}
+                    <a href="{% url 'public:landing' %}#features" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Features</a>
+                    <a href="{% url 'public:landing' %}#security" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Biometric Security</a>
+                    <a href="{% url 'public:landing' %}#pricing" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">Pricing</a>
+                    <a href="{% url 'public:landing' %}#faq" class="text-xs font-medium text-[#1d1d1f]/80 hover:text-[#0066cc] transition-colors">FAQ</a>
+                    <a href="{% url 'public:register' %}" class="inline-flex items-center text-xs font-medium text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full px-4 py-2 transition-all shadow-sm transform hover:scale-[1.02]">
+                        Register School
+                    </a>
+                {% endif %}
             </nav>
 
             <!-- Mobile menu button -->
