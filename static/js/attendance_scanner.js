@@ -275,23 +275,21 @@
      * For now, this demonstrates the UI interaction loop. The actual vector
      * extraction and matching happens server-side via the biometric pipeline.
      */
+    /**
+     * Capture a frame from the video stream and send to scan API for real-time face matching.
+     */
     async function captureAndScan() {
         if (isScanning || !video || video.readyState < 2) return;
         isScanning = true;
 
         try {
-            // Capture frame to canvas
             if (canvas && ctx) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0);
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const frameData = canvas.toDataURL('image/jpeg', 0.8);
+                await sendScanPayload({ frame: frameData });
             }
-
-            // In a real deployment, InsightFace WASM would extract the 512-d
-            // vector here. For Phase 7 demo, we skip automatic API calls
-            // and let the kiosk UI serve as the visual interface layer.
-            // The scan API can be tested directly via curl or unit tests.
-
         } catch (e) {
             console.warn('Frame capture error:', e);
         } finally {
@@ -300,14 +298,10 @@
     }
 
     /**
-     * Send a pre-extracted vector to the scan API.
-     * Called by the biometric pipeline when a face vector is extracted.
+     * Send pre-extracted vector or base64 frame payload to the scan API.
      */
-    async function sendScanVector(vector) {
-        if (!vector || vector.length !== 512) {
-            console.error('Invalid vector: must be 512 floats');
-            return;
-        }
+    async function sendScanPayload(payload) {
+        if (!payload || (!payload.vector && !payload.frame)) return;
 
         const now = Date.now();
 
@@ -319,25 +313,29 @@
                     'X-CSRFToken': CSRF_TOKEN,
                 },
                 body: JSON.stringify({
-                    vector: vector,
+                    ...payload,
                     device_info: navigator.userAgent,
                 }),
             });
 
             const data = await response.json();
-            scanCount++;
-            if (scanCountEl) scanCountEl.textContent = `Scans today: ${scanCount}`;
 
             if (!data.success) {
-                showStatus('error', '⚠️', 'Error', data.error, '');
-                playWarningTone();
+                if (data.error && !data.error.includes('Rate limit')) {
+                    showStatus('error', '⚠️', 'Error', data.error, '');
+                }
+                return;
+            }
+
+            // Silent return if no face detected in frame
+            if (data.detected === false) {
                 return;
             }
 
             if (!data.recognized) {
                 // Unrecognized face
                 showStatus('warning', '❓', 'Not Recognized',
-                    'Face not enrolled in this school.',
+                    data.message || 'Face not enrolled in this school.',
                     new Date().toLocaleTimeString());
                 playWarningTone();
                 return;
@@ -356,6 +354,9 @@
 
             // Update cooldown map
             cooldownMap.set(faculty.id, now);
+
+            scanCount++;
+            if (scanCountEl) scanCountEl.textContent = `Scans today: ${scanCount}`;
 
             if (action === 'cooldown') {
                 showStatus('cooldown', '⏳', 'Please Wait',
@@ -378,9 +379,11 @@
 
         } catch (err) {
             console.error('Scan API error:', err);
-            showStatus('error', '🔌', 'Connection Error',
-                'Unable to reach server. Retrying...', '');
         }
+    }
+
+    async function sendScanVector(vector) {
+        return sendScanPayload({ vector: vector });
     }
 
     // ═══════════════════════════════════════════════════════

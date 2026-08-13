@@ -372,7 +372,7 @@
             scanApiUrl: '{% url "attendance:api-scan" %}',
             csrfToken: '{{ csrf_token }}',
             schoolName: '{{ school.name|escapejs }}',
-            scanIntervalMs: 500,
+            scanIntervalMs: 1500,
             cooldownMs: 30000,
             statusResetMs: 3000,
         };

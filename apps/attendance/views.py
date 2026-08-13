@@ -80,11 +80,50 @@ class AttendanceScanAPIView(SchoolAdminRequiredMixin, View):
             )
 
         scan_vector = data.get('vector')
+        frame_data = data.get('frame') or data.get('image')
         device_info = data.get('device_info', '')
+
+        # ── Optional: Extract vector from base64 image frame if vector not provided ──
+        if not scan_vector and frame_data:
+            try:
+                import gc
+                import numpy as np
+                from apps.biometrics.services import BiometricService
+                img = BiometricService.decode_base64_frame(frame_data)
+                try:
+                    analyzer = BiometricService.get_face_analyzer()
+                    faces = analyzer.get(img)
+                    if len(faces) == 0:
+                        return JsonResponse({
+                            'success': True,
+                            'detected': False,
+                            'message': 'No face detected in frame.',
+                        })
+                    if len(faces) > 1:
+                        return JsonResponse({
+                            'success': True,
+                            'detected': True,
+                            'recognized': False,
+                            'message': 'Multiple faces detected. Please step in frame one at a time.',
+                        })
+                    face = faces[0]
+                    emb = face.embedding
+                    norm = np.linalg.norm(emb)
+                    if norm > 0:
+                        scan_vector = (emb / norm).tolist()
+                finally:
+                    del img
+                    gc.collect()
+            except Exception as e:
+                logger.warning("Frame vector extraction failed: %s", e)
+                return JsonResponse(
+                    {'success': False, 'error': f'Image processing error: {e}'},
+                    status=400,
+                )
 
         if not isinstance(scan_vector, list):
             return JsonResponse(
-                {'success': False, 'error': 'Missing or invalid "vector" field.'},
+                {'success': False, 'error': 'Missing or invalid "vector" or "frame" field.'},
                 status=400,
             )
 
