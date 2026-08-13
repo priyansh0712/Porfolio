@@ -91,22 +91,36 @@ class PunctualityCalculator:
             status = AttendanceLog.Status.PRESENT
             reason = "On-time check-in"
 
-        # ── 4. Half-Day Check ──
-        # Check-in after 11:00 AM OR working duration < 4 hours
-        half_day_cutoff_time = time(11, 0)
-        check_in_local_time = check_in_time.time() if hasattr(check_in_time, 'time') else check_in_time
+        # ── 4. Half-Day Check (Shift-relative) ──
+        end_time = schedule.end_time
+        end_dt = datetime.combine(date, end_time)
+        if timezone_is_aware(check_in_time):
+            end_dt = timezone.make_aware(end_dt, check_in_time.tzinfo)
 
-        is_after_11am = check_in_local_time > half_day_cutoff_time
+        shift_duration_seconds = max(0, (end_dt - start_dt).total_seconds())
+        shift_duration_hours = shift_duration_seconds / 3600.0 if shift_duration_seconds > 0 else 8.0
 
+        # Midpoint of scheduled shift (e.g. 12:00 PM for 8am-4pm, or 17:50 for 17:45-17:55)
+        shift_midpoint = start_dt + timedelta(seconds=shift_duration_seconds / 2.0)
+
+        # Arrival late cutoff for half-day: 3 hours late after start_time OR after shift midpoint
+        half_day_late_cutoff = min(start_dt + timedelta(hours=3), shift_midpoint)
+
+        # Arrival after half-day cutoff triggers Half-Day
+        arrived_late_half_day = check_in_time > half_day_late_cutoff
+
+        # Working duration less than half of scheduled shift duration triggers Half-Day
         short_duration = False
         if check_out_time and check_in_time:
-            duration_hours = (check_out_time - check_in_time).total_seconds() / 3600.0
-            if duration_hours < 4.0:
+            actual_duration = (check_out_time - check_in_time).total_seconds() / 3600.0
+            # For 8h shift, threshold is 4h; for short test shifts, threshold is half shift
+            half_shift_threshold = max(0.05, shift_duration_hours / 2.0)
+            if actual_duration < half_shift_threshold:
                 short_duration = True
 
-        if is_after_11am or short_duration:
+        if arrived_late_half_day or short_duration:
             status = AttendanceLog.Status.HALF_DAY
-            reason = "Half-day threshold met (late arrival after 11:00 AM or <4h duration)"
+            reason = "Half-day threshold met (late arrival or worked less than half shift)"
 
         # ── 5. Early Departure Check ──
         early_departure = False
