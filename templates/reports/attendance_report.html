@@ -110,11 +110,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="py-3.5 px-4 text-xs font-mono text-[#86868b]">
-                                    {% if log.duration %}
-                                        {{ log.duration }}
-                                    {% else %}
-                                        --
-                                    {% endif %}
+                                    {{ log.formatted_duration }}
                                 </td>
                                 <td class="py-3.5 px-4">
                                     {% if log.status == 'PRESENT' %}

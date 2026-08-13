@@ -134,8 +134,12 @@ class ReportService:
                 hours = log.duration.total_seconds() / 3600.0
                 duration_str = f"{hours:.2f}"
 
-            check_in_str = log.check_in_time.strftime('%H:%M:%S') if log.check_in_time else ''
-            check_out_str = log.check_out_time.strftime('%H:%M:%S') if log.check_out_time else ''
+            from django.utils import timezone
+            local_in = timezone.localtime(log.check_in_time) if log.check_in_time else None
+            local_out = timezone.localtime(log.check_out_time) if log.check_out_time else None
+
+            check_in_str = local_in.strftime('%H:%M:%S') if local_in else ''
+            check_out_str = local_out.strftime('%H:%M:%S') if local_out else ''
 
             writer.writerow([
                 str(log.date),

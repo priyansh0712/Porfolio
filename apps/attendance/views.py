@@ -189,10 +189,13 @@ class AttendanceScanAPIView(SchoolAdminRequiredMixin, View):
             return JsonResponse(response_data, status=429)
 
         if attendance:
+            from django.utils import timezone
+            local_in = timezone.localtime(attendance.check_in_time) if attendance.check_in_time else None
+            local_out = timezone.localtime(attendance.check_out_time) if attendance.check_out_time else None
             response_data['attendance'] = {
                 'date': str(attendance.date),
-                'check_in': attendance.check_in_time.strftime('%H:%M:%S') if attendance.check_in_time else None,
-                'check_out': attendance.check_out_time.strftime('%H:%M:%S') if attendance.check_out_time else None,
+                'check_in': local_in.strftime('%I:%M:%S %p') if local_in else None,
+                'check_out': local_out.strftime('%I:%M:%S %p') if local_out else None,
                 'status': attendance.get_status_display(),
             }
 
