@@ -16,8 +16,9 @@ from django.views import View
 
 from apps.accounts.permissions import SchoolAdminRequiredMixin
 from apps.biometrics.services import BiometricService, MAX_PAYLOAD_SIZE_BYTES
-from django.utils.decorators import method_decorator
 from apps.core.ratelimit import rate_limit
+from apps.faculty.models import Faculty
+from django.utils.decorators import method_decorator
 
 logger = logging.getLogger(__name__)
 
