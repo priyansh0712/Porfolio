@@ -38,7 +38,7 @@
   <!-- Welcome Header (Mobile Responsive) -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-semibold text-[#1d1d1f] tracking-tight">
+      <h1 class="text-2xl sm:text-3xl font-semibold text-[#1d1d1f] tracking-tight" id="time-greeting-title" data-user-name="{{ user.first_name|default:user.email }}">
         Good morning, <span class="text-[#0066cc]">{{ user.first_name|default:user.email }}</span> 👋
       </h1>
       <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5 sm:mt-2">
@@ -134,6 +134,56 @@
     </div>
   </div>
 
+  <!-- GitHub-Style 30-Day Monthly Attendance Heatmap Grid -->
+  <div class="apple-card p-6 mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+      <div>
+        <h2 class="text-sm font-semibold text-[var(--apple-ink)]">Monthly Attendance Punctuality Heatmap</h2>
+        <p class="text-xs text-[var(--apple-muted)]">30-day activity tracking grid for your school institution</p>
+      </div>
+      <div class="flex items-center gap-3 text-[11px] text-[var(--apple-muted)]">
+        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Present</div>
+        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-400 inline-block"></span> Late</div>
+        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-purple-500 inline-block"></span> Leave</div>
+        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-gray-200 inline-block"></span> Weekend</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-7 sm:grid-cols-10 md:grid-cols-15 gap-2">
+      <!-- 30 visual day blocks -->
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 1: Present (On-Time)">1</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 2: Present (On-Time)">2</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 3: Present (On-Time)">3</div>
+      <div class="w-full h-8 rounded-lg bg-amber-400 border border-amber-500/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 4: Late Arrival">4</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 5: Present (On-Time)">5</div>
+      <div class="w-full h-8 rounded-lg bg-gray-200 text-gray-500 border border-gray-300/30 flex items-center justify-center text-[10px] font-bold" title="Day 6: Saturday (Off)">6</div>
+      <div class="w-full h-8 rounded-lg bg-gray-200 text-gray-500 border border-gray-300/30 flex items-center justify-center text-[10px] font-bold" title="Day 7: Sunday (Off)">7</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 8: Present (On-Time)">8</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 9: Present (On-Time)">9</div>
+      <div class="w-full h-8 rounded-lg bg-purple-500 border border-purple-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 10: Approved Leave">10</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 11: Present (On-Time)">11</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 12: Present (On-Time)">12</div>
+      <div class="w-full h-8 rounded-lg bg-gray-200 text-gray-500 border border-gray-300/30 flex items-center justify-center text-[10px] font-bold" title="Day 13: Saturday (Off)">13</div>
+      <div class="w-full h-8 rounded-lg bg-gray-200 text-gray-500 border border-gray-300/30 flex items-center justify-center text-[10px] font-bold" title="Day 14: Sunday (Off)">14</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 15: Present (On-Time)">15</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 16: Present (On-Time)">16</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 17: Present (On-Time)">17</div>
+      <div class="w-full h-8 rounded-lg bg-amber-400 border border-amber-500/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 18: Late Arrival">18</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 19: Present (On-Time)">19</div>
+      <div class="w-full h-8 rounded-lg bg-gray-200 text-gray-500 border border-gray-300/30 flex items-center justify-center text-[10px] font-bold" title="Day 20: Saturday (Off)">20</div>
+      <div class="w-full h-8 rounded-lg bg-gray-200 text-gray-500 border border-gray-300/30 flex items-center justify-center text-[10px] font-bold" title="Day 21: Sunday (Off)">21</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 22: Present (On-Time)">22</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 23: Present (On-Time)">23</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 24: Present (On-Time)">24</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 25: Present (On-Time)">25</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 26: Present (On-Time)">26</div>
+      <div class="w-full h-8 rounded-lg bg-gray-200 text-gray-500 border border-gray-300/30 flex items-center justify-center text-[10px] font-bold" title="Day 27: Saturday (Off)">27</div>
+      <div class="w-full h-8 rounded-lg bg-gray-200 text-gray-500 border border-gray-300/30 flex items-center justify-center text-[10px] font-bold" title="Day 28: Sunday (Off)">28</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 29: Present (On-Time)">29</div>
+      <div class="w-full h-8 rounded-lg bg-emerald-500 border border-emerald-600/20 flex items-center justify-center text-[10px] text-white font-bold" title="Day 30: Present (Today)">30</div>
+    </div>
+  </div>
+
   <!-- Quick Action Cards -->
   <div>
     <h2 class="text-sm font-semibold text-[#1d1d1f] mb-3">Quick Actions</h2>
@@ -184,4 +234,26 @@
   </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const hour = new Date().getHours();
+    const titleEl = document.getElementById('time-greeting-title');
+    if (titleEl) {
+        const userName = titleEl.dataset.userName || '';
+        let greeting = 'Good morning';
+        let icon = '☀️';
+        if (hour >= 12 && hour < 17) {
+            greeting = 'Good afternoon';
+            icon = '🌤️';
+        } else if (hour >= 17 || hour < 5) {
+            greeting = 'Good evening';
+            icon = '🌙';
+        }
+        titleEl.innerHTML = `${greeting}, <span class="text-[#0066cc]">${userName}</span> ${icon}`;
+    }
+});
+</script>
 {% endblock %}

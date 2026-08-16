@@ -65,11 +65,22 @@
         return audioContext;
     }
 
+    function flashScreenGlow(color = 'rgba(52, 199, 89, 0.4)') {
+        const vp = document.getElementById('camera-viewport');
+        if (vp) {
+            vp.style.boxShadow = `inset 0 0 120px ${color}`;
+            setTimeout(() => {
+                vp.style.boxShadow = 'none';
+            }, 600);
+        }
+    }
+
     /**
      * Play a success chime: E5 → B5 dual-tone chord (659.25Hz → 987.77Hz).
      * Exponential gain decay over 200ms.
      */
     function playSuccessChime() {
+        flashScreenGlow('rgba(52, 199, 89, 0.5)');
         try {
             const ctx = getAudioContext();
             const now = ctx.currentTime;
@@ -104,6 +115,7 @@
      * Play a warning tone: D3 (146.83 Hz) low pulse with quick cutoff.
      */
     function playWarningTone() {
+        flashScreenGlow('rgba(255, 149, 0, 0.4)');
         try {
             const ctx = getAudioContext();
             const now = ctx.currentTime;

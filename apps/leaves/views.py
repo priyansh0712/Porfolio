@@ -143,6 +143,89 @@ class FacultyDashboardView(FacultyRequiredMixin, TemplateView):
         # 4. Recent Notifications (past 15 entries)
         context['notifications'] = self.request.user.notifications.all()[:15]
 
+        # 5. Dynamic 30-Day Attendance Heatmap for logged-in Faculty
+        start_date = today - timedelta(days=29)
+        from apps.schedules.models import HolidayException, WorkingSchedule
+
+        logs_by_date = {
+            log.date: log
+            for log in AttendanceLog.objects.filter(
+                school=self.request.tenant,
+                faculty=faculty,
+                date__range=(start_date, today)
+            )
+        }
+
+        # Fetch School Admin configured holidays
+        school_holidays = {
+            h.date: h.description
+            for h in HolidayException.objects.filter(
+                school=self.request.tenant,
+                date__range=(start_date, today)
+            )
+        }
+        for rh in HolidayException.objects.filter(school=self.request.tenant, is_recurring_yearly=True):
+            for i in range(30):
+                d = start_date + timedelta(days=i)
+                if d.month == rh.date.month and d.day == rh.date.day:
+                    school_holidays[d] = rh.description
+
+        # Fetch non-working days from WorkingSchedule (default: ONLY Sunday 6 is weekend)
+        off_days = set()
+        schedules = WorkingSchedule.objects.filter(school=self.request.tenant)
+        if schedules.exists():
+            for ws in schedules:
+                if not ws.is_working_day:
+                    off_days.add(ws.day_of_week)
+        else:
+            off_days.add(6)  # Default: Only Sunday is weekend
+
+        heatmap_days = []
+        for i in range(30):
+            d = start_date + timedelta(days=i)
+            log = logs_by_date.get(d)
+            is_holiday = d in school_holidays
+
+            if log:
+                if log.status == AttendanceLog.Status.PRESENT:
+                    status_type = 'PRESENT'
+                    status_label = 'Present (On-Time)'
+                elif log.status == AttendanceLog.Status.LATE:
+                    status_type = 'LATE'
+                    status_label = 'Late Arrival'
+                elif log.status == AttendanceLog.Status.HALF_DAY:
+                    status_type = 'HALF_DAY'
+                    status_label = 'Half Day'
+                elif log.status == AttendanceLog.Status.LEAVE:
+                    status_type = 'LEAVE'
+                    status_label = 'Approved Leave'
+                else:
+                    status_type = 'ABSENT'
+                    status_label = log.get_status_display()
+            elif is_holiday:
+                status_type = 'HOLIDAY'
+                status_label = f"Holiday ({school_holidays[d]})"
+            elif d.weekday() in off_days or (not schedules.exists() and d.weekday() == 6):
+                status_type = 'WEEKEND'
+                status_label = 'Sunday (Weekend)' if d.weekday() == 6 else 'Weekend Off'
+            elif d < today:
+                # Past working day with no scan = BOLD RED ABSENT
+                status_type = 'ABSENT'
+                status_label = 'Absent (Unrecorded)'
+            else:
+                # Today or future day with no scan
+                status_type = 'PENDING'
+                status_label = 'Pending Scan'
+
+            heatmap_days.append({
+                'day_number': d.day,
+                'date_str': d.strftime('%b %d, %Y'),
+                'status_type': status_type,
+                'status_label': status_label,
+            })
+
+        context['heatmap_days'] = heatmap_days
+
         return context
 
 
@@ -305,25 +388,55 @@ class FacultyAttendanceHistoryView(FacultyRequiredMixin, TemplateView):
         faculty = self.request.user.faculty_profile
         today = timezone.localdate()
 
-        # Date range queries (default last 30 days)
+        # Date range & Month-wise query handling
+        month_param = self.request.GET.get('month', '').strip()
         from_date_str = self.request.GET.get('from_date', '').strip()
         to_date_str = self.request.GET.get('to_date', '').strip()
 
-        if from_date_str:
+        if month_param:
+            try:
+                m_date = datetime.strptime(month_param, '%Y-%m').date()
+                from_date = m_date.replace(day=1)
+                # Compute end of month
+                if from_date.month == 12:
+                    to_date = from_date.replace(year=from_date.year + 1, month=1, day=1) - timedelta(days=1)
+                else:
+                    to_date = from_date.replace(month=from_date.month + 1, day=1) - timedelta(days=1)
+            except ValueError:
+                from_date = today - timedelta(days=30)
+                to_date = today
+        elif from_date_str:
             try:
                 from_date = datetime.strptime(from_date_str, '%Y-%m-%d').date()
             except ValueError:
                 from_date = today - timedelta(days=30)
-        else:
-            from_date = today - timedelta(days=30)
-
-        if to_date_str:
-            try:
-                to_date = datetime.strptime(to_date_str, '%Y-%m-%d').date()
-            except ValueError:
+            if to_date_str:
+                try:
+                    to_date = datetime.strptime(to_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    to_date = today
+            else:
                 to_date = today
         else:
+            from_date = today - timedelta(days=30)
             to_date = today
+
+        # Generate list of last 12 months for month selector dropdown
+        available_months = []
+        cur_m = today.replace(day=1)
+        for _ in range(12):
+            available_months.append({
+                'value': cur_m.strftime('%Y-%m'),
+                'label': cur_m.strftime('%B %Y')
+            })
+            # move to previous month
+            if cur_m.month == 1:
+                cur_m = cur_m.replace(year=cur_m.year - 1, month=12)
+            else:
+                cur_m = cur_m.replace(month=cur_m.month - 1)
+
+        context['available_months'] = available_months
+        context['selected_month'] = month_param or from_date.strftime('%Y-%m')
 
         # Base Attendance Logs queryset in date range
         logs = AttendanceLog.objects.filter(

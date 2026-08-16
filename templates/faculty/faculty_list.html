@@ -487,6 +487,64 @@
       <button class="status-pill" data-filter="active" onclick="filterByStatus('active', this)">Active <span style="font-size: 0.62rem; opacity: 0.7;">{{ active_count }}</span></button>
       <button class="status-pill" data-filter="inactive" onclick="filterByStatus('inactive', this)">Inactive <span style="font-size: 0.62rem; opacity: 0.7;">{{ inactive_count }}</span></button>
     </div>
+
+    <!-- View Switcher (Table vs Digital ID Cards) -->
+    <div class="flex items-center gap-1 bg-[var(--apple-canvas)] p-1 rounded-xl border border-[var(--apple-hairline)] ml-auto">
+      <button onclick="setDirectoryView('table')" id="view-btn-table" title="Table View" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-[var(--apple-ink)] shadow-sm border border-[var(--apple-hairline)] flex items-center gap-1.5 transition-all">
+        <span>📑</span> Table
+      </button>
+      <button onclick="setDirectoryView('cards')" id="view-btn-cards" title="Digital ID Cards View" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--apple-muted)] hover:text-[var(--apple-ink)] flex items-center gap-1.5 transition-all">
+        <span>🎴</span> ID Cards
+      </button>
+    </div>
+  </div>
+
+  <!-- Digital ID Cards View (Grid) -->
+  <div id="faculty-cards-container" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    {% for faculty in faculty_list %}
+    <div class="apple-card p-6 flex flex-col justify-between hover:shadow-xl transition-all duration-200 cursor-pointer group" onclick="openProfileModal({{ faculty.pk }})">
+      <div>
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-[#0066cc]/10 text-[#0066cc] font-bold text-lg flex items-center justify-center border border-[#0066cc]/20">
+              {{ faculty.first_name.0 }}{{ faculty.last_name.0 }}
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-[var(--apple-ink)] group-hover:text-[var(--apple-blue)] transition-colors">{{ faculty.full_name }}</h3>
+              <p class="text-xs text-[var(--apple-muted)]">{{ faculty.department }}</p>
+            </div>
+          </div>
+          <span class="font-mono text-[10px] font-bold px-2 py-1 bg-[var(--apple-canvas)] border border-[var(--apple-hairline)] rounded-lg text-[var(--apple-ink)]">
+            {{ faculty.employee_code }}
+          </span>
+        </div>
+
+        <div class="space-y-2 mb-4 text-xs text-[var(--apple-muted)]">
+          <div class="flex items-center justify-between py-1 border-b border-[var(--apple-hairline)]">
+            <span>Designation:</span>
+            <span class="font-semibold text-[var(--apple-ink)]">{{ faculty.designation|default:"Faculty Member" }}</span>
+          </div>
+          <div class="flex items-center justify-between py-1 border-b border-[var(--apple-hairline)]">
+            <span>Email:</span>
+            <span class="font-medium text-[var(--apple-ink)]">{{ faculty.email }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-[var(--apple-hairline)] flex items-center justify-between">
+        {% if faculty.is_face_enrolled %}
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 512-d Vector Enrolled
+          </span>
+        {% else %}
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-semibold border border-amber-200">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span> Pending Enrollment
+          </span>
+        {% endif %}
+        <span class="text-xs font-semibold text-[var(--apple-blue)] group-hover:underline">View Profile &rarr;</span>
+      </div>
+    </div>
+    {% endfor %}
   </div>
 
   <!-- Faculty Data Table -->
@@ -837,9 +895,25 @@
 
 {% block extra_js %}
 <script>
-/* ========================================= */
-/* Faculty Directory — Client-Side Logic     */
-/* ========================================= */
+// ── View Switcher (Table vs Digital ID Cards) ──
+function setDirectoryView(mode) {
+    const table = document.getElementById('faculty-table');
+    const cards = document.getElementById('faculty-cards-container');
+    const btnTable = document.getElementById('view-btn-table');
+    const btnCards = document.getElementById('view-btn-cards');
+
+    if (mode === 'cards') {
+        if (table && table.parentElement) table.parentElement.classList.add('hidden');
+        if (cards) cards.classList.remove('hidden');
+        if (btnCards) btnCards.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-[var(--apple-ink)] shadow-sm border border-[var(--apple-hairline)] flex items-center gap-1.5 transition-all";
+        if (btnTable) btnTable.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--apple-muted)] hover:text-[var(--apple-ink)] flex items-center gap-1.5 transition-all";
+    } else {
+        if (table && table.parentElement) table.parentElement.classList.remove('hidden');
+        if (cards) cards.classList.add('hidden');
+        if (btnTable) btnTable.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-[var(--apple-ink)] shadow-sm border border-[var(--apple-hairline)] flex items-center gap-1.5 transition-all";
+        if (btnCards) btnCards.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--apple-muted)] hover:text-[var(--apple-ink)] flex items-center gap-1.5 transition-all";
+    }
+}
 
 // ── Modal Management ──
 let currentMode = 'create';

@@ -13,27 +13,38 @@
         <p class="text-[var(--apple-muted)] text-sm">View summary statistics and daily check-in/out records for your profile.</p>
     </div>
 
-    <!-- Date Filter Form -->
+    <!-- Date & Month Filter Form -->
     <div class="apple-card p-6">
-        <form method="get" action="{% url 'leaves:faculty_attendance' %}" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <form method="get" action="{% url 'leaves:faculty_attendance' %}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <!-- Month Selector Dropdown -->
+            <div class="space-y-1.5">
+                <label for="month_picker" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">Select Month</label>
+                <select name="month" id="month_picker" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--apple-blue)]/30 focus:border-[var(--apple-blue)]">
+                    <option value="">-- Custom Range --</option>
+                    {% for m in available_months %}
+                        <option value="{{ m.value }}" {% if selected_month == m.value %}selected{% endif %}>{{ m.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <!-- From Date -->
             <div class="space-y-1.5">
                 <label for="from_date" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">From Date</label>
-                <input type="date" name="from_date" id="from_date" value="{{ from_date }}" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc]">
+                <input type="date" name="from_date" id="from_date" value="{{ from_date }}" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--apple-blue)]/30 focus:border-[var(--apple-blue)]">
             </div>
 
             <!-- To Date -->
             <div class="space-y-1.5">
                 <label for="to_date" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">To Date</label>
-                <input type="date" name="to_date" id="to_date" value="{{ to_date }}" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc]">
+                <input type="date" name="to_date" id="to_date" value="{{ to_date }}" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--apple-blue)]/30 focus:border-[var(--apple-blue)]">
             </div>
 
             <!-- Action Buttons -->
-            <div class="flex items-center space-x-3">
-                <a href="{% url 'leaves:faculty_attendance' %}" class="px-5 py-2.5 rounded-full text-xs font-semibold border border-[var(--apple-hairline)] bg-white text-[var(--apple-ink)] hover:bg-gray-50 flex-1 text-center transition-colors">
+            <div class="flex items-center space-x-2">
+                <a href="{% url 'leaves:faculty_attendance' %}" class="px-4 py-2.5 rounded-full text-xs font-semibold border border-[var(--apple-hairline)] bg-white text-[var(--apple-ink)] hover:bg-gray-50 flex-1 text-center transition-colors">
                     Reset
                 </a>
-                <button type="submit" class="apple-btn-primary px-6 py-2.5 text-xs font-semibold flex-1">
+                <button type="submit" class="apple-btn-primary px-5 py-2.5 text-xs font-semibold flex-1">
                     Filter Logs
                 </button>
             </div>

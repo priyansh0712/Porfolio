@@ -8,7 +8,7 @@
     <!-- Welcome Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold tracking-tight text-[var(--apple-ink)] mb-1">
+            <h1 class="text-3xl font-bold tracking-tight text-[var(--apple-ink)] mb-1" id="faculty-greeting-title" data-user-name="{{ request.user.first_name }}">
                 Welcome, {{ request.user.first_name }}!
             </h1>
             <p class="text-[var(--apple-muted)] text-sm">Faculty Member Dashboard — {{ request.tenant.name }}</p>
@@ -106,6 +106,62 @@
             </div>
         </div>
         {% endfor %}
+    </div>
+
+    <!-- GitHub-Style 30-Day Monthly Attendance Heatmap Grid -->
+    <div class="apple-card p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+                <h2 class="text-base font-bold text-[var(--apple-ink)]">My 30-Day Attendance Punctuality Heatmap</h2>
+                <p class="text-xs text-[var(--apple-muted)]">Your daily check-in activity & punctuality status grid</p>
+            </div>
+            <div class="flex items-center gap-3 text-[11px] text-[var(--apple-muted)]">
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Present</div>
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-400 inline-block"></span> Late</div>
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-indigo-500 inline-block"></span> Leave</div>
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-sky-400 inline-block"></span> Holiday</div>
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Absent</div>
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-gray-200 inline-block"></span> Sunday</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-7 sm:grid-cols-10 md:grid-cols-15 gap-2">
+            {% for day in heatmap_days %}
+                {% if day.status_type == 'PRESENT' %}
+                    <div class="w-full h-8 rounded-lg bg-emerald-500 text-white border border-emerald-600/20 flex items-center justify-center text-[10px] font-bold shadow-sm transition-transform hover:scale-110 cursor-pointer" title="{{ day.date_str }}: {{ day.status_label }}">
+                        {{ day.day_number }}
+                    </div>
+                {% elif day.status_type == 'LATE' %}
+                    <div class="w-full h-8 rounded-lg bg-amber-400 text-white border border-amber-500/20 flex items-center justify-center text-[10px] font-bold shadow-sm transition-transform hover:scale-110 cursor-pointer" title="{{ day.date_str }}: {{ day.status_label }}">
+                        {{ day.day_number }}
+                    </div>
+                {% elif day.status_type == 'HALF_DAY' %}
+                    <div class="w-full h-8 rounded-lg bg-purple-500 text-white border border-purple-600/20 flex items-center justify-center text-[10px] font-bold shadow-sm transition-transform hover:scale-110 cursor-pointer" title="{{ day.date_str }}: {{ day.status_label }}">
+                        {{ day.day_number }}
+                    </div>
+                {% elif day.status_type == 'LEAVE' %}
+                    <div class="w-full h-8 rounded-lg bg-indigo-500 text-white border border-indigo-600/20 flex items-center justify-center text-[10px] font-bold shadow-sm transition-transform hover:scale-110 cursor-pointer" title="{{ day.date_str }}: {{ day.status_label }}">
+                        {{ day.day_number }}
+                    </div>
+                {% elif day.status_type == 'HOLIDAY' %}
+                    <div class="w-full h-8 rounded-lg bg-sky-400 text-white border border-sky-500/20 flex items-center justify-center text-[10px] font-bold shadow-sm transition-transform hover:scale-110 cursor-pointer" title="{{ day.date_str }}: {{ day.status_label }}">
+                        {{ day.day_number }}
+                    </div>
+                {% elif day.status_type == 'ABSENT' %}
+                    <div class="w-full h-8 rounded-lg bg-rose-500 text-white border border-rose-600/20 flex items-center justify-center text-[10px] font-bold shadow-sm transition-transform hover:scale-110 cursor-pointer" title="{{ day.date_str }}: {{ day.status_label }}">
+                        {{ day.day_number }}
+                    </div>
+                {% elif day.status_type == 'WEEKEND' %}
+                    <div class="w-full h-8 rounded-lg bg-gray-200 text-gray-600 border border-gray-300/30 flex items-center justify-center text-[10px] font-bold shadow-sm transition-transform hover:scale-110 cursor-pointer" title="{{ day.date_str }}: {{ day.status_label }}">
+                        {{ day.day_number }}
+                    </div>
+                {% else %}
+                    <div class="w-full h-8 rounded-lg bg-gray-100 text-gray-400 border border-gray-200 flex items-center justify-center text-[10px] font-bold shadow-sm transition-transform hover:scale-110 cursor-pointer" title="{{ day.date_str }}: {{ day.status_label }}">
+                        {{ day.day_number }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
     </div>
 
     <!-- Details Section: Requests & notifications Split Grid -->
@@ -207,4 +263,26 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const hour = new Date().getHours();
+    const titleEl = document.getElementById('faculty-greeting-title');
+    if (titleEl) {
+        const userName = titleEl.dataset.userName || '';
+        let greeting = 'Good morning';
+        let icon = '☀️';
+        if (hour >= 12 && hour < 17) {
+            greeting = 'Good afternoon';
+            icon = '🌤️';
+        } else if (hour >= 17 || hour < 5) {
+            greeting = 'Good evening';
+            icon = '🌙';
+        }
+        titleEl.innerHTML = `${greeting}, ${userName}! ${icon}`;
+    }
+});
+</script>
 {% endblock %}

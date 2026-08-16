@@ -1,70 +1,147 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en" class="overflow-x-hidden w-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{% block title %}Faculty Attendance SaaS{% endblock %}</title>
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
-    <!-- Google Fonts Inter & SF Pro fallback -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <!-- Google Fonts: Plus Jakarta Sans, Instrument Serif, Yellowtail -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Yellowtail&display=swap" rel="stylesheet">
+    <!-- Lenis Smooth Scroll CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.18/dist/lenis.css">
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
     <style>
         :root {
-            --apple-canvas: #f5f5f7;
+            --apple-canvas: #EFE9E9;
             --apple-surface: #ffffff;
-            --apple-ink: #1d1d1f;
-            --apple-muted: #86868b;
-            --apple-blue: #0066cc;
-            --apple-blue-hover: #0071e3;
-            --apple-hairline: #e0e0e0;
+            --apple-ink: #5A2132;
+            --apple-muted: #7D4755;
+            --apple-blue: #5A2132;
+            --apple-blue-hover: #752A41;
+            --apple-hairline: #D9CDCE;
         }
-        *, ::before, ::after {
+
+        *,
+        ::before,
+        ::after {
             box-sizing: border-box;
         }
-        html, body {
+
+        html.lenis, html.lenis body {
+            height: auto;
+        }
+
+        .lenis.lenis-smooth {
+            scroll-behavior: auto !important;
+        }
+
+        .lenis.lenis-smooth [data-lenis-prevent] {
+            overscroll-behavior: contain;
+        }
+
+        .lenis.lenis-stopped {
+            overflow: hidden;
+        }
+
+        html,
+        body {
             overflow-x: hidden;
             width: 100%;
             margin: 0;
             padding: 0;
         }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--apple-canvas);
             color: var(--apple-ink);
             letter-spacing: -0.01em;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
+
+        /* Custom Premium Minimalist Scrollbar */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--apple-canvas);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--apple-hairline);
+            border-radius: 999px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--apple-muted);
+        }
+
+        h1, h2, .heading-luxury {
+            font-family: 'Instrument Serif', Georgia, serif;
+            letter-spacing: -0.02em;
+        }
+
+        .font-luxury-serif {
+            font-family: 'Instrument Serif', Georgia, serif !important;
+        }
+
+        .font-luxury-sans {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+
+        .font-yellowtail {
+            font-family: 'Yellowtail', cursive !important;
+        }
+
         .apple-card {
             background-color: var(--apple-surface);
             border: 1px solid var(--apple-hairline);
-            border-radius: 18px;
+            border-radius: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        .apple-card:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        }
+
         .apple-btn-primary {
             background-color: var(--apple-blue);
             color: #ffffff;
-            font-weight: 500;
+            font-weight: 600;
             border-radius: 980px;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         .apple-btn-primary:hover {
             background-color: var(--apple-blue-hover);
-            transform: scale(1.01);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
         }
     </style>
+    <!-- Lenis Smooth Scroll JS Library -->
+    <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-[#f5f5f7] text-[#1d1d1f] min-h-screen flex flex-col antialiased overflow-x-hidden w-full">
+
+<body class="min-h-screen flex flex-col antialiased overflow-x-clip w-full">
+    <!-- Top Premium Scroll Reading Progress Line -->
+    <div id="page-scroll-progress" class="fixed top-0 left-0 h-[3px] theme-bg-accent z-50 transition-all duration-150 w-0"></div>
+
     <!-- Apple Translucent Header Navigation -->
     {% include "components/navbar.html" %}
 
     <!-- Main Container -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 box-border overflow-x-hidden">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 box-border overflow-x-clip">
         {% include "components/alerts.html" %}
         {% block content %}{% endblock %}
     </main>
@@ -72,9 +149,438 @@
     <!-- Page Footer -->
     {% include "components/footer.html" %}
 
-    <!-- Mobile Menu Script -->
+    <!-- Global Command Palette Modal (Ctrl + K) -->
+    <div id="cmd-palette-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-start justify-center pt-20 px-4 hidden transition-all duration-200" onclick="if(event.target === this) toggleCmdPalette();">
+        <div class="bg-white/95 backdrop-blur-xl border border-[var(--apple-hairline)] w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden transform transition-all">
+            <!-- Search Header -->
+            <div class="flex items-center px-4 py-3.5 border-b border-[var(--apple-hairline)]">
+                <span class="text-base text-[var(--apple-muted)] mr-3">🔍</span>
+                <input type="text" id="cmd-search-input" placeholder="Type a command or search (e.g. Dashboard, Faculty, Kiosk)..." class="w-full bg-transparent text-sm font-semibold text-[var(--apple-ink)] focus:outline-none placeholder-[var(--apple-muted)]/60">
+                <span class="text-[10px] font-mono text-[var(--apple-muted)] bg-[var(--apple-canvas)] px-2 py-1 rounded-md">ESC to close</span>
+            </div>
+
+            <!-- Command Results List -->
+            <div id="cmd-results-list" class="max-h-80 overflow-y-auto p-2 space-y-1">
+                {% if user.is_authenticated and user.role == 'FACULTY' %}
+                    <!-- Faculty Search Commands -->
+                    <a href="{% url 'accounts:dashboard' %}" class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <span class="text-base">🏠</span>
+                            <div>
+                                <div class="text-xs font-semibold text-[var(--apple-ink)]">Faculty Dashboard</div>
+                                <div class="text-[11px] text-[var(--apple-muted)]">View leave balances, punctuality & notifications</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
+                    </a>
+
+                    <a href="{% url 'leaves:apply_leave' %}" class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <span class="text-base">🌴</span>
+                            <div>
+                                <div class="text-xs font-semibold text-[var(--apple-ink)]">Apply for Leave</div>
+                                <div class="text-[11px] text-[var(--apple-muted)]">Submit a new leave request</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
+                    </a>
+
+                    <a href="{% url 'leaves:faculty_attendance' %}" class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <span class="text-base">📅</span>
+                            <div>
+                                <div class="text-xs font-semibold text-[var(--apple-ink)]">My Attendance History</div>
+                                <div class="text-[11px] text-[var(--apple-muted)]">Filter and view monthly check-in history</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
+                    </a>
+                {% elif user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}
+                    <!-- Admin Search Commands -->
+                    <a href="{% url 'accounts:dashboard' %}" class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <span class="text-base">🏠</span>
+                            <div>
+                                <div class="text-xs font-semibold text-[var(--apple-ink)]">Admin Dashboard Overview</div>
+                                <div class="text-[11px] text-[var(--apple-muted)]">Go to school management dashboard</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
+                    </a>
+
+                    <a href="{% url 'faculty:list' %}" class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <span class="text-base">👥</span>
+                            <div>
+                                <div class="text-xs font-semibold text-[var(--apple-ink)]">Faculty Directory & Add Staff</div>
+                                <div class="text-[11px] text-[var(--apple-muted)]">View faculty list and enroll biometrics</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
+                    </a>
+
+                    <a href="{% url 'leaves:admin_requests' %}" class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <span class="text-base">🌴</span>
+                            <div>
+                                <div class="text-xs font-semibold text-[var(--apple-ink)]">Approve Faculty Leaves</div>
+                                <div class="text-[11px] text-[var(--apple-muted)]">Review and approve pending leave requests</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
+                    </a>
+
+                    <a href="{% url 'reports:report-list' %}" class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <span class="text-base">📊</span>
+                            <div>
+                                <div class="text-xs font-semibold text-[var(--apple-ink)]">Attendance Reports & Export</div>
+                                <div class="text-[11px] text-[var(--apple-muted)]">Filter and download attendance records</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
+                    </a>
+
+                    <a href="{% url 'attendance:kiosk' %}" target="_blank" class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <span class="text-base">📷</span>
+                            <div>
+                                <div class="text-xs font-semibold text-[var(--apple-ink)]">Open Attendance Webcam Kiosk</div>
+                                <div class="text-[11px] text-[var(--apple-muted)]">Launch live webcam face scanner</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
+                    </a>
+                {% else %}
+                    <!-- Guest Search Commands -->
+                    <a href="{% url 'public:landing' %}" class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <span class="text-base">🏠</span>
+                            <div>
+                                <div class="text-xs font-semibold text-[var(--apple-ink)]">Home Page</div>
+                                <div class="text-[11px] text-[var(--apple-muted)]">Go to StudentERP landing page</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
+                    </a>
+
+                    <a href="{% url 'public:register' %}" class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <span class="text-base">🏢</span>
+                            <div>
+                                <div class="text-xs font-semibold text-[var(--apple-ink)]">Register School Tenant</div>
+                                <div class="text-[11px] text-[var(--apple-muted)]">Register a new school tenant SaaS account</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
+                    </a>
+                {% endif %}
+
+                <!-- Theme Switchers (Available for all) -->
+                <button onclick="setLiveTheme('burgundy'); toggleCmdPalette();" class="cmd-item w-full text-left flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                    <div class="flex items-center gap-3">
+                        <span class="text-base">🎨</span>
+                        <div>
+                            <div class="text-xs font-semibold text-[var(--apple-ink)]">Switch Theme: Rosewood Plum & Pearl (Dot 1)</div>
+                            <div class="text-[11px] text-[var(--apple-muted)]">Deep Plum Wine & Soft Rose Grey</div>
+                        </div>
+                    </div>
+                </button>
+
+                <button onclick="setLiveTheme('espresso'); toggleCmdPalette();" class="cmd-item w-full text-left flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
+                    <div class="flex items-center gap-3">
+                        <span class="text-base">☕</span>
+                        <div>
+                            <div class="text-xs font-semibold text-[var(--apple-ink)]">Switch Theme: Espresso Coffee & Linen (Dot 2)</div>
+                            <div class="text-[11px] text-[var(--apple-muted)]">Dark Coffee & Soft Linen Sand</div>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Live Theme Switcher Widget (3 DEMO DOTS + Ctrl+K Button) -->
+    <div id="theme-switcher-widget"
+        class="fixed bottom-5 right-5 z-40 bg-white/90 backdrop-blur-xl border border-[#e0e0e0] shadow-xl rounded-full px-4 py-2.5 flex items-center space-x-3 transition-all transform hover:scale-105">
+        <button onclick="toggleCmdPalette()" title="Press Ctrl+K to search" class="text-xs font-bold text-[var(--apple-ink)] hover:text-[var(--apple-blue)] flex items-center gap-1.5 font-luxury-sans focus:outline-none">
+            🔍 <span class="hidden sm:inline">Search</span> <span class="text-[10px] bg-[var(--apple-canvas)] border border-[var(--apple-hairline)] px-1.5 py-0.5 rounded font-mono">Ctrl+K</span>
+        </button>
+        <span class="text-[var(--apple-hairline)]">|</span>
+        <div class="flex items-center space-x-2.5">
+            <!-- Dot 1: Deep Rosewood Plum & Pearl (#5A2132 / #EFE9E9) -->
+            <button onclick="setLiveTheme('burgundy')" title="1. Rosewood & Pearl (#5A2132 / #EFE9E9)"
+                class="w-7 h-7 rounded-full bg-[#5A2132] border-2 border-[#EFE9E9] shadow-md hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-[#5A2132] flex items-center justify-center text-[10px] text-white font-bold font-luxury-sans">1</button>
+            
+            <!-- Dot 2: Espresso & Linen (#3B2A22 / #F9F6F1) -->
+            <button onclick="setLiveTheme('espresso')" title="2. Espresso & Linen (#3B2A22 / #F9F6F1)"
+                class="w-7 h-7 rounded-full bg-[#3B2A22] border-2 border-[#F9F6F1] shadow-md hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-[#3B2A22] flex items-center justify-center text-[10px] text-white font-bold font-luxury-sans">2</button>
+            
+            <!-- Dot 3: Apple Royal Blue (#0066cc / #f5f5f7) -->
+            <button onclick="setLiveTheme('blue')" title="3. Apple Royal Blue (#0066cc / #f5f5f7)"
+                class="w-7 h-7 rounded-full bg-[#0066cc] border-2 border-white shadow-md hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-[#0066cc] flex items-center justify-center text-[10px] text-white font-bold font-luxury-sans">3</button>
+        </div>
+    </div>
+
+    <!-- Quick Floating Action Drawer FAB Button (Bottom Left) -->
+    <div class="fixed bottom-6 left-6 z-40">
+        <button onclick="toggleQuickDrawer()" id="fab-quick-btn" title="Quick Actions Drawer"
+            class="px-4 py-2.5 rounded-full bg-[var(--apple-ink)] text-white shadow-2xl border border-white/20 flex items-center gap-2 text-xs font-semibold hover:scale-105 transition-all duration-200 backdrop-blur-md active:scale-95">
+            <span class="text-sm">⚡</span>
+            <span>Quick Actions</span>
+        </button>
+
+        <!-- Quick Actions Drawer Popup -->
+        <div id="quick-action-drawer" class="hidden absolute bottom-12 left-0 w-72 bg-white/95 backdrop-blur-xl border border-[var(--apple-hairline)] rounded-2xl shadow-2xl p-3 transform transition-all duration-200 animate-in fade-in slide-in-from-bottom-3">
+            <div class="flex items-center justify-between px-2 pb-2 mb-2 border-b border-[var(--apple-hairline)]">
+                <span class="text-xs font-bold text-[var(--apple-ink)] flex items-center gap-1.5">
+                    <span>⚡</span> Instant Shortcuts
+                </span>
+                <button onclick="toggleQuickDrawer()" class="text-xs text-[var(--apple-muted)] hover:text-[var(--apple-ink)] p-1">✕</button>
+            </div>
+            <div class="space-y-1">
+                {% if user.is_authenticated and user.role == 'FACULTY' %}
+                    <!-- Faculty Specific Quick Actions -->
+                    <a href="{% url 'leaves:apply_leave' %}" onclick="toggleQuickDrawer()" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors">
+                        <span class="p-1.5 bg-purple-100 text-purple-600 rounded-lg text-sm">🌴</span>
+                        <div>
+                            <div class="text-xs font-bold text-[var(--apple-ink)]">Apply for Leave</div>
+                            <div class="text-[10px] text-[var(--apple-muted)]">Submit a new leave request</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'leaves:faculty_attendance' %}" onclick="toggleQuickDrawer()" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors">
+                        <span class="p-1.5 bg-emerald-100 text-emerald-600 rounded-lg text-sm">📅</span>
+                        <div>
+                            <div class="text-xs font-bold text-[var(--apple-ink)]">My Attendance History</div>
+                            <div class="text-[10px] text-[var(--apple-muted)]">View monthly log history</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'accounts:dashboard' %}" onclick="toggleQuickDrawer()" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors">
+                        <span class="p-1.5 bg-blue-100 text-blue-600 rounded-lg text-sm">🏠</span>
+                        <div>
+                            <div class="text-xs font-bold text-[var(--apple-ink)]">Faculty Dashboard</div>
+                            <div class="text-[10px] text-[var(--apple-muted)]">View leave balances & status</div>
+                        </div>
+                    </a>
+                {% elif user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}
+                    <!-- School Admin Specific Quick Actions -->
+                    <a href="{% url 'attendance:kiosk' %}" target="_blank" onclick="toggleQuickDrawer()" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors">
+                        <span class="p-1.5 bg-emerald-100 text-emerald-600 rounded-lg text-sm">📷</span>
+                        <div>
+                            <div class="text-xs font-bold text-[var(--apple-ink)]">Webcam Kiosk Scanner</div>
+                            <div class="text-[10px] text-[var(--apple-muted)]">Launch live face scanner</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'faculty:list' %}" onclick="toggleQuickDrawer()" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors">
+                        <span class="p-1.5 bg-blue-100 text-blue-600 rounded-lg text-sm">👥</span>
+                        <div>
+                            <div class="text-xs font-bold text-[var(--apple-ink)]">Faculty Directory</div>
+                            <div class="text-[10px] text-[var(--apple-muted)]">Add staff & enroll biometrics</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'leaves:admin_requests' %}" onclick="toggleQuickDrawer()" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors">
+                        <span class="p-1.5 bg-purple-100 text-purple-600 rounded-lg text-sm">🌴</span>
+                        <div>
+                            <div class="text-xs font-bold text-[var(--apple-ink)]">Approve Faculty Leaves</div>
+                            <div class="text-[10px] text-[var(--apple-muted)]">Review pending requests</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'reports:report-list' %}" onclick="toggleQuickDrawer()" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors">
+                        <span class="p-1.5 bg-amber-100 text-amber-600 rounded-lg text-sm">📊</span>
+                        <div>
+                            <div class="text-xs font-bold text-[var(--apple-ink)]">Attendance Reports</div>
+                            <div class="text-[10px] text-[var(--apple-muted)]">Export CSV logs</div>
+                        </div>
+                    </a>
+                {% else %}
+                    <!-- Guest / Public Shortcuts -->
+                    <a href="{% url 'public:landing' %}" onclick="toggleQuickDrawer()" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors">
+                        <span class="p-1.5 bg-blue-100 text-blue-600 rounded-lg text-sm">🏠</span>
+                        <div>
+                            <div class="text-xs font-bold text-[var(--apple-ink)]">Home Page</div>
+                            <div class="text-[10px] text-[var(--apple-muted)]">StudentERP landing</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'public:register' %}" onclick="toggleQuickDrawer()" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors">
+                        <span class="p-1.5 bg-emerald-100 text-emerald-600 rounded-lg text-sm">🏢</span>
+                        <div>
+                            <div class="text-xs font-bold text-[var(--apple-ink)]">Register School</div>
+                            <div class="text-[10px] text-[var(--apple-muted)]">Create new tenant</div>
+                        </div>
+                    </a>
+                {% endif %}
+
+                <button onclick="toggleCmdPalette(); toggleQuickDrawer();" class="w-full text-left flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] border-t border-[var(--apple-hairline)] pt-2 transition-colors">
+                    <span class="p-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm">🔍</span>
+                    <div>
+                        <div class="text-xs font-bold text-[var(--apple-ink)]">Global Search (Ctrl + K)</div>
+                        <div class="text-[10px] text-[var(--apple-muted)]">Spotlight command palette</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Theme Switcher & Lenis Smooth Scroll Script -->
     <script>
+        const THEMES = {
+            burgundy: {
+                canvas: '#EFE9E9',      // Soft Rosewood Pearl Canvas
+                surface: '#FFFFFF',     // Pure White Card Surface
+                ink: '#5A2132',         // Deep Rosewood Plum Text
+                muted: '#7D4755',       // Muted Rosewood Text
+                blue: '#5A2132',        // Primary Accent Button
+                blueHover: '#752A41',   // Hover Button Accent
+                hairline: '#D9CDCE',    // Border Hairline
+                fontFamily: "'Plus Jakarta Sans', sans-serif"
+            },
+            espresso: {
+                canvas: '#F9F6F1',      // Soft Clean Linen Sand
+                surface: '#FFFFFF',     // Pure White Card Surface
+                ink: '#32231B',         // Deep Espresso Coffee Text
+                muted: '#6E5C50',       // Muted Espresso Text
+                blue: '#3B2A22',        // Primary Button Espresso
+                blueHover: '#523B30',   // Hover Espresso
+                hairline: '#E6DCCE',    // Sand Hairline Border
+                fontFamily: "'Plus Jakarta Sans', sans-serif"
+            },
+            blue: {
+                canvas: '#f5f5f7',
+                surface: '#ffffff',
+                ink: '#1d1d1f',
+                muted: '#86868b',
+                blue: '#0066cc',
+                blueHover: '#0071e3',
+                hairline: '#e0e0e0',
+                fontFamily: "'Plus Jakarta Sans', sans-serif"
+            }
+        };
+
+        function setLiveTheme(themeKey) {
+            const theme = THEMES[themeKey] || THEMES.burgundy;
+            const root = document.documentElement;
+
+            root.style.setProperty('--apple-canvas', theme.canvas);
+            root.style.setProperty('--apple-surface', theme.surface);
+            root.style.setProperty('--apple-ink', theme.ink);
+            root.style.setProperty('--apple-muted', theme.muted);
+            root.style.setProperty('--apple-blue', theme.blue);
+            root.style.setProperty('--apple-blue-hover', theme.blueHover);
+            root.style.setProperty('--apple-hairline', theme.hairline);
+
+            if (theme.fontFamily) {
+                document.body.style.fontFamily = theme.fontFamily;
+            }
+
+            // Dynamically update element colors across landing page
+            document.querySelectorAll('.theme-text-ink').forEach(el => el.style.color = theme.ink);
+            document.querySelectorAll('.theme-text-muted').forEach(el => el.style.color = theme.muted);
+            document.querySelectorAll('.theme-text-accent').forEach(el => el.style.color = theme.blue);
+            document.querySelectorAll('.theme-bg-accent').forEach(el => el.style.backgroundColor = theme.blue);
+            document.querySelectorAll('.theme-border-accent').forEach(el => el.style.borderColor = theme.blue);
+
+            localStorage.setItem('studenterp_theme', themeKey);
+        }
+
+        // Initialize Lenis Inertia Kinetic Smooth Scroll
+        window.lenisInstance = null;
+        if (typeof Lenis !== 'undefined') {
+            window.lenisInstance = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                orientation: 'vertical',
+                gestureOrientation: 'vertical',
+                smoothWheel: true,
+                wheelMultiplier: 1,
+                touchMultiplier: 2,
+                infinite: false
+            });
+
+            function raf(time) {
+                if (window.lenisInstance) {
+                    window.lenisInstance.raf(time);
+                }
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+
+            // Sync Lenis scroll progress with top progress bar
+            window.lenisInstance.on('scroll', (e) => {
+                const scrolled = e.progress * 100;
+                const pBar = document.getElementById('page-scroll-progress');
+                if (pBar) {
+                    pBar.style.width = scrolled + '%';
+                }
+            });
+        }
+
+        // Quick Drawer Logic
+        function toggleQuickDrawer() {
+            const drawer = document.getElementById('quick-action-drawer');
+            if (drawer) {
+                drawer.classList.toggle('hidden');
+            }
+        }
+
+        // Close quick drawer when clicking outside
+        document.addEventListener('click', function(e) {
+            const drawer = document.getElementById('quick-action-drawer');
+            const fab = document.getElementById('fab-quick-btn');
+            if (drawer && !drawer.classList.contains('hidden') && fab) {
+                if (!drawer.contains(e.target) && !fab.contains(e.target)) {
+                    drawer.classList.add('hidden');
+                }
+            }
+        });
+
+        // Command Palette Logic (Ctrl + K)
+        function toggleCmdPalette() {
+            const modal = document.getElementById('cmd-palette-modal');
+            const input = document.getElementById('cmd-search-input');
+            if (modal) {
+                if (modal.classList.contains('hidden')) {
+                    modal.classList.remove('hidden');
+                    if (input) {
+                        input.value = '';
+                        input.focus();
+                        filterCmdItems('');
+                    }
+                } else {
+                    modal.classList.add('hidden');
+                }
+            }
+        }
+
+        function filterCmdItems(query) {
+            const q = query.toLowerCase().trim();
+            const items = document.querySelectorAll('.cmd-item');
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (!q || text.includes(q)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                toggleCmdPalette();
+            } else if (e.key === 'Escape') {
+                const modal = document.getElementById('cmd-palette-modal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    modal.classList.add('hidden');
+                }
+            }
+        });
+
+        // Restore saved theme
         document.addEventListener('DOMContentLoaded', function () {
+            const savedTheme = localStorage.getItem('studenterp_theme') || 'burgundy';
+            setLiveTheme(savedTheme);
+
             const btn = document.getElementById('mobile-menu-btn');
             const menu = document.getElementById('mobile-menu');
             if (btn && menu) {
@@ -82,8 +588,26 @@
                     menu.classList.toggle('hidden');
                 });
             }
+
+            document.getElementById('cmd-search-input')?.addEventListener('input', function (e) {
+                filterCmdItems(e.target.value);
+            });
+
+            // Fallback scroll progress handler
+            if (!lenisInstance) {
+                window.addEventListener('scroll', function () {
+                    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                    const scrolled = (winScroll / height) * 100;
+                    const pBar = document.getElementById('page-scroll-progress');
+                    if (pBar) {
+                        pBar.style.width = scrolled + '%';
+                    }
+                });
+            }
         });
     </script>
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

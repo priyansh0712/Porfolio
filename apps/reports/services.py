@@ -61,6 +61,24 @@ class DashboardService:
         # ── 3. Live Feed (Most recent scans) ──
         live_feed = today_logs.select_related('faculty').order_by('-last_scan_at')[:25]
 
+        # ── 4. Live Punctuality & Donut Chart Arc Metrics ──
+        total_checked_in = present_count + late_count + half_day_count
+        if total_checked_in > 0:
+            punctuality_rate = round((present_count / total_checked_in) * 100)
+        elif present_count > 0:
+            punctuality_rate = 100
+        else:
+            punctuality_rate = 0 if total_faculty > 0 else 100
+
+        if total_faculty > 0:
+            donut_present_dash = round((present_count / total_faculty) * 100)
+            donut_late_dash = round((late_count / total_faculty) * 100)
+        else:
+            donut_present_dash = 0
+            donut_late_dash = 0
+
+        donut_late_offset = -donut_present_dash
+
         return {
             'today': today,
             'total_faculty': total_faculty,
@@ -71,6 +89,10 @@ class DashboardService:
             'absent_count': absent_count,
             'total_scans': total_scans,
             'live_feed': live_feed,
+            'punctuality_rate': punctuality_rate,
+            'donut_present_dash': donut_present_dash,
+            'donut_late_dash': donut_late_dash,
+            'donut_late_offset': donut_late_offset,
         }
 
 
