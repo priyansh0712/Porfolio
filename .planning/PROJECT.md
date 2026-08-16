@@ -1,37 +1,28 @@
-# School Faculty Face Attendance SaaS (StudentERP1 V1)
+# School Faculty Face Attendance SaaS & Leave Management (StudentERP1 V2)
 
 ## What This Is
 
-A production-minded, multi-tenant SaaS platform for schools centered on webcam-based face recognition for faculty check-in and check-out attendance. Built with Django, PostgreSQL, Tailwind CSS, and Vanilla JavaScript, it offers isolated tenant environments (`school.ourapp.com`), configurable working schedules and late rules, audit logging for attendance integrity, and an authorized school admin dashboard, along with a public company landing page and school self-registration.
+A production-minded, multi-tenant SaaS platform for schools centered on webcam-based face recognition for faculty check-in and check-out attendance, extended with faculty self-service leave management, personal attendance history dashboards, and real-time in-app notifications. Built with Django, PostgreSQL, Tailwind CSS, and Vanilla JavaScript, it offers isolated tenant environments (`school.ourapp.com`), configurable working schedules and late rules, audit logging for attendance integrity, and authorized school admin & faculty dashboards.
 
 ## Core Value
 
-Allow school faculty to mark accurate check-in and check-out attendance using face recognition through a webcam with strict multi-tenant isolation, while giving authorized school administrators complete attendance management, rule configuration, and reporting.
+Allow school faculty to mark accurate check-in and check-out attendance using face recognition through a webcam with strict multi-tenant isolation, while giving authorized school administrators complete attendance management, rule configuration, leave reviews, and reporting, alongside faculty personal dashboards.
 
 ### Requirements
 
 ### Validated
 
 - **V1 Core Platform**: All V1 requirements (TENANT-01, TENANT-02, LANDING-01, REG-01, AUTH-01, AUTH-02, AUTH-03, FAC-01, FACE-01, FACE-02, ATT-01, ATT-02, ATT-03, SCHED-01, SCHED-02, AUDIT-01, RPT-01, SEC-01) are fully validated and verified.
+- **V2 Leave & Faculty Dashboard**: All V2 requirements (LEAVE-ALLOC, LEAVE-BAL, FAC-DASH, MY-ATT, LEAVE-REQ, LEAVE-APP, LEAVE-INT, LEAVE-NOTIF, LEAVE-OVERLAP, LEAVE-HOL, SEC-V2) are fully validated and verified (159 tests passing).
 
 ### Current State
-- **V1.0 Milestone**: Complete and production-ready (100% verified, 121 tests passing).
-- **V2.0 Milestone**: Initiating Phase 1 (Foundation & Database Models).
-
+- **V1.0 Milestone**: Complete & archived (2026-08-15).
+- **V2.0 Milestone**: Complete & archived (2026-08-16).
+- **Next Milestone**: Ready for V3.0 definition via `/gsd-new-milestone`.
 
 ### Active
 
-- [ ] **LEAVE-ALLOC**: School Admin Excel leave allocation upload and validation.
-- [ ] **LEAVE-BAL**: Dynamic faculty leave balance tracking (Allocated, Used, Remaining).
-- [ ] **FAC-DASH**: Personal dashboard for Faculty members showing attendance, stats, leaves, and notifications.
-- [ ] **MY-ATT**: "My Attendance" history page for Faculty.
-- [ ] **LEAVE-REQ**: Faculty leave application form with conflict and balance checks.
-- [ ] **LEAVE-APP**: School Admin leave approval/rejection interface with reasons.
-- [ ] **LEAVE-INT**: Automatic integration of approved leaves into check-in/out logs (`LEAVE` status).
-- [ ] **LEAVE-NOTIF**: In-app notifications for leave submission/approval/rejection.
-- [ ] **LEAVE-OVERLAP**: Validation rules to prevent overlapping leave requests.
-- [ ] **LEAVE-HOL**: Respect working schedule and holiday calendar in leave balance deductions.
-- [ ] **SEC-V2**: Multi-tenant isolation and strict role permission boundaries across all V2 paths.
+*No active requirements. Initialize next milestone using `/gsd-new-milestone`.*
 
 ### Out of Scope
 
@@ -51,9 +42,8 @@ Allow school faculty to mark accurate check-in and check-out attendance using fa
 ## Context
 
 - **Target Market**: K-12 and private schools seeking an accurate, proxy-proof faculty attendance system without expensive biometric hardware.
-- **Tech Stack**: Python, Django backend, PostgreSQL database, Tailwind CSS, Vanilla JavaScript (browser MediaDevices camera API), Django HTML templates.
-- **Architecture**: Modular Django monolith with clean app boundaries and tenant-middleware context resolution.
-- **Biometric & Privacy**: Biometric vector storage, data minimization, compliance readiness, audit logging, secrets in environment variables.
+- **Tech Stack**: Python 3.12, Django 5.1 backend, PostgreSQL 16 database, Tailwind CSS 3.4, Vanilla JavaScript (MediaDevices camera API), Django HTML templates.
+- **Architecture**: Modular Django monolith with clean app boundaries (`tenants`, `accounts`, `faculty`, `biometrics`, `attendance`, `schedules`, `reports`, `leaves`, `notifications`).
 
 ## Constraints
 
@@ -67,28 +57,12 @@ Allow school faculty to mark accurate check-in and check-out attendance using fa
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Django Monolith + Tailwind + Vanilla JS | Server-rendered templates eliminate SPA overhead while maintaining fast, responsive UX and high security | — Pending |
-| Multi-tenant Subdomain Routing | Provides isolated identity and clean data separation (`school.ourapp.com`) | — Pending |
-| Biometric Embeddings over Raw Images | Protects privacy, minimizes data footprint, and avoids compliance liability | — Pending |
-| Super Admin Data Access Restriction | Ensures customer trust by preventing platform admins from viewing faculty attendance/biometric records | — Pending |
-| Faculty Face-only Attendance Interaction | Streamlines daily check-in/check-out; no password login needed for attendance scanning | — Pending |
-
-## Evolution
-
-This document evolves at phase transitions and milestone boundaries.
-
-**After each phase transition** (via `/gsd-transition`):
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
-
-**After each milestone** (via `/gsd-complete-milestone`):
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
+| Django Monolith + Tailwind + Vanilla JS | Server-rendered templates eliminate SPA overhead while maintaining fast, responsive UX and high security | Verified |
+| Multi-tenant Subdomain Routing | Provides isolated identity and clean data separation (`school.ourapp.com`) | Verified |
+| Biometric Embeddings over Raw Images | Protects privacy, minimizes data footprint, and avoids compliance liability | Verified |
+| Super Admin Data Access Restriction | Ensures customer trust by preventing platform admins from viewing faculty attendance/biometric records | Verified |
+| Transactional Leave-Attendance Sync | Approved leave requests automatically generate status `LEAVE` logs in `AttendanceLog` | Verified |
+| Holiday Exclusion Engine | Respects custom holidays and working schedules when calculating leave day subtractions | Verified |
 
 ---
-*Last updated: 2026-08-11 after initialization*
+*Updated: 2026-08-16 upon V2.0 completion*
