@@ -208,22 +208,32 @@ class AttendanceStateMachine:
 
         from apps.schedules.calculator import PunctualityCalculator
 
-        if existing is None:
+        if existing is None or existing.check_in_time is None:
             # ── State 1: First scan of day → Check-In ──
             calc = PunctualityCalculator.calculate_status(
                 school=school, date=today, check_in_time=now,
             )
-            attendance = AttendanceLog.objects.create(
-                school=school,
-                faculty=faculty,
-                date=today,
-                check_in_time=now,
-                last_scan_at=now,
-                status=calc['status'],
-                early_departure=calc['early_departure'],
-                match_confidence=confidence,
-                device_info=device_info,
-            )
+            if existing:
+                existing.check_in_time = now
+                existing.last_scan_at = now
+                existing.status = calc['status']
+                existing.early_departure = calc['early_departure']
+                existing.match_confidence = confidence
+                existing.device_info = device_info
+                existing.save()
+                attendance = existing
+            else:
+                attendance = AttendanceLog.objects.create(
+                    school=school,
+                    faculty=faculty,
+                    date=today,
+                    check_in_time=now,
+                    last_scan_at=now,
+                    status=calc['status'],
+                    early_departure=calc['early_departure'],
+                    match_confidence=confidence,
+                    device_info=device_info,
+                )
             logger.info("CHECK-IN: %s at %s (%s)", faculty.full_name, now.strftime('%H:%M:%S'), calc['status'])
             return {
                 'action': 'check_in',

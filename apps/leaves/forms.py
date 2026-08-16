@@ -38,6 +38,28 @@ class LeaveRequestForm(forms.ModelForm):
         self.school = kwargs.pop('school', None)
         super().__init__(*args, **kwargs)
 
+        if self.faculty and self.school:
+            choices = [('', '---------')]
+            for l_type, l_label in LeaveType.choices:
+                alloc = LeaveAllocation.objects.filter(
+                    school=self.school,
+                    faculty=self.faculty,
+                    leave_type=l_type
+                ).first()
+                allocated = alloc.allocated if alloc else 0
+
+                approved_requests = LeaveRequest.objects.filter(
+                    school=self.school,
+                    faculty=self.faculty,
+                    leave_type=l_type,
+                    status=LeaveRequest.Status.APPROVED
+                )
+                used = sum(r.used_days for r in approved_requests)
+                remaining = max(0, allocated - used)
+                choices.append((l_type, f"{l_label} ({remaining} remaining)"))
+
+            self.fields['leave_type'].choices = choices
+
     def clean(self):
         cleaned_data = super().clean()
         from_date = cleaned_data.get('from_date')
