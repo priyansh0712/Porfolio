@@ -38,6 +38,7 @@ class AttendanceLog(TenantModel):
         LATE = 'LATE', 'Late'
         HALF_DAY = 'HALF_DAY', 'Half Day'
         EARLY_DEPARTURE = 'EARLY_DEPARTURE', 'Early Departure'
+        LEAVE = 'LEAVE', 'Leave'
 
     faculty = models.ForeignKey(
         Faculty,
@@ -49,6 +50,8 @@ class AttendanceLog(TenantModel):
         help_text='Calendar date of attendance (timezone.localdate)',
     )
     check_in_time = models.DateTimeField(
+        null=True,
+        blank=True,
         help_text='Timestamp of first face scan (check-in)',
     )
     check_out_time = models.DateTimeField(
@@ -93,9 +96,10 @@ class AttendanceLog(TenantModel):
 
     def __str__(self):
         status_label = self.get_status_display()
+        in_time_str = f"{self.check_in_time:%H:%M}" if self.check_in_time else "no check-in"
         return (
             f"{self.faculty.full_name} — {self.date} — "
-            f"{status_label} (in: {self.check_in_time:%H:%M})"
+            f"{status_label} ({in_time_str})"
         )
 
     @property

@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Manage Leave Requests - StudentERP{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-7xl mx-auto py-4">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-[var(--apple-ink)] mb-1">
+                Leave Requests
+            </h1>
+            <p class="text-[var(--apple-muted)] text-sm">Review, filter, and approve or reject faculty leave applications.</p>
+        </div>
+        <div class="flex-shrink-0">
+            <a href="{% url 'leaves:upload_allocation' %}" class="apple-btn-secondary px-5 py-2.5 inline-flex items-center text-sm font-semibold border border-[var(--apple-hairline)] bg-white text-[var(--apple-ink)] hover:bg-gray-50">
+                Bulk Allocations Upload
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="apple-card p-6">
+        <form method="get" action="{% url 'leaves:admin_requests' %}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <!-- Filter by Status -->
+            <div class="space-y-1.5">
+                <label for="status" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">Status</label>
+                <select name="status" id="status" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc]">
+                    <option value="">All Statuses</option>
+                    {% for val, name in status_choices %}
+                        <option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filter by Faculty -->
+            <div class="space-y-1.5">
+                <label for="faculty" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">Faculty</label>
+                <select name="faculty" id="faculty" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc]">
+                    <option value="">All Faculty</option>
+                    {% for fac in faculties %}
+                        <option value="{{ fac.pk }}" {% if selected_faculty == fac.pk %}selected{% endif %}>{{ fac.full_name }} ({{ fac.employee_code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Date Range From -->
+            <div class="space-y-1.5">
+                <label for="from_date" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">From Date</label>
+                <input type="date" name="from_date" id="from_date" value="{{ selected_from_date }}" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc]">
+            </div>
+
+            <!-- Date Range To -->
+            <div class="space-y-1.5">
+                <label for="to_date" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">To Date</label>
+                <input type="date" name="to_date" id="to_date" value="{{ selected_to_date }}" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc]">
+            </div>
+
+            <!-- Filter Actions (Span 4 to align nicely) -->
+            <div class="md:col-span-4 flex items-center justify-end space-x-3 pt-2">
+                <a href="{% url 'leaves:admin_requests' %}" class="px-5 py-2.5 rounded-full text-xs font-semibold border border-[var(--apple-hairline)] bg-white text-[var(--apple-ink)] hover:bg-gray-50">
+                    Clear Filters
+                </a>
+                <button type="submit" class="apple-btn-primary px-6 py-2.5 text-xs font-semibold">
+                    Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Leave Requests Listing Card -->
+    <div class="apple-card p-6">
+        <h2 class="text-lg font-bold text-[var(--apple-ink)] mb-6">Applications Overview</h2>
+
+        {% if leave_requests %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                    <tr class="border-b border-[var(--apple-hairline)] text-[var(--apple-muted)] font-medium">
+                        <th class="py-3 px-2">Faculty</th>
+                        <th class="py-3">Date Range</th>
+                        <th class="py-3">Leave Type</th>
+                        <th class="py-3">Reason</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for req in leave_requests %}
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="py-4 px-2">
+                            <div class="font-bold text-[var(--apple-ink)]">{{ req.faculty.full_name }}</div>
+                            <div class="text-[10px] text-[var(--apple-muted)] mt-0.5">{{ req.faculty.employee_code }} • {{ req.faculty.department }}</div>
+                        </td>
+                        <td class="py-4 text-[var(--apple-ink)] font-medium">
+                            {{ req.from_date|date:"d M, Y" }} to {{ req.to_date|date:"d M, Y" }}
+                        </td>
+                        <td class="py-4 text-[var(--apple-muted)] font-medium">
+                            {{ req.get_leave_type_display }}
+                        </td>
+                        <td class="py-4 text-[var(--apple-ink)] max-w-sm truncate" title="{{ req.reason }}">
+                            {{ req.reason }}
+                            {% if req.status == 'REJECTED' and req.rejection_reason %}
+                            <div class="text-xs text-rose-600 font-medium mt-1">Rejection Reason: {{ req.rejection_reason }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="py-4">
+                            {% if req.status == 'PENDING' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100">
+                                    {{ req.get_status_display }}
+                                </span>
+                            {% elif req.status == 'APPROVED' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                    {{ req.get_status_display }}
+                                </span>
+                            {% elif req.status == 'REJECTED' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-100">
+                                    {{ req.get_status_display }}
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                                    {{ req.get_status_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 text-right">
+                            {% if req.status == 'PENDING' %}
+                            <div class="inline-flex items-center space-x-2">
+                                <form action="{% url 'leaves:approve_request' req.pk %}" method="post" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100/80 px-3 py-1.5 rounded-full border border-emerald-200">
+                                        Approve
+                                    </button>
+                                </form>
+                                <button type="button" onclick="openRejectModal('{% url 'leaves:reject_request' req.pk %}', '{{ req.faculty.full_name }}')" class="text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100/80 px-3 py-1.5 rounded-full border border-rose-200">
+                                    Reject
+                                </button>
+                            </div>
+                            {% else %}
+                            <span class="text-xs text-[var(--apple-muted)]">No Actions Available</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="flex flex-col items-center justify-center py-16 text-[var(--apple-muted)] bg-gray-50/30 rounded-2xl border border-dashed border-[var(--apple-hairline)]">
+            <svg class="w-12 h-12 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            <p class="text-sm font-semibold">No applications matching current filters.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Rejection Modal Background Backdrop -->
+<div id="reject-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center hidden" aria-modal="true" role="dialog">
+    <!-- Modal Card container -->
+    <div class="bg-white rounded-3xl max-w-md w-full mx-4 overflow-hidden border border-gray-200/80 shadow-2xl transform transition-all duration-300 scale-95 opacity-0" id="modal-card">
+        <div class="p-6 md:p-8 space-y-6">
+            <div>
+                <h3 class="text-lg font-bold text-[var(--apple-ink)] mb-2">Reject Leave Request</h3>
+                <p class="text-sm text-[var(--apple-muted)]">
+                    Please provide an explanation for rejecting the request submitted by <strong id="modal-faculty-name" class="text-[var(--apple-ink)]"></strong>. This explanation is mandatory.
+                </p>
+            </div>
+
+            <form method="post" id="reject-form" class="space-y-4">
+                {% csrf_token %}
+                <div class="space-y-2">
+                    <label for="rejection_reason" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">Rejection Reason</label>
+                    <textarea name="rejection_reason" id="rejection_reason" rows="3" required class="w-full px-4 py-3 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc] placeholder:text-[#86868b]" placeholder="e.g. Current project delivery dates overlap."></textarea>
+                </div>
+
+                <div class="pt-4 border-t border-[var(--apple-hairline)] flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeRejectModal()" class="px-5 py-2.5 rounded-full text-xs font-semibold border border-[var(--apple-hairline)] bg-white text-[var(--apple-ink)] hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 rounded-full text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-sm">
+                        Confirm Rejection
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openRejectModal(actionUrl, facultyName) {
+        const modal = document.getElementById('reject-modal');
+        const card = document.getElementById('modal-card');
+        const form = document.getElementById('reject-form');
+        const facultyText = document.getElementById('modal-faculty-name');
+        
+        form.action = actionUrl;
+        facultyText.innerText = facultyName;
+        
+        modal.classList.remove('hidden');
+        // Let class trigger transitions
+        setTimeout(() => {
+            card.classList.remove('scale-95', 'opacity-0');
+            card.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeRejectModal() {
+        const modal = document.getElementById('reject-modal');
+        const card = document.getElementById('modal-card');
+        
+        card.classList.remove('scale-100', 'opacity-100');
+        card.classList.add('scale-95', 'opacity-0');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.getElementById('rejection_reason').value = '';
+        }, 200);
+    }
+
+    // Close on click outside modal card
+    document.getElementById('reject-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeRejectModal();
+        }
+    });
+</script>
+{% endblock %}

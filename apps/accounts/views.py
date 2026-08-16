@@ -36,13 +36,25 @@ class TenantLoginView(LoginView):
 class TenantLogoutView(LogoutView):
     """Logs out user and redirects to /login/ on the current subdomain."""
     next_page = '/login/'
+    http_method_names = ['get', 'post', 'options']
+
+    def get(self, request, *args, **kwargs):
+        return self.post(request, *args, **kwargs)
 
 
 from apps.reports.views import AdminDashboardView
+from django.views import View
+from django.http import HttpResponseForbidden
 
-class TenantDashboardView(AdminDashboardView):
+class TenantDashboardView(LoginRequiredMixin, View):
     """
-    Primary School Admin Dashboard view for tenant subdomains.
-    Delivers KPI summary cards, live activity feed, and quick actions.
+    Unified landing page for all tenant logins.
+    Routes School Admins to AdminDashboardView and Faculty members to FacultyDashboardView.
     """
-    pass
+    def get(self, request, *args, **kwargs):
+        if request.user.role == User.Role.SCHOOL_ADMIN:
+            return AdminDashboardView.as_view()(request, *args, **kwargs)
+        elif request.user.role == User.Role.FACULTY:
+            from apps.leaves.views import FacultyDashboardView
+            return FacultyDashboardView.as_view()(request, *args, **kwargs)
+        return HttpResponseForbidden("Access Denied: Invalid role for school tenant subdomain.")

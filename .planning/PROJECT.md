@@ -8,51 +8,45 @@ A production-minded, multi-tenant SaaS platform for schools centered on webcam-b
 
 Allow school faculty to mark accurate check-in and check-out attendance using face recognition through a webcam with strict multi-tenant isolation, while giving authorized school administrators complete attendance management, rule configuration, and reporting.
 
-## Requirements
+### Requirements
 
 ### Validated
 
-(None yet — ship to validate)
+- **V1 Core Platform**: All V1 requirements (TENANT-01, TENANT-02, LANDING-01, REG-01, AUTH-01, AUTH-02, AUTH-03, FAC-01, FACE-01, FACE-02, ATT-01, ATT-02, ATT-03, SCHED-01, SCHED-02, AUDIT-01, RPT-01, SEC-01) are fully validated and verified.
 
 ### Current State
-- **Phase 1 Complete**: Django 5.1 foundation initialized with split settings (`django-environ`), PostgreSQL DB config, modular `apps/` structure, `TimeStampedModel` mixin, Tailwind CSS 3.4 CLI compilation, and Minimal White & Gray `base.html` template layout.
-- **Phase 2 Complete**: Public marketing landing page (`/`), School self-registration workflow (`/register/`), registration success view (`/register/success/`), `SchoolRegistrationService`, and `School` tenant model with 8 passing unit tests.
+- **V1.0 Milestone**: Complete and production-ready (100% verified, 121 tests passing).
+- **V2.0 Milestone**: Initiating Phase 1 (Foundation & Database Models).
 
 
 ### Active
 
-- [ ] **TENANT-01**: Multi-tenant isolation enforced at database, backend, and data-access layers ensuring complete data separation between schools
-- [ ] **TENANT-02**: Subdomain-based tenant resolution (`schoolname.ourapp.com`) with secure routing and fallback handling
-- [ ] **LANDING-01**: Public landing page (`ourapp.com`) showcasing product benefits, face attendance feature highlights, security positioning, pricing structure, FAQ, and "Register Your School" CTA
-- [ ] **REG-01**: School self-registration flow capturing school metadata and admin credentials, initializing tenant schema/environment, and redirecting to tenant domain
-- [ ] **AUTH-01**: Role-based access control (Platform Super Admin, School Admin, Faculty) with strict permission enforcement
-- [ ] **AUTH-02**: Platform Super Admin account lifecycle and school activation management strictly prohibited from accessing faculty records, attendance logs, or face data
-- [ ] **AUTH-03**: Secure School Admin conventional authentication (Email + Password, CSRF, session handling, password hashing)
-- [ ] **FAC-01**: School Admin faculty management (Create, Edit, Deactivate/Remove, View Faculty list) scoped strictly to tenant
-- [ ] **FACE-01**: Face registration workflow for School Admin to capture faculty face via webcam and generate secure biometric face representations/embeddings
-- [ ] **FACE-02**: Face processing & matching engine evaluated for accuracy, CPU efficiency, Python/Django compatibility, and cloud deployment practicality
-- [ ] **ATT-01**: Face-based attendance scanning interface using webcam with real-time camera state, detection feedback, scan result cues, and anti-spoofing/liveness considerations
-- [ ] **ATT-02**: Check-in and check-out attendance state engine enforcing valid state transitions and preventing duplicate scans
-- [ ] **ATT-03**: Exception and edge case handling (unknown face, recognition failure, late arrival, early departure, missing check-out, non-working day, holiday)
-- [ ] **SCHED-01**: Configurable school working schedule engine supporting day-specific working hours, full-day/half-day designations, and date-specific exceptions (holidays)
-- [ ] **SCHED-02**: Configurable late threshold & grace period engine calculating present, late, early departure, and half-day statuses automatically
-- [ ] **AUDIT-01**: Attendance integrity & audit logging preserving original records, recording admin corrections with actor, timestamp, and reason
-- [ ] **RPT-01**: School Admin reporting dashboard providing today's attendance, faculty-wise history, date-range reports, present/absent/late counts, working duration, and monthly summaries
-- [ ] **SEC-01**: Django security hardening (CSRF, XSS prevention, SQL injection protection, rate limiting, audit logging, HTTPS enforcement, secrets via environment variables)
+- [ ] **LEAVE-ALLOC**: School Admin Excel leave allocation upload and validation.
+- [ ] **LEAVE-BAL**: Dynamic faculty leave balance tracking (Allocated, Used, Remaining).
+- [ ] **FAC-DASH**: Personal dashboard for Faculty members showing attendance, stats, leaves, and notifications.
+- [ ] **MY-ATT**: "My Attendance" history page for Faculty.
+- [ ] **LEAVE-REQ**: Faculty leave application form with conflict and balance checks.
+- [ ] **LEAVE-APP**: School Admin leave approval/rejection interface with reasons.
+- [ ] **LEAVE-INT**: Automatic integration of approved leaves into check-in/out logs (`LEAVE` status).
+- [ ] **LEAVE-NOTIF**: In-app notifications for leave submission/approval/rejection.
+- [ ] **LEAVE-OVERLAP**: Validation rules to prevent overlapping leave requests.
+- [ ] **LEAVE-HOL**: Respect working schedule and holiday calendar in leave balance deductions.
+- [ ] **SEC-V2**: Multi-tenant isolation and strict role permission boundaries across all V2 paths.
 
 ### Out of Scope
 
-- [ ] **Student Attendance** — Deferred to future milestone to keep V1 focused exclusively on faculty attendance MVP
-- [ ] **Student Management** — Deferred to future school management module
-- [ ] **School Bus Tracking** — Deferred to future transport module
-- [ ] **Parent Notifications / Communication Portal** — Deferred to future communication module
-- [ ] **Fees & Tuition Management** — Deferred to future finance module
-- [ ] **Payroll & Payroll Integration** — Deferred to future HR module
-- [ ] **Learning Management System (LMS)** — Deferred to future academic module
-- [ ] **Exams & Grading** — Deferred to future academic module
-- [ ] **Chatbots / AI Assistants** — Unnecessary complexity for core biometric attendance product
-- [ ] **Native Mobile Applications (iOS/Android)** — Web application with responsive UI is the V1 focus
-- [ ] **Permanent Raw Facial Photo Storage** — Only biometric embeddings/vectors stored to protect privacy and minimize storage
+- [ ] **Student Attendance** — Deferred to future milestone to keep SaaS focused exclusively on faculty.
+- [ ] **Student Management** — Deferred to future school management module.
+- [ ] **School Bus Tracking** — Deferred to future transport module.
+- [ ] **Parent Notifications / Communication Portal** — Deferred to future communication module.
+- [ ] **Fees & Tuition Management** — Deferred to future finance module.
+- [ ] **Payroll & Payroll Integration** — Deferred to future HR module.
+- [ ] **Learning Management System (LMS)** — Deferred to future academic module.
+- [ ] **Exams & Grading** — Deferred to future academic module.
+- [ ] **Chatbots / AI Assistants** — Unnecessary complexity for core biometric attendance product.
+- [ ] **Native Mobile Applications (iOS/Android)** — Web application with responsive UI is the focus.
+- [ ] **Permanent Raw Facial Photo Storage** — Only biometric embeddings/vectors stored to protect privacy.
+- [ ] **WhatsApp/SMS/Email notifications** — Notifications are strictly in-app for V2.
 
 ## Context
 

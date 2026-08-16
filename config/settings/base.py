@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'apps.schedules',
     'apps.attendance',
     'apps.reports',
+    'apps.leaves',
+    'apps.notifications',
 ]
 
 MIDDLEWARE = [
@@ -81,6 +83,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.notifications.context_processors.unread_notifications_count',
             ],
         },
     },

@@ -95,6 +95,33 @@ class SuperAdminRequiredMixin(AccessMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
+class FacultyRequiredMixin(AccessMixin):
+    """
+    CBV mixin: Allows access only to authenticated Faculty members belonging
+    to the active tenant (request.tenant).
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        active_tenant = getattr(request, 'tenant', None)
+
+        if not user.is_authenticated:
+            return self.handle_no_permission()
+
+        if user.role != User.Role.FACULTY:
+            return HttpResponseForbidden(
+                'Access denied: Faculty authorization required. '
+                f'Your role ({user.get_role_display()}) does not have permission.'
+            )
+
+        if user.school_id is None or user.school != active_tenant:
+            return HttpResponseForbidden(
+                'Access denied: You are not authorized to access this school\'s resources.'
+            )
+
+        return super().dispatch(request, *args, **kwargs)
+
+
 # ---------------------------------------------------------------------------
 # Function-Based View Decorators
 # ---------------------------------------------------------------------------
@@ -154,6 +181,35 @@ def super_admin_required(view_func):
         if active_tenant is not None:
             return HttpResponseForbidden(
                 'Access denied: Super Admin management is root domain only.'
+            )
+
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
+def faculty_required(view_func):
+    """
+    Decorator for FBVs: restricts access to Faculty users belonging
+    to the active request.tenant.
+    """
+    @functools.wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        user = request.user
+        active_tenant = getattr(request, 'tenant', None)
+
+        if not user.is_authenticated:
+            from django.conf import settings
+            from django.shortcuts import redirect
+            return redirect(settings.LOGIN_URL)
+
+        if user.role != User.Role.FACULTY:
+            return HttpResponseForbidden(
+                'Access denied: Faculty authorization required.'
+            )
+
+        if user.school_id is None or user.school != active_tenant:
+            return HttpResponseForbidden(
+                'Access denied: Cross-tenant access is strictly prohibited.'
             )
 
         return view_func(request, *args, **kwargs)

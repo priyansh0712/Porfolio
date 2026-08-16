@@ -13,4 +13,6 @@ urlpatterns = [
     path('attendance/', include('apps.attendance.urls', namespace='attendance')),
     path('', include('apps.schedules.urls', namespace='schedules')),
     path('', include('apps.reports.urls', namespace='reports')),
+    path('leaves/', include('apps.leaves.urls', namespace='leaves')),
+    path('notifications/', include('apps.notifications.urls', namespace='notifications')),
 ]

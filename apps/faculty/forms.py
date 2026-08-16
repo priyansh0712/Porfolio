@@ -22,6 +22,14 @@ class FacultyForm(forms.ModelForm):
 
     The `tenant` kwarg is required for school-scoped validation.
     """
+    password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc] transition-all placeholder:text-[#86868b]',
+            'placeholder': 'Set password (optional for login)',
+        }),
+        help_text="If set, this password allows the faculty member to log into their web dashboard."
+    )
 
     class Meta:
         model = Faculty

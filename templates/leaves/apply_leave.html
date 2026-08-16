@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Apply for Leave - StudentERP{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-4">
+    <!-- Breadcrumbs -->
+    <nav class="flex mb-5" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-2 text-sm font-medium">
+            <li class="inline-flex items-center text-[var(--apple-muted)]">
+                <a href="{% url 'accounts:dashboard' %}" class="hover:text-[var(--apple-ink)]">Dashboard</a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <svg class="w-3 h-3 text-[var(--apple-muted)] mx-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                    </svg>
+                    <span class="text-[var(--apple-ink)] font-semibold">Apply for Leave</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header Section -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold tracking-tight text-[var(--apple-ink)] mb-2">Apply for Leave</h1>
+        <p class="text-[var(--apple-muted)] text-base">Submit a leave request. Requests start in a pending state until approved by the school administrator.</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="apple-card p-6 md:p-8">
+        <form action="{% url 'leaves:apply_leave' %}" method="post" class="space-y-6">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="p-4 border border-rose-200 bg-rose-50 rounded-xl text-rose-800 text-sm">
+                {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Leave Type -->
+            <div class="space-y-2">
+                <label for="{{ form.leave_type.id_for_label }}" class="block text-sm font-semibold text-[var(--apple-ink)]">
+                    Leave Type
+                </label>
+                {{ form.leave_type }}
+                {% if form.leave_type.errors %}
+                <p class="text-rose-600 text-xs mt-1">{{ form.leave_type.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Date Range split grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- From Date -->
+                <div class="space-y-2">
+                    <label for="{{ form.from_date.id_for_label }}" class="block text-sm font-semibold text-[var(--apple-ink)]">
+                        From Date
+                    </label>
+                    {{ form.from_date }}
+                    {% if form.from_date.errors %}
+                    <p class="text-rose-600 text-xs mt-1">{{ form.from_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- To Date -->
+                <div class="space-y-2">
+                    <label for="{{ form.to_date.id_for_label }}" class="block text-sm font-semibold text-[var(--apple-ink)]">
+                        To Date
+                    </label>
+                    {{ form.to_date }}
+                    {% if form.to_date.errors %}
+                    <p class="text-rose-600 text-xs mt-1">{{ form.to_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Reason -->
+            <div class="space-y-2">
+                <label for="{{ form.reason.id_for_label }}" class="block text-sm font-semibold text-[var(--apple-ink)]">
+                    Reason
+                </label>
+                {{ form.reason }}
+                {% if form.reason.errors %}
+                <p class="text-rose-600 text-xs mt-1">{{ form.reason.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Form Actions -->
+            <div class="pt-4 border-t border-[var(--apple-hairline)] flex items-center justify-end space-x-3">
+                <a href="{% url 'accounts:dashboard' %}" class="px-6 py-2.5 rounded-full text-sm font-semibold border border-[var(--apple-hairline)] bg-white hover:bg-gray-50 transition-colors text-[var(--apple-ink)]">
+                    Cancel
+                </a>
+                <button type="submit" class="apple-btn-primary px-8 py-2.5 inline-flex items-center text-sm font-semibold tracking-wide shadow-sm" id="submit-btn">
+                    Submit Request
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        const submitBtn = document.getElementById('submit-btn');
+        if (form) {
+            form.addEventListener('submit', () => {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Submitting...
+                `;
+            });
+        }
+    });
+</script>
+{% endblock %}

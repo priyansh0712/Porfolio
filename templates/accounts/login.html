@@ -59,7 +59,7 @@
       </div>
       {% if tenant %}
         <h1 class="text-2xl font-semibold text-[#1d1d1f] tracking-tight">{{ tenant.name }}</h1>
-        <p class="text-xs text-[#86868b] mt-1">School Admin Login</p>
+        <p class="text-xs text-[#86868b] mt-1">School Portal Login</p>
         <div class="inline-flex items-center mt-2.5 px-3 py-1 rounded-full bg-[#fafafc] border border-[#e0e0e0]">
           <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></div>
           <span class="text-xs font-medium text-[#0066cc]">{{ tenant.subdomain }}.ourapp.com</span>
@@ -145,7 +145,7 @@
     <!-- Footer note -->
     <p class="text-center text-xs text-[#86868b] mt-6">
       {% if tenant %}
-        School Admin access only for <strong>{{ tenant.name }}</strong>.
+        School Admin &amp; Faculty access for <strong>{{ tenant.name }}</strong>.
       {% else %}
         Platform Super Admin access only. School Admins log in via their school subdomain.
       {% endif %}

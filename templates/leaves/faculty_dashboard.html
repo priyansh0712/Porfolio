@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Faculty Dashboard - StudentERP{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-7xl mx-auto py-4">
+    <!-- Welcome Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-[var(--apple-ink)] mb-1">
+                Welcome, {{ request.user.first_name }}!
+            </h1>
+            <p class="text-[var(--apple-muted)] text-sm">Faculty Member Dashboard — {{ request.tenant.name }}</p>
+        </div>
+        <div class="flex-shrink-0">
+            <a href="{% url 'leaves:apply_leave' %}" class="apple-btn-primary px-6 py-3 inline-flex items-center text-sm font-semibold tracking-wide shadow-sm">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Apply for Leave
+            </a>
+        </div>
+    </div>
+
+    <!-- Top KPI Grid: Today's Attendance & Leave Balances -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Card 1: Today's Attendance -->
+        <div class="apple-card p-6 flex flex-col justify-between">
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--apple-muted)] mb-3">Today's Attendance</h3>
+                {% if today_log %}
+                    <div class="flex items-center space-x-2.5 mb-4">
+                        {% if today_log.status == 'PRESENT' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                {{ today_log.get_status_display }}
+                            </span>
+                        {% elif today_log.status == 'LATE' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                {{ today_log.get_status_display }}
+                            </span>
+                        {% elif today_log.status == 'HALF_DAY' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                                {{ today_log.get_status_display }}
+                            </span>
+                        {% elif today_log.status == 'LEAVE' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                {{ today_log.get_status_display }}
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                {{ today_log.get_status_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-[var(--apple-muted)]">Check In:</span>
+                            <span class="font-medium text-[var(--apple-ink)]">
+                                {% if today_log.check_in_time %}
+                                    {{ today_log.check_in_time|date:"H:i" }}
+                                {% else %}
+                                    --:--
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-[var(--apple-muted)]">Check Out:</span>
+                            <span class="font-medium text-[var(--apple-ink)]">
+                                {% if today_log.check_out_time %}
+                                    {{ today_log.check_out_time|date:"H:i" }}
+                                {% else %}
+                                    --:--
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="my-4 flex flex-col items-center justify-center py-4 bg-gray-50/50 rounded-xl border border-dashed border-[var(--apple-hairline)]">
+                        <span class="text-sm font-semibold text-[var(--apple-ink)]">Not Checked In</span>
+                        <span class="text-[var(--apple-muted)] text-xs mt-1">Stand in front of Kiosk</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mt-4 pt-4 border-t border-[var(--apple-hairline)] text-xs text-[var(--apple-muted)]">
+                Scan via webcam kiosk to check in.
+            </div>
+        </div>
+
+        <!-- Leave Balance Cards -->
+        {% for bal in balances %}
+        <div class="apple-card p-6 flex flex-col justify-between">
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--apple-muted)] mb-3">
+                    {{ bal.name }}
+                </h3>
+                <div class="flex items-baseline space-x-2 my-2">
+                    <span class="text-4xl font-extrabold text-[var(--apple-blue)]">{{ bal.remaining }}</span>
+                    <span class="text-sm text-[var(--apple-muted)]">days left</span>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-[var(--apple-hairline)] flex justify-between text-xs text-[var(--apple-muted)]">
+                <span>Allocated: <strong>{{ bal.allocated }}</strong></span>
+                <span>Used: <strong>{{ bal.used }}</strong></span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Details Section: Requests & notifications Split Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left: Leave Requests (Span 2) -->
+        <div class="lg:col-span-2 apple-card p-6 flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-[var(--apple-ink)]">My Leave Requests</h2>
+                <span class="text-xs text-[var(--apple-muted)]">Showing recent 15 entries</span>
+            </div>
+
+            {% if recent_requests %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-[var(--apple-hairline)] text-[var(--apple-muted)] font-medium">
+                            <th class="py-3 px-1">Dates</th>
+                            <th class="py-3">Type</th>
+                            <th class="py-3">Reason</th>
+                            <th class="py-3 text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for req in recent_requests %}
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="py-3.5 px-1 font-medium text-[var(--apple-ink)]">
+                                {{ req.from_date|date:"d M" }} - {{ req.to_date|date:"d M, Y" }}
+                            </td>
+                            <td class="py-3.5 text-[var(--apple-muted)]">
+                                {{ req.get_leave_type_display }}
+                            </td>
+                            <td class="py-3.5 text-[var(--apple-ink)] max-w-xs truncate" title="{{ req.reason }}">
+                                {{ req.reason }}
+                            </td>
+                            <td class="py-3.5 text-right">
+                                {% if req.status == 'PENDING' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100">
+                                        {{ req.get_status_display }}
+                                    </span>
+                                {% elif req.status == 'APPROVED' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                        {{ req.get_status_display }}
+                                    </span>
+                                {% elif req.status == 'REJECTED' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-100" title="Reason: {{ req.rejection_reason }}">
+                                        {{ req.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                                        {{ req.get_status_display }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="flex-grow flex flex-col items-center justify-center py-12 text-[var(--apple-muted)]">
+                <svg class="w-12 h-12 mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <p class="text-sm font-semibold">No leave requests found</p>
+                <p class="text-xs mt-1">Submit a leave form using the "Apply for Leave" button.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: notifications Feed (Span 1) -->
+        <div class="apple-card p-6 flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-[var(--apple-ink)]">notifications</h2>
+            </div>
+
+            {% if notifications %}
+            <div class="space-y-4 max-h-[400px] overflow-y-auto pr-1">
+                {% for notif in notifications %}
+                <div class="p-3.5 rounded-xl border border-gray-100 bg-gray-50/50 flex space-x-3 {% if not notif.is_read %}border-l-4 border-l-[var(--apple-blue)] bg-blue-50/10{% endif %}">
+                    <div class="flex-grow">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-bold text-sm text-[var(--apple-ink)]">{{ notif.title }}</span>
+                            <span class="text-[var(--apple-muted)] text-[10px]">{{ notif.created_at|date:"d M, H:i" }}</span>
+                        </div>
+                        <p class="text-xs text-[var(--apple-muted)] leading-relaxed">{{ notif.message }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="flex-grow flex flex-col items-center justify-center py-12 text-[var(--apple-muted)]">
+                <svg class="w-12 h-12 mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+                <p class="text-sm font-semibold">No notifications</p>
+                <p class="text-xs mt-1">Alerts about leave requests will appear here.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

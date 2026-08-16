@@ -84,7 +84,11 @@ class FacultyService:
             role=User.Role.FACULTY,
             school=school,
         )
-        user.set_unusable_password()
+        password = data.get('password')
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save()
 
         # Create Faculty record (designation is optional)
@@ -127,6 +131,9 @@ class FacultyService:
             if new_email and new_email != faculty.user.email:
                 faculty.user.email = new_email
                 faculty.user.username = new_email
+            password = data.get('password')
+            if password:
+                faculty.user.set_password(password)
             faculty.user.save()
 
         return faculty

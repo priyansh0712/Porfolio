@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Notification Center - StudentERP{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6 py-4">
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-[var(--apple-ink)] mb-1">
+                Notification Center
+            </h1>
+            <p class="text-[var(--apple-muted)] text-sm">Stay updated with system events, leave request approvals, and adjustments.</p>
+        </div>
+        
+        {% if unread_notifications_count > 0 %}
+        <form method="post" action="{% url 'notifications:mark_all_read' %}">
+            {% csrf_token %}
+            <button type="submit" class="apple-btn-primary px-5 py-2.5 text-xs font-semibold">
+                Mark All as Read
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Message Alerts -->
+    {% if messages %}
+    <div class="space-y-2">
+        {% for message in messages %}
+        <div class="px-4 py-3 rounded-xl text-xs font-medium border bg-emerald-50 text-emerald-700 border-emerald-100">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Notification Cards List -->
+    <div class="space-y-4">
+        {% if page_obj %}
+            {% for log in page_obj %}
+            <div class="apple-card p-5 transition-all duration-200 {% if not log.is_read %}border-l-4 border-[#0066cc] bg-[#0066cc]/[0.02]{% else %}border-gray-200/60 bg-white{% endif %}">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <h3 class="text-sm font-bold text-[var(--apple-ink)]">
+                                {{ log.title }}
+                            </h3>
+                            {% if not log.is_read %}
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#0066cc]"></span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-[var(--apple-muted)] font-medium">
+                            {{ log.created_at|date:"M d, Y • H:i" }}
+                        </p>
+                        <p class="text-sm text-[var(--apple-ink)]/90 pt-1 leading-relaxed">
+                            {{ log.message }}
+                        </p>
+                    </div>
+
+                    {% if not log.is_read %}
+                    <form method="post" action="{% url 'notifications:mark_read' log.pk %}?next={% url 'notifications:notification_list' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="px-4 py-1.5 border border-[#0066cc]/20 hover:border-[#0066cc] text-[#0066cc] bg-white rounded-full text-xs font-semibold transition-all">
+                            Mark as Read
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Pagination Footer -->
+            {% if page_obj.has_other_pages %}
+            <div class="flex items-center justify-between border-t border-[var(--apple-hairline)] pt-4 mt-6">
+                <div class="text-xs text-[var(--apple-muted)]">
+                    Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </div>
+                <div class="inline-flex items-center space-x-2">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 border border-[var(--apple-hairline)] bg-white hover:bg-gray-50 text-xs font-semibold text-[var(--apple-ink)] rounded-full transition-colors">
+                            Previous
+                        </a>
+                    {% else %}
+                        <span class="px-4 py-2 border border-[var(--apple-hairline)] bg-gray-50 text-xs font-semibold text-[var(--apple-muted)] rounded-full cursor-not-allowed">
+                            Previous
+                        </span>
+                    {% endif %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 border border-[var(--apple-hairline)] bg-white hover:bg-gray-50 text-xs font-semibold text-[var(--apple-ink)] rounded-full transition-colors">
+                            Next
+                        </a>
+                    {% else %}
+                        <span class="px-4 py-2 border border-[var(--apple-hairline)] bg-gray-50 text-xs font-semibold text-[var(--apple-muted)] rounded-full cursor-not-allowed">
+                            Next
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- All Clean State -->
+            <div class="flex flex-col items-center justify-center py-20 text-[var(--apple-muted)] bg-gray-50/30 rounded-2xl border border-dashed border-[var(--apple-hairline)]">
+                <span class="text-3xl mb-3">🎉</span>
+                <p class="text-sm font-semibold">All clean! You have no notifications.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -52,11 +52,22 @@
 
 ## v2 Requirements
 
-### Communication & Exports
+### Leave Management & Allocation
+- **LEAVE-ALLOC**: School Admin must be able to upload an Excel file to assign/update leave allocations for existing faculty, with validation.
+- **LEAVE-BAL**: Track Allocated, Used, and Remaining leave balances per faculty member for Casual, Sick, and Paid leaves. Used/Remaining balances are computed dynamically.
+- **LEAVE-REQ**: Faculty members can apply for leave via a form with validation (date ordering, overlapping checks, sufficient balance).
+- **LEAVE-APP**: School Admin can review, filter, and approve or reject leave requests (rejection requires a mandatory reason).
+- **LEAVE-OVERLAP**: System must reject overlapping leave requests.
+- **LEAVE-HOL**: Respect school working schedules and holidays in leave request calculations (e.g. non-working days/holidays do not deduct balance).
 
-- **COMM-01**: Automated daily attendance digest email sent to School Admin
-- **EXPT-01**: Monthly attendance export to CSV and PDF format for payroll and school recordkeeping
-- **CAL-01**: Interactive holiday and school event calendar editor UI
+### Faculty Dashboard & Attendance
+- **FAC-DASH**: Faculty personal dashboard displaying today's attendance, summary stats, leave balances, pending requests, and notifications.
+- **MY-ATT**: Faculty "My Attendance" page showing a summary of Present/Absent/Half-Day/Late/Leave counts and a detailed date-wise log.
+- **LEAVE-INT**: Approved leaves automatically create/update attendance logs with status `LEAVE`, reflecting consistently in all admin/faculty views.
+
+### notifications & Security
+- **LEAVE-NOTIF**: In-app notifications when leave is submitted, approved, or rejected.
+- **SEC-V2**: Strict role-based permissions (School Admin vs Faculty vs Super Admin) and multi-tenant isolation across all V2 features.
 
 ## Out of Scope
 
@@ -71,8 +82,9 @@
 | Learning Management System (LMS) | Out of scope for attendance SaaS MVP |
 | Exam & Grade Management | Out of scope for attendance SaaS MVP |
 | Chatbots & Unnecessary AI Features | Unnecessary complexity for core biometric attendance product |
-| Native Mobile Apps (iOS/Android) | Responsive web application is the V1 product scope |
+| Native Mobile Apps (iOS/Android) | Responsive web application is the V1/V2 product scope |
 | Permanent Raw Facial Photo Storage | Biometric privacy hazard; only mathematical embeddings stored |
+| WhatsApp/SMS/Email notifications | Excluded from V2 scope to keep notifications strictly in-app |
 
 ## Traceability
 
@@ -80,30 +92,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TENANT-01 | Phase 3 | Pending |
-| TENANT-02 | Phase 3 | Pending |
-| LANDING-01 | Phase 2 | Pending |
-| REG-01 | Phase 2 | Pending |
-| AUTH-01 | Phase 4 | Pending |
-| AUTH-02 | Phase 4 | Pending |
-| AUTH-03 | Phase 4 | Pending |
-| FAC-01 | Phase 5 | Pending |
-| FACE-01 | Phase 6 | Pending |
-| FACE-02 | Phase 6 | Pending |
-| ATT-01 | Phase 7 | Pending |
-| ATT-02 | Phase 7 | Pending |
-| ATT-03 | Phase 7 | Pending |
-| SCHED-01 | Phase 8 | Pending |
-| SCHED-02 | Phase 8 | Pending |
-| RPT-01 | Phase 9 | Pending |
-| AUDIT-01 | Phase 9 | Pending |
-| SEC-01 | Phase 10 | Pending |
+| LEAVE-ALLOC | Phase 2 | Pending |
+| LEAVE-BAL | Phase 3 | Pending |
+| LEAVE-REQ | Phase 3 | Pending |
+| LEAVE-APP | Phase 4 | Pending |
+| LEAVE-OVERLAP | Phase 3 | Pending |
+| LEAVE-HOL | Phase 8 | Pending |
+| FAC-DASH | Phase 3 | Pending |
+| MY-ATT | Phase 6 | Pending |
+| LEAVE-INT | Phase 5 | Pending |
+| LEAVE-NOTIF | Phase 7 | Pending |
+| SEC-V2 | Phase 9 | Pending |
 
 **Coverage:**
-- v1 requirements: 18 total
-- Mapped to phases: 18
+- v2 requirements: 11 total
+- Mapped to phases: 11
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-08-11*
-*Last updated: 2026-08-11 after initial definition*
+*Last updated: 2026-08-16 after V2 definition*

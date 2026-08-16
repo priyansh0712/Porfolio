@@ -52,10 +52,11 @@ class DashboardService:
         present_count = today_logs.filter(status=AttendanceLog.Status.PRESENT).count()
         late_count = today_logs.filter(status=AttendanceLog.Status.LATE).count()
         half_day_count = today_logs.filter(status=AttendanceLog.Status.HALF_DAY).count()
+        leave_count = today_logs.filter(status=AttendanceLog.Status.LEAVE).count()
 
         scanned_faculty_ids = set(today_logs.values_list('faculty_id', flat=True))
         absent_count = max(0, total_faculty - len(scanned_faculty_ids))
-        total_scans = today_logs.count()
+        total_scans = today_logs.exclude(status=AttendanceLog.Status.LEAVE).count()
 
         # ── 3. Live Feed (Most recent scans) ──
         live_feed = today_logs.select_related('faculty').order_by('-last_scan_at')[:25]
@@ -66,6 +67,7 @@ class DashboardService:
             'present_count': present_count,
             'late_count': late_count,
             'half_day_count': half_day_count,
+            'leave_count': leave_count,
             'absent_count': absent_count,
             'total_scans': total_scans,
             'live_feed': live_feed,
