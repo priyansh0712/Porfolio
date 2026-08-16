@@ -1,0 +1,15 @@
+Django>=5.1,<5.2
+psycopg[binary]>=3.2
+django-environ>=0.11
+argon2-cffi>=23.1.0
+numpy>=2.0
+opencv-python-headless>=4.10
+insightface>=1.0.1
+onnxruntime>=1.28.0
+scipy>=1.18.0
+scikit-image>=0.26.0
+onnx>=1.22.0
+pillow>=12.3.0
+networkx>=3.6.1
+urllib3>=2.2.0
+requests>=2.34.2
