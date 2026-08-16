@@ -119,6 +119,8 @@
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Late</span>
                                     {% elif log.status == 'HALF_DAY' %}
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">Half Day</span>
+                                    {% elif log.status == 'EARLY_DEPARTURE' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Early Departure</span>
                                     {% else %}
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ log.get_status_display }}</span>
                                     {% endif %}

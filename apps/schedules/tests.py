@@ -119,7 +119,7 @@ class PunctualityCalculatorTest(SchedulesTestBase):
         self.assertEqual(calc['status'], AttendanceLog.Status.HALF_DAY)
 
     def test_early_departure_flag(self):
-        """Check-out at 15:00 (end=16:00, grace=15m) should set early_departure = True."""
+        """Check-out at 15:00 (end=16:00, grace=15m) should set early_departure = True and status = EARLY_DEPARTURE."""
         check_in = timezone.make_aware(datetime.combine(self.monday_date, time(8, 0)))
         check_out = timezone.make_aware(datetime.combine(self.monday_date, time(15, 0)))
         calc = PunctualityCalculator.calculate_status(
@@ -127,6 +127,7 @@ class PunctualityCalculatorTest(SchedulesTestBase):
             check_in_time=check_in, check_out_time=check_out,
         )
         self.assertTrue(calc['early_departure'])
+        self.assertEqual(calc['status'], AttendanceLog.Status.EARLY_DEPARTURE)
 
     def test_holiday_exception_returns_present(self):
         """Check-in on a registered holiday date should return PRESENT without penalties."""

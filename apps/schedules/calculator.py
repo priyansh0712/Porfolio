@@ -134,6 +134,9 @@ class PunctualityCalculator:
             early_cutoff = end_dt - grace
             if check_out_time < early_cutoff:
                 early_departure = True
+                if status != AttendanceLog.Status.HALF_DAY:
+                    status = AttendanceLog.Status.EARLY_DEPARTURE
+                    reason = f"Early departure (before {early_cutoff.strftime('%H:%M')})"
 
         return {
             'status': status,
