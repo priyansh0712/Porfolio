@@ -8,11 +8,14 @@ Tests cover:
   - ClassTeacherAllocation and SubjectTeacherAllocation constraint integrity.
   - Cross-tenant and inactive faculty assignment prevention.
   - Multi-tenant form scoping and validation.
+  - View-level authorization and role permissions (SchoolAdminRequiredMixin, TenantRoleAccessMiddleware).
+  - Academic Hub CRUD views and Allocation workflows.
 """
 from datetime import date, timedelta
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
+from django.urls import reverse
 
 from apps.tenants.models import School
 from apps.tenants.context import set_current_tenant
@@ -53,9 +56,40 @@ class AcademicsBaseTestCase(TestCase):
             contact_email='admin@oakridge.com',
         )
 
+        # Users
+        self.admin_user_a = User.objects.create_user(
+            email='admin@greenwood.com',
+            username='admin_gw',
+            password='Password@123',
+            role=User.Role.SCHOOL_ADMIN,
+            school=self.school_a,
+        )
+        self.admin_user_b = User.objects.create_user(
+            email='admin@oakridge.com',
+            username='admin_oak',
+            password='Password@123',
+            role=User.Role.SCHOOL_ADMIN,
+            school=self.school_b,
+        )
+        self.faculty_user_a = User.objects.create_user(
+            email='anand.sharma@greenwood.com',
+            username='anand_gw',
+            password='Password@123',
+            role=User.Role.FACULTY,
+            school=self.school_a,
+        )
+        self.superadmin_user = User.objects.create_user(
+            email='super@ourapp.com',
+            username='superadmin',
+            password='Password@123',
+            role=User.Role.SUPER_ADMIN,
+            school=None,
+        )
+
         # Create active faculty for School A
         self.faculty_a1 = Faculty.objects.create(
             school=self.school_a,
+            user=self.faculty_user_a,
             first_name='Anand',
             last_name='Sharma',
             email='anand.sharma@greenwood.com',
@@ -92,6 +126,10 @@ class AcademicsBaseTestCase(TestCase):
             department='Mathematics',
             is_active=True,
         )
+
+    def tearDown(self):
+        set_current_tenant(None)
+        super().tearDown()
 
 
 class AcademicModelTests(AcademicsBaseTestCase):
@@ -336,3 +374,169 @@ class AcademicFormTests(AcademicsBaseTestCase):
         )
         self.assertTrue(subj_form.is_valid())
         self.assertEqual(subj_form.cleaned_data['code'], 'MATH-01')
+
+
+class AcademicViewSecurityTests(AcademicsBaseTestCase):
+    """Integration tests for view security, authentication, and role authorization."""
+
+    def test_unauthenticated_user_redirected_to_login(self):
+        """Unauthenticated request to /academics/ is redirected to login."""
+        response = self.client.get('/academics/', HTTP_HOST='greenwood.localhost')
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/login/', response.url)
+
+    def test_super_admin_forbidden_from_academics(self):
+        """Platform Super Admin is forbidden (HTTP 403) from accessing tenant academic hub."""
+        self.client.force_login(self.superadmin_user)
+        response = self.client.get('/academics/', HTTP_HOST='greenwood.localhost')
+        self.assertEqual(response.status_code, 403)
+
+    def test_faculty_forbidden_from_academics_hub(self):
+        """Faculty user is forbidden (HTTP 403) from accessing school admin academic hub."""
+        self.client.force_login(self.faculty_user_a)
+        response = self.client.get('/academics/', HTTP_HOST='greenwood.localhost')
+        self.assertEqual(response.status_code, 403)
+
+    def test_school_admin_access_allowed(self):
+        """School Admin of School A can access School A academic hub."""
+        self.client.force_login(self.admin_user_a)
+        response = self.client.get('/academics/', HTTP_HOST='greenwood.localhost')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Academic Management")
+
+    def test_cross_tenant_school_admin_forbidden(self):
+        """School Admin of School B cannot access School A academic hub."""
+        self.client.force_login(self.admin_user_b)
+        response = self.client.get('/academics/', HTTP_HOST='greenwood.localhost')
+        self.assertEqual(response.status_code, 403)
+
+
+class AcademicCRUDViewTests(AcademicsBaseTestCase):
+    """Integration tests for CRUD endpoints and allocation workflows."""
+
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.admin_user_a)
+
+    def test_academic_year_crud_and_set_current(self):
+        """Admin can create, edit, set current, and delete AcademicYear via views."""
+        # 1. Create AcademicYear
+        create_resp = self.client.post(
+            '/academics/years/create/',
+            {
+                'name': '2026-2027',
+                'start_date': '2026-06-01',
+                'end_date': '2027-04-30',
+                'is_current': True,
+            },
+            HTTP_HOST='greenwood.localhost',
+        )
+        self.assertEqual(create_resp.status_code, 302)
+
+        set_current_tenant(self.school_a)
+        year = AcademicYear.objects.get(school=self.school_a, name='2026-2027')
+        self.assertTrue(year.is_current)
+
+        # 2. Create second AcademicYear and set it active
+        self.client.post(
+            '/academics/years/create/',
+            {
+                'name': '2027-2028',
+                'start_date': '2027-06-01',
+                'end_date': '2028-04-30',
+                'is_current': False,
+            },
+            HTTP_HOST='greenwood.localhost',
+        )
+        year2 = AcademicYear.objects.get(school=self.school_a, name='2027-2028')
+        self.assertFalse(year2.is_current)
+
+        # Toggle year2 as current
+        self.client.post(f'/academics/years/{year2.id}/set-current/', HTTP_HOST='greenwood.localhost')
+        year.refresh_from_db()
+        year2.refresh_from_db()
+        self.assertFalse(year.is_current)
+        self.assertTrue(year2.is_current)
+
+    def test_standard_and_division_views(self):
+        """Admin can create Standards and Divisions via views."""
+        # Create Standard
+        std_resp = self.client.post(
+            '/academics/standards/create/',
+            {
+                'name': 'Standard 10',
+                'order_index': 10,
+                'is_active': True,
+            },
+            HTTP_HOST='greenwood.localhost',
+        )
+        self.assertEqual(std_resp.status_code, 302)
+
+        set_current_tenant(self.school_a)
+        std = Standard.objects.get(school=self.school_a, name='Standard 10')
+
+        # Create Division under Standard 10
+        div_resp = self.client.post(
+            '/academics/divisions/create/',
+            {
+                'standard': std.id,
+                'name': 'A',
+                'is_active': True,
+            },
+            HTTP_HOST='greenwood.localhost',
+        )
+        self.assertEqual(div_resp.status_code, 302)
+        self.assertTrue(Division.objects.filter(school=self.school_a, standard=std, name='A').exists())
+
+    def test_subject_and_allocation_views(self):
+        """Admin can create Subjects and allocate Class and Subject Teachers."""
+        set_current_tenant(self.school_a)
+        year = AcademicYear.objects.create(
+            school=self.school_a,
+            name='2026-2027',
+            start_date=date(2026, 6, 1),
+            end_date=date(2027, 4, 30),
+            is_current=True,
+        )
+        std = Standard.objects.create(school=self.school_a, name='Standard 10', order_index=10)
+        div = Division.objects.create(school=self.school_a, standard=std, name='A')
+
+        # Create Subject
+        self.client.post(
+            '/academics/subjects/create/',
+            {
+                'name': 'Science',
+                'code': 'SCI-10',
+                'subject_type': 'CORE',
+                'is_active': True,
+            },
+            HTTP_HOST='greenwood.localhost',
+        )
+        sub = Subject.objects.get(school=self.school_a, code='SCI-10')
+
+        # Assign Class Teacher
+        alloc_resp = self.client.post(
+            '/academics/allocations/class-teacher/',
+            {
+                'academic_year': year.id,
+                'division': div.id,
+                'faculty': self.faculty_a1.id,
+            },
+            HTTP_HOST='greenwood.localhost',
+        )
+        self.assertEqual(alloc_resp.status_code, 302)
+        self.assertTrue(ClassTeacherAllocation.objects.filter(school=self.school_a, division=div, faculty=self.faculty_a1).exists())
+
+        # Assign Subject Teacher
+        sub_alloc_resp = self.client.post(
+            '/academics/allocations/subject-teacher/',
+            {
+                'academic_year': year.id,
+                'division': div.id,
+                'subject': sub.id,
+                'faculty': self.faculty_a2.id,
+            },
+            HTTP_HOST='greenwood.localhost',
+        )
+        self.assertEqual(sub_alloc_resp.status_code, 302)
+        self.assertTrue(SubjectTeacherAllocation.objects.filter(school=self.school_a, division=div, subject=sub, faculty=self.faculty_a2).exists())

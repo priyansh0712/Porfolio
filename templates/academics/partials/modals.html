@@ -1,0 +1,402 @@
+<!-- Reusable Modals for Academic Management -->
+
+<!-- 1. Create Academic Year Modal -->
+<div id="modal-create-year" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6 animate-scale-in">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">New Academic Year</h3>
+            <button type="button" onclick="closeModal('modal-create-year')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form method="POST" action="{% url 'academics:year_create' %}" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Session Name *</label>
+                {{ year_form.name }}
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Start Date *</label>
+                    {{ year_form.start_date }}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">End Date *</label>
+                    {{ year_form.end_date }}
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 pt-1">
+                {{ year_form.is_current }}
+                <label class="text-xs text-gray-700 font-medium">Set as Active Current Session</label>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button type="button" onclick="closeModal('modal-create-year')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Session</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 2. Edit Academic Year Modal -->
+<div id="modal-edit-year" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Edit Academic Year</h3>
+            <button type="button" onclick="closeModal('modal-edit-year')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form id="form-edit-year" method="POST" action="" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Session Name *</label>
+                <input type="text" id="edit-year-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Start Date *</label>
+                    <input type="date" id="edit-year-start" name="start_date" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">End Date *</label>
+                    <input type="date" id="edit-year-end" name="end_date" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 pt-1">
+                <input type="checkbox" id="edit-year-current" name="is_current" class="rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4">
+                <label class="text-xs text-gray-700 font-medium">Set as Active Current Session</label>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button type="button" onclick="closeModal('modal-edit-year')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Update Session</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 3. Create Standard Modal -->
+<div id="modal-create-standard" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Add Grade Standard</h3>
+            <button type="button" onclick="closeModal('modal-create-standard')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form method="POST" action="{% url 'academics:standard_create' %}" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Standard / Grade Name *</label>
+                {{ standard_form.name }}
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Sort Order Index *</label>
+                {{ standard_form.order_index }}
+                <p class="text-[11px] text-gray-400 mt-1">Lower numbers appear first (e.g. UKG=0, Std 1=1, Std 10=10).</p>
+            </div>
+            <div class="flex items-center space-x-2 pt-1">
+                {{ standard_form.is_active }}
+                <label class="text-xs text-gray-700 font-medium">Active Standard</label>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button type="button" onclick="closeModal('modal-create-standard')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Standard</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 4. Edit Standard Modal -->
+<div id="modal-edit-standard" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Edit Grade Standard</h3>
+            <button type="button" onclick="closeModal('modal-edit-standard')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form id="form-edit-standard" method="POST" action="" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Standard / Grade Name *</label>
+                <input type="text" id="edit-standard-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Sort Order Index *</label>
+                <input type="number" id="edit-standard-order" name="order_index" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+            </div>
+            <div class="flex items-center space-x-2 pt-1">
+                <input type="checkbox" id="edit-standard-active" name="is_active" class="rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4">
+                <label class="text-xs text-gray-700 font-medium">Active Standard</label>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button type="button" onclick="closeModal('modal-edit-standard')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Update Standard</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 5. Create Division Modal -->
+<div id="modal-create-division" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Add Division</h3>
+            <button type="button" onclick="closeModal('modal-create-division')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form method="POST" action="{% url 'academics:division_create' %}" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Standard *</label>
+                <select id="create-division-standard-select" name="standard" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                    {% for std in standards %}
+                        <option value="{{ std.id }}">{{ std.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Division Section Name *</label>
+                {{ division_form.name }}
+                <p class="text-[11px] text-gray-400 mt-1">e.g. A, B, C, Rose, Yellow</p>
+            </div>
+            <div class="flex items-center space-x-2 pt-1">
+                {{ division_form.is_active }}
+                <label class="text-xs text-gray-700 font-medium">Active Division</label>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button type="button" onclick="closeModal('modal-create-division')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Division</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 6. Edit Division Modal -->
+<div id="modal-edit-division" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Edit Division</h3>
+            <button type="button" onclick="closeModal('modal-edit-division')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form id="form-edit-division" method="POST" action="" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Standard *</label>
+                <select id="edit-division-standard" name="standard" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                    {% for std in standards %}
+                        <option value="{{ std.id }}">{{ std.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Division Section Name *</label>
+                <input type="text" id="edit-division-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+            </div>
+            <div class="flex items-center space-x-2 pt-1">
+                <input type="checkbox" id="edit-division-active" name="is_active" class="rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4">
+                <label class="text-xs text-gray-700 font-medium">Active Division</label>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button type="button" onclick="closeModal('modal-edit-division')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Update Division</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 7. Create Subject Modal -->
+<div id="modal-create-subject" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Add Subject</h3>
+            <button type="button" onclick="closeModal('modal-create-subject')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form method="POST" action="{% url 'academics:subject_create' %}" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Subject Name *</label>
+                {{ subject_form.name }}
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Subject Code *</label>
+                {{ subject_form.code }}
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Category *</label>
+                {{ subject_form.subject_type }}
+            </div>
+            <div class="flex items-center space-x-2 pt-1">
+                {{ subject_form.is_active }}
+                <label class="text-xs text-gray-700 font-medium">Active Subject</label>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button type="button" onclick="closeModal('modal-create-subject')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Subject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 8. Edit Subject Modal -->
+<div id="modal-edit-subject" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Edit Subject</h3>
+            <button type="button" onclick="closeModal('modal-edit-subject')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form id="form-edit-subject" method="POST" action="" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Subject Name *</label>
+                <input type="text" id="edit-subject-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Subject Code *</label>
+                <input type="text" id="edit-subject-code" name="code" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 uppercase">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Category *</label>
+                <select id="edit-subject-type" name="subject_type" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                    <option value="CORE">Core Subject</option>
+                    <option value="ELECTIVE">Elective / Optional</option>
+                </select>
+            </div>
+            <div class="flex items-center space-x-2 pt-1">
+                <input type="checkbox" id="edit-subject-active" name="is_active" class="rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4">
+                <label class="text-xs text-gray-700 font-medium">Active Subject</label>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button type="button" onclick="closeModal('modal-edit-subject')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Update Subject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 9. Assign Class Teacher Modal -->
+<div id="modal-assign-class-teacher" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Assign Class Teacher</h3>
+            <button type="button" onclick="closeModal('modal-assign-class-teacher')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form method="POST" action="{% url 'academics:assign_class_teacher' %}" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" id="assign-class-year" name="academic_year" value="">
+            <input type="hidden" id="assign-class-division" name="division" value="">
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Class</label>
+                <div id="assign-class-name-display" class="font-bold text-[#1d1d1f] text-sm bg-gray-50 p-2.5 rounded-xl border border-gray-200/60"></div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Select Faculty Member *</label>
+                <select id="assign-class-faculty-select" name="faculty" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                    <option value="">-- Choose Teacher --</option>
+                    {% for f in active_faculty %}
+                        <option value="{{ f.id }}">{{ f.full_name }} ({{ f.employee_code }}) - {{ f.department }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button type="button" onclick="closeModal('modal-assign-class-teacher')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Assignment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 10. Assign Subject Teacher Modal -->
+<div id="modal-assign-subject-teacher" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Assign Subject Teacher</h3>
+            <button type="button" onclick="closeModal('modal-assign-subject-teacher')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form method="POST" action="{% url 'academics:assign_subject_teacher' %}" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" id="assign-sub-year" name="academic_year" value="">
+            <input type="hidden" id="assign-sub-division" name="division" value="">
+            <input type="hidden" id="assign-sub-subject" name="subject" value="">
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Class</label>
+                    <div id="assign-sub-class-display" class="font-bold text-[#1d1d1f] text-xs bg-gray-50 p-2.5 rounded-xl border border-gray-200/60 truncate"></div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Subject</label>
+                    <div id="assign-sub-subject-display" class="font-bold text-[#0066cc] text-xs bg-blue-50/60 p-2.5 rounded-xl border border-blue-200/60 truncate"></div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Select Subject Teacher *</label>
+                <select id="assign-sub-faculty-select" name="faculty" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                    <option value="">-- Choose Teacher --</option>
+                    {% for f in active_faculty %}
+                        <option value="{{ f.id }}">{{ f.full_name }} ({{ f.employee_code }}) - {{ f.department }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button type="button" onclick="closeModal('modal-assign-subject-teacher')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Subject Allocation</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditYearModal(id, name, start, end, isCurrent) {
+        document.getElementById('form-edit-year').action = '/academics/years/' + id + '/edit/';
+        document.getElementById('edit-year-name').value = name;
+        document.getElementById('edit-year-start').value = start;
+        document.getElementById('edit-year-end').value = end;
+        document.getElementById('edit-year-current').checked = isCurrent;
+        openModal('modal-edit-year');
+    }
+
+    function openEditStandardModal(id, name, order, isActive) {
+        document.getElementById('form-edit-standard').action = '/academics/standards/' + id + '/edit/';
+        document.getElementById('edit-standard-name').value = name;
+        document.getElementById('edit-standard-order').value = order;
+        document.getElementById('edit-standard-active').checked = isActive;
+        openModal('modal-edit-standard');
+    }
+
+    function openCreateDivisionForStandardModal(standardId, standardName) {
+        document.getElementById('create-division-standard-select').value = standardId;
+        openModal('modal-create-division');
+    }
+
+    function openEditDivisionModal(id, standardId, name, isActive) {
+        document.getElementById('form-edit-division').action = '/academics/divisions/' + id + '/edit/';
+        document.getElementById('edit-division-standard').value = standardId;
+        document.getElementById('edit-division-name').value = name;
+        document.getElementById('edit-division-active').checked = isActive;
+        openModal('modal-edit-division');
+    }
+
+    function openEditSubjectModal(id, name, code, type, isActive) {
+        document.getElementById('form-edit-subject').action = '/academics/subjects/' + id + '/edit/';
+        document.getElementById('edit-subject-name').value = name;
+        document.getElementById('edit-subject-code').value = code;
+        document.getElementById('edit-subject-type').value = type;
+        document.getElementById('edit-subject-active').checked = isActive;
+        openModal('modal-edit-subject');
+    }
+
+    function openAssignClassTeacherModal(yearId, divisionId, className, currentFacultyId) {
+        document.getElementById('assign-class-year').value = yearId;
+        document.getElementById('assign-class-division').value = divisionId;
+        document.getElementById('assign-class-name-display').innerText = className;
+        document.getElementById('assign-class-faculty-select').value = currentFacultyId || '';
+        openModal('modal-assign-class-teacher');
+    }
+
+    function openAssignSubjectTeacherModal(yearId, divisionId, className, subjectId, subjectName, currentFacultyId) {
+        document.getElementById('assign-sub-year').value = yearId;
+        document.getElementById('assign-sub-division').value = divisionId;
+        document.getElementById('assign-sub-subject').value = subjectId;
+        document.getElementById('assign-sub-class-display').innerText = className;
+        document.getElementById('assign-sub-subject-display').innerText = subjectName;
+        document.getElementById('assign-sub-faculty-select').value = currentFacultyId || '';
+        openModal('modal-assign-subject-teacher');
+    }
+</script>

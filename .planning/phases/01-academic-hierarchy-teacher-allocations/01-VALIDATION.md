@@ -1,9 +1,9 @@
 ---
 phase: 01
 slug: academic-hierarchy-teacher-allocations
-status: draft
+status: passed
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-08-20
 ---
 
@@ -21,7 +21,7 @@ created: 2026-08-20
 | **Config file** | `config/settings/base.py` |
 | **Quick run command** | `python manage.py test apps.academics` |
 | **Full suite command** | `python manage.py test` |
-| **Estimated runtime** | ~5 seconds (app), ~20 seconds (full) |
+| **Estimated runtime** | ~5 seconds (app), ~15 seconds (full) |
 
 ---
 
@@ -38,10 +38,10 @@ created: 2026-08-20
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| 01-01-01 | 01 | 1 | ACAD-01, ACAD-02, ACAD-03, ACAD-04 | T-01-01 | Multi-tenant isolation at DB model level | unit | `python manage.py test apps.academics.tests.AcademicModelTests` | ❌ W0 | ⬜ pending |
-| 01-01-02 | 01 | 1 | ALLOC-01, ALLOC-02, ALLOC-03 | T-01-02 | Constraint integrity on teacher allocations | unit | `python manage.py test apps.academics.tests.AllocationModelTests` | ❌ W0 | ⬜ pending |
-| 01-02-01 | 02 | 2 | ACAD-01, ACAD-02, ACAD-03, ACAD-04 | T-01-03 | View & Form tenant authorization (SchoolAdmin only) | integration | `python manage.py test apps.academics.tests.AcademicViewTests` | ❌ W0 | ⬜ pending |
-| 01-02-02 | 02 | 2 | ALLOC-01, ALLOC-02, ALLOC-03 | T-01-04 | Class & Subject Teacher allocation workflow | integration | `python manage.py test apps.academics.tests.AllocationViewTests` | ❌ W0 | ⬜ pending |
+| 01-01-01 | 01 | 1 | ACAD-01, ACAD-02, ACAD-03, ACAD-04 | T-01-01 | Multi-tenant isolation at DB model level | unit | `python manage.py test apps.academics.tests.AcademicModelTests` | ✅ | ✅ green |
+| 01-01-02 | 01 | 1 | ALLOC-01, ALLOC-02, ALLOC-03 | T-01-02 | Constraint integrity on teacher allocations | unit | `python manage.py test apps.academics.tests.AllocationModelTests` | ✅ | ✅ green |
+| 01-02-01 | 02 | 2 | ACAD-01, ACAD-02, ACAD-03, ACAD-04 | T-01-03 | View & Form tenant authorization (SchoolAdmin only) | integration | `python manage.py test apps.academics.tests.AcademicViewSecurityTests` | ✅ | ✅ green |
+| 01-02-02 | 02 | 2 | ALLOC-01, ALLOC-02, ALLOC-03 | T-01-04 | Class & Subject Teacher allocation workflow | integration | `python manage.py test apps.academics.tests.AcademicCRUDViewTests` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -49,7 +49,7 @@ created: 2026-08-20
 
 ## Wave 0 Requirements
 
-- [ ] `apps/academics/tests.py` — Test scaffolding covering multi-tenant isolation, unique constraints, active session switching, and role permission guards.
+- [x] `apps/academics/tests.py` — Test scaffolding covering multi-tenant isolation, unique constraints, active session switching, and role permission guards.
 
 ---
 

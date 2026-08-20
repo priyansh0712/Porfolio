@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Management — {% if request.tenant %}{{ request.tenant.name }}{% else %}StudentERP{% endif %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-[#f5f5f7] py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Top Header & Session Selector -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-[#1d1d1f] tracking-tight">Academic Management</h1>
+                <p class="text-sm text-gray-500 mt-1">Configure academic years, grade standards, class divisions, subjects, and faculty allocations.</p>
+            </div>
+
+            <!-- Active / Browsing Academic Session Switcher -->
+            <div class="flex items-center space-x-3 bg-white px-3.5 py-2 rounded-2xl border border-gray-200/80 shadow-xs self-start md:self-auto">
+                <span class="text-xs font-semibold text-gray-500">Session:</span>
+                <form method="GET" action="{% url 'academics:hub' %}" class="inline-flex items-center">
+                    <input type="hidden" name="tab" value="{{ active_tab }}">
+                    <select name="year" onchange="this.form.submit()" class="text-xs font-bold text-[#1d1d1f] bg-transparent border-0 focus:ring-0 cursor-pointer pr-6 py-0">
+                        {% for y in academic_years %}
+                            <option value="{{ y.id }}" {% if selected_year and selected_year.id == y.id %}selected{% endif %}>
+                                {{ y.name }}{% if y.is_current %} ★ (Active){% endif %}
+                            </option>
+                        {% empty %}
+                            <option value="">No Sessions Configured</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+        </div>
+
+        <!-- Segmented Control Tabs (Apple Style) -->
+        <div class="bg-gray-200/70 p-1 rounded-2xl inline-flex space-x-1 mb-8 overflow-x-auto max-w-full no-scrollbar shadow-inner">
+            <a href="?tab=years{% if selected_year %}&year={{ selected_year.id }}{% endif %}"
+               class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {% if active_tab == 'years' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
+                🗓️ Academic Years
+            </a>
+            <a href="?tab=classes{% if selected_year %}&year={{ selected_year.id }}{% endif %}"
+               class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {% if active_tab == 'classes' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
+                🏫 Standards & Divisions
+            </a>
+            <a href="?tab=subjects{% if selected_year %}&year={{ selected_year.id }}{% endif %}"
+               class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {% if active_tab == 'subjects' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
+                📚 Subjects
+            </a>
+            <a href="?tab=allocations{% if selected_year %}&year={{ selected_year.id }}{% endif %}"
+               class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {% if active_tab == 'allocations' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
+                👨‍🏫 Teacher Allocations
+            </a>
+        </div>
+
+        <!-- Tab Content Panels -->
+        <div class="space-y-6">
+            {% if active_tab == 'years' %}
+                {% include "academics/partials/tab_years.html" %}
+            {% elif active_tab == 'classes' %}
+                {% include "academics/partials/tab_standards.html" %}
+            {% elif active_tab == 'subjects' %}
+                {% include "academics/partials/tab_subjects.html" %}
+            {% elif active_tab == 'allocations' %}
+                {% include "academics/partials/tab_allocations.html" %}
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Dialogs for Create / Edit / Assign -->
+{% include "academics/partials/modals.html" %}
+
+<script>
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.modal-dialog').forEach(function(modal) {
+                if (!modal.classList.contains('hidden')) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            });
+            document.body.style.overflow = '';
+        }
+    });
+</script>
+{% endblock %}

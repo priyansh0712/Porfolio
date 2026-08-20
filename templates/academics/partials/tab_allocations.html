@@ -1,0 +1,120 @@
+<!-- Teacher Allocations Tab -->
+<div class="space-y-6">
+    <!-- Header Bar -->
+    <div class="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <h2 class="text-lg font-bold text-[#1d1d1f] tracking-tight">Faculty Teaching Allocations</h2>
+                {% if selected_year %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-[#0066cc] border border-blue-200/80">
+                        {{ selected_year.name }}
+                    </span>
+                {% endif %}
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">Assign Class Teachers (1-to-1) and Subject Teachers across all active classes.</p>
+        </div>
+    </div>
+
+    <!-- Classes Allocation Matrix Grid -->
+    {% for std_data in allocation_matrix %}
+    <div class="space-y-4">
+        <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider px-1">
+            Grade: {{ std_data.standard.name }}
+        </h3>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {% for div_data in std_data.divisions %}
+            <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden flex flex-col justify-between">
+                <div>
+                    <!-- Division Card Top Banner: Class Teacher -->
+                    <div class="p-5 bg-gradient-to-r from-gray-50 to-blue-50/20 border-b border-gray-100 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Class</div>
+                            <div class="text-base font-extrabold text-[#1d1d1f] tracking-tight">
+                                {{ std_data.standard.name }} - Division {{ div_data.division.name }}
+                            </div>
+                        </div>
+
+                        <!-- Class Teacher Badge / Action -->
+                        <div class="text-right">
+                            <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Class Teacher</div>
+                            {% if div_data.class_teacher %}
+                                <div class="inline-flex items-center space-x-2 mt-0.5">
+                                    <span class="text-xs font-bold text-emerald-800 bg-emerald-100/70 border border-emerald-200/80 px-2.5 py-0.5 rounded-full">
+                                        👨‍🏫 {{ div_data.class_teacher.full_name }}
+                                    </span>
+                                    <button type="button"
+                                            onclick="openAssignClassTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name }} - {{ div_data.division.name }}', '{{ div_data.class_teacher.id }}')"
+                                            class="text-xs font-semibold text-[#0066cc] hover:underline">
+                                        Change
+                                    </button>
+                                </div>
+                            {% else %}
+                                <div class="inline-flex items-center space-x-1.5 mt-0.5">
+                                    <span class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200/70 px-2.5 py-0.5 rounded-full">
+                                        ⚠️ Unassigned
+                                    </span>
+                                    <button type="button"
+                                            onclick="openAssignClassTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name }} - {{ div_data.division.name }}', '')"
+                                            class="text-xs font-bold text-[#0066cc] hover:underline">
+                                        + Assign
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Subject Teachers Section -->
+                    <div class="p-5">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Subject Teacher Mappings</h4>
+                        <div class="divide-y divide-gray-100">
+                            {% for sub_data in div_data.subjects %}
+                            <div class="py-2.5 flex items-center justify-between text-xs">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-[#1d1d1f]">{{ sub_data.subject.name }}</span>
+                                    <span class="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{{ sub_data.subject.code }}</span>
+                                </div>
+
+                                <div class="flex items-center space-x-2">
+                                    {% if sub_data.assigned_faculty %}
+                                        <span class="text-gray-700 font-medium bg-gray-50 border border-gray-200/80 px-2 py-0.5 rounded-lg">
+                                            {{ sub_data.assigned_faculty.full_name }}
+                                        </span>
+                                        <button type="button"
+                                                onclick="openAssignSubjectTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name }} - {{ div_data.division.name }}', '{{ sub_data.subject.id }}', '{{ sub_data.subject.name }}', '{{ sub_data.assigned_faculty.id }}')"
+                                                class="text-gray-400 hover:text-[#0066cc] text-[11px] font-semibold">
+                                            Edit
+                                        </button>
+                                        <form method="POST" action="{% url 'academics:delete_subject_teacher' sub_data.allocation.id %}" class="inline" onsubmit="return confirm('Remove subject allocation?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="text-gray-400 hover:text-rose-600 text-[11px]">
+                                                ✕
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <button type="button"
+                                                onclick="openAssignSubjectTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name }} - {{ div_data.division.name }}', '{{ sub_data.subject.id }}', '{{ sub_data.subject.name }}', '')"
+                                                class="text-xs font-semibold text-[#0066cc] hover:underline bg-blue-50/60 px-2 py-0.5 rounded-lg">
+                                            + Assign Teacher
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-xs text-gray-400 italic py-2">No subjects configured. Add subjects in the Subjects tab.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="bg-white rounded-2xl border border-gray-200/80 p-12 text-center text-gray-400">
+        <div class="text-3xl mb-2">👨‍🏫</div>
+        <p class="font-medium text-gray-600">No classes found to allocate.</p>
+        <p class="text-xs text-gray-400 mt-1">First create an Academic Year and Standards/Divisions in the tabs above.</p>
+    </div>
+    {% endfor %}
+</div>

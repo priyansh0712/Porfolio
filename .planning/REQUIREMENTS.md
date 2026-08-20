@@ -1,15 +1,15 @@
 # Requirements: Milestone v3.0 (Academic Structure & Bulk Excel Onboarding)
 
 ## Academic Structure & Master Data (ACAD)
-- [ ] **ACAD-01**: Admin can create and manage Academic Years with an `is_current` active session indicator per tenant.
-- [ ] **ACAD-02**: Admin can create, edit, list, and delete Standards (Grades 1 to 12 / Pre-primary).
-- [ ] **ACAD-03**: Admin can create, edit, list, and delete Divisions (Sections A, B, C, etc.) linked to Standards and Academic Years.
-- [ ] **ACAD-04**: Admin can create, edit, list, and delete Subjects (e.g., Mathematics, Science, English, Gujarati, Hindi, Social Science) with subject codes.
+- [x] **ACAD-01**: Admin can create and manage Academic Years with an `is_current` active session indicator per tenant.
+- [x] **ACAD-02**: Admin can create, edit, list, and delete Standards (Grades 1 to 12 / Pre-primary).
+- [x] **ACAD-03**: Admin can create, edit, list, and delete Divisions (Sections A, B, C, etc.) linked to Standards and Academic Years.
+- [x] **ACAD-04**: Admin can create, edit, list, and delete Subjects (e.g., Mathematics, Science, English, Gujarati, Hindi, Social Science) with subject codes.
 
 ## Teacher Allocations & Mappings (ALLOC)
-- [ ] **ALLOC-01**: Admin can assign a single Faculty member as the Class Teacher for a Standard+Division (1-to-1 mapping per Academic Year).
-- [ ] **ALLOC-02**: Admin can allocate Subject Teachers to specific Standard+Division+Subject combinations.
-- [ ] **ALLOC-03**: System enforces uniqueness and prevents conflicting double allocations.
+- [x] **ALLOC-01**: Admin can assign a single Faculty member as the Class Teacher for a Standard+Division (1-to-1 mapping per Academic Year).
+- [x] **ALLOC-02**: Admin can allocate Subject Teachers to specific Standard+Division+Subject combinations.
+- [x] **ALLOC-03**: System enforces uniqueness and prevents conflicting double allocations.
 
 ## Student Management, Scoped CRUD & Student Portal (STU)
 - [ ] **STU-01**: School Admin has full CRUD across all students in all classes, including GR Number edits and active/inactive status toggling.

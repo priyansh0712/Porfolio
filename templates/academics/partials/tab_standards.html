@@ -1,0 +1,81 @@
+<!-- Standards & Divisions Tab -->
+<div class="space-y-6">
+    <!-- Header Bar -->
+    <div class="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h2 class="text-lg font-bold text-[#1d1d1f] tracking-tight">Grade Standards & Class Divisions</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Manage grade levels (1 to 12, Pre-primary) and section divisions (A, B, C).</p>
+        </div>
+        <button type="button" onclick="openModal('modal-create-standard')" class="inline-flex items-center justify-center px-4 py-2 bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-semibold rounded-full shadow-xs transition-colors">
+            + Add Standard
+        </button>
+    </div>
+
+    <!-- Grid of Standard Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for std in standards %}
+        <div class="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs flex flex-col justify-between hover:border-gray-300 transition-all">
+            <div>
+                <!-- Card Header -->
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+                    <div class="flex items-center space-x-2.5">
+                        <span class="w-7 h-7 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold flex items-center justify-center">
+                            #{{ std.order_index }}
+                        </span>
+                        <h3 class="font-bold text-[#1d1d1f] text-base tracking-tight">{{ std.name }}</h3>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button type="button" onclick="openEditStandardModal('{{ std.id }}', '{{ std.name }}', '{{ std.order_index }}', {{ std.is_active|yesno:'true,false' }})" class="text-xs font-semibold text-gray-500 hover:text-[#0066cc]">
+                            Edit
+                        </button>
+                        <form method="POST" action="{% url 'academics:standard_delete' std.id %}" class="inline" onsubmit="return confirm('Delete standard {{ std.name }}?');">
+                            {% csrf_token %}
+                            <button type="submit" class="text-xs font-semibold text-rose-500 hover:text-rose-700">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Divisions Section -->
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">
+                        Divisions / Sections ({{ std.divisions.count }})
+                    </label>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        {% for div in std.divisions.all %}
+                        <div class="group inline-flex items-center bg-gray-50 hover:bg-gray-100 border border-gray-200/80 rounded-xl px-3 py-1.5 transition-colors">
+                            <span class="text-xs font-bold text-[#1d1d1f] mr-2">Div {{ div.name }}</span>
+                            <div class="hidden group-hover:inline-flex items-center space-x-1">
+                                <button type="button" onclick="openEditDivisionModal('{{ div.id }}', '{{ std.id }}', '{{ div.name }}', {{ div.is_active|yesno:'true,false' }})" class="text-[10px] text-gray-500 hover:text-[#0066cc]">
+                                    ✎
+                                </button>
+                                <form method="POST" action="{% url 'academics:division_delete' div.id %}" class="inline" onsubmit="return confirm('Delete division {{ div.name }}?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-[10px] text-rose-500 hover:text-rose-700">
+                                        ✕
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <span class="text-xs text-gray-400 italic">No divisions added yet.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Add Division CTA -->
+            <button type="button" onclick="openCreateDivisionForStandardModal('{{ std.id }}', '{{ std.name }}')" class="w-full mt-4 py-2 border border-dashed border-gray-300 hover:border-[#0066cc] text-gray-600 hover:text-[#0066cc] text-xs font-semibold rounded-xl bg-gray-50/50 hover:bg-blue-50/30 transition-all flex items-center justify-center">
+                + Add Division to {{ std.name }}
+            </button>
+        </div>
+        {% empty %}
+        <div class="col-span-full bg-white rounded-2xl border border-gray-200/80 p-12 text-center text-gray-400">
+            <div class="text-3xl mb-2">🏫</div>
+            <p class="font-medium text-gray-600">No Grade Standards created yet.</p>
+            <p class="text-xs text-gray-400 mt-1">Click "+ Add Standard" to setup your school grades and sections.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
