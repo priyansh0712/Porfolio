@@ -1,20 +1,16 @@
 ---
-status: testing
+status: complete
 phase: 01-academic-hierarchy-teacher-allocations
 source:
   - .planning/phases/01-academic-hierarchy-teacher-allocations/01-01-SUMMARY.md
   - .planning/phases/01-academic-hierarchy-teacher-allocations/01-02-SUMMARY.md
 started: 2026-08-20T17:52:00Z
-updated: 2026-08-20T18:02:15Z
+updated: 2026-08-20T18:03:30Z
 ---
 
 ## Current Test
 
-number: 7
-name: Multi-Tenant Role Security Guard
-expected: |
-  Attempting to access `/academics/` as a Platform Super Admin or Faculty user results in HTTP 403 Forbidden, protecting academic master data at the tenant boundary.
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -44,16 +40,16 @@ result: pass
 
 ### 7. Multi-Tenant Role Security Guard
 expected: Attempting to access `/academics/` as a Platform Super Admin or Faculty user results in HTTP 403 Forbidden, protecting academic master data at the tenant boundary.
-result: pending
+result: pass
 
 ## Summary
 
 total: 7
-passed: 6
+passed: 7
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 
 ## Gaps
 
-[none yet]
+[none]
