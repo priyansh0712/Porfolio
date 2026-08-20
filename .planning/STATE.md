@@ -1,33 +1,33 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: V2: Leave Management & Faculty Dashboard
-status: archived
-last_updated: "2026-08-16T20:22:00.000Z"
-last_activity: 2026-08-16 -- Milestone V2 audited, completed, and archived (159/159 tests passing)
+milestone: v3.0
+milestone_name: "V3: Academic Structure & Bulk Excel Onboarding"
+status: active
+last_updated: "2026-08-20T17:10:00.000Z"
+last_activity: "2026-08-20 -- Initialized Milestone v3.0 with 4 planned phases (Phase 10 to 13)"
 progress:
-  total_phases: 9
-  completed_phases: 9
-  total_plans: 26
-  completed_plans: 26
-  percent: 100
+  total_phases: 4
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-08-16)
+See: [.planning/PROJECT.md](file:///c:/Users/ansh/OneDrive/Desktop/Ansh/New%20folder/StudentERP1/.planning/PROJECT.md) (updated 2026-08-20)
 
-**Core value:** Allow school faculty to mark accurate check-in and check-out attendance using face recognition through a webcam with strict multi-tenant isolation, while giving authorized school administrators complete attendance management, rule configuration, and reporting, extended with faculty leave management.
-**Current status:** Milestone V2.0 Completed & Archived.
+**Core value:** Allow schools to effortlessly onboard and manage academic structures, teachers, subject allocations, and student records via intuitive Excel/CSV bulk import wizards with strict validation, while providing isolated tenant environments, secure role-based access for Principals and Class Teachers, and biometric face attendance for faculty.
+**Current status:** Milestone v3.0 Active.
 
 ## Current Position
 
-Phase: 9 (v2-09-security-polish-testing) — 100% COMPLETE & VERIFIED
-Status: Milestone V2 Archived
-Last activity: 2026-08-16 -- Audited milestone V2 (100% requirements met, 159 tests passing), archived roadmap and requirements, tagged release v2.0.
-Progress: [████████████████████] 100%
+Phase: 10 (Academic Hierarchy & Teacher Allocations) — NOT STARTED
+Status: Ready for Phase 10 discussion / planning
+Last activity: 2026-08-20 -- Initialized Milestone v3.0 roadmap and requirements
+Progress: [░░░░░░░░░░░░░░░░░░░░] 0%
 
 ## Accumulated Context
 
@@ -36,7 +36,8 @@ Progress: [████████████████████] 100%
 - **V1.0 Milestone**: Core Face Recognition Attendance Platform (121 tests passing).
 - **V2.0 Milestone**: Leave Management & Faculty Dashboard (159 tests passing).
 
-### Verification Status
-
-- **159/159 full project unit tests passed cleanly** (`python manage.py test`).
-- All 9 roadmap phases for V2.0 completed, audited, and verified.
+### Active Milestone v3.0 Phases
+- **Phase 10**: Academic Hierarchy & Teacher Allocations (`ACAD-01` to `ACAD-04`, `ALLOC-01` to `ALLOC-03`)
+- **Phase 11**: Student Master Records, Scoped CRUD & Transfer Requests (`STU-01` to `STU-05`)
+- **Phase 12**: 4-Step Bulk Excel/CSV Onboarding Engine (`BULK-01` to `BULK-05`)
+- **Phase 13**: Faculty Portal Views, Password Security & Integration Polish (`FAC-01`, `FAC-02`, `AUTH-01`, `SEC-01`)
