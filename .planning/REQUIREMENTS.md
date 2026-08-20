@@ -16,7 +16,7 @@
 - [ ] **BULK-02**: Step 1 Faculty Bulk Import — uploads teachers list, checks duplicate emails/employee codes, previews data with status badges, and creates User accounts with default password `Admin@123`.
 - [ ] **BULK-03**: Step 2 Class & Class Teacher Bulk Import — creates Standards, Divisions, and assigns Class Teachers with validation preview and atomic commit.
 - [ ] **BULK-04**: Step 3 Subject Teacher Mapping Bulk Import — creates Subject Teacher allocations with dependency checks on existing classes and teachers.
-- [ ] **BULK-05**: Step 4 Student Bulk Import — uploads student roster with unique GR Number checks, standard/division linking, roll number validation, preview table, and atomic commit.
+- [ ] **BULK-05**: Step 4 Student Bulk Import — uploads student roster with unique GR Number checks, standard/division linking, roll number validation, auto-creates Student User accounts (`username` = GR No, default password = `Admin@123`), preview table, and atomic commit.
 
 ## Student Management & Scoped CRUD (STU)
 - [ ] **STU-01**: School Admin has full CRUD across all students in all classes, including GR Number edits and active/inactive status toggling.
@@ -24,11 +24,12 @@
 - [ ] **STU-03**: Class Teacher can submit a Student Class Transfer Request for Principal approval.
 - [ ] **STU-04**: Student soft-delete mechanism (`is_active=False`) preserves historical integrity.
 - [ ] **STU-05**: Responsive Apple-style UI table with search by GR No / Name / Roll No and filter by Standard/Division.
+- [ ] **STU-06**: Student Portal Login — Students can log in using GR Number and default password `Admin@123`, viewing only their personal profile, assigned class, class teacher, and subjects.
 
 ## Faculty Portal Experience & Security (FAC / AUTH)
 - [ ] **FAC-01**: "My Class" dashboard for Class Teachers displaying assigned students, quick parent contact, and "+ Add Student" modal.
 - [ ] **FAC-02**: "My Subjects" view for Subject Teachers showing their assigned classes, subjects, and student rosters (read-only).
-- [ ] **AUTH-01**: Faculty self-service password change and profile management.
+- [ ] **AUTH-01**: Faculty and Student self-service password change and profile management.
 - [ ] **SEC-01**: Backend multi-tenant and role-based permission decorators preventing cross-tenant and cross-class unauthorized modifications.
 
 ---
@@ -39,6 +40,6 @@
 |-------------|-------|--------|
 | ACAD-01, ACAD-02, ACAD-03, ACAD-04 | Phase 10 | Pending |
 | ALLOC-01, ALLOC-02, ALLOC-03 | Phase 10 | Pending |
-| STU-01, STU-02, STU-03, STU-04, STU-05 | Phase 11 | Pending |
+| STU-01, STU-02, STU-03, STU-04, STU-05, STU-06 | Phase 11 | Pending |
 | BULK-01, BULK-02, BULK-03, BULK-04, BULK-05 | Phase 12 | Pending |
 | FAC-01, FAC-02, AUTH-01, SEC-01 | Phase 13 | Pending |
