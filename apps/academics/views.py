@@ -319,8 +319,10 @@ class SubjectTeacherAssignView(SchoolAdminRequiredMixin, View):
             subject=subject,
             faculty=faculty,
         )
-        action_word = "assigned" if created else "reassigned"
-        messages.success(request, f"{faculty.full_name} {action_word} to teach {subject.name} in {division}.")
+        if created:
+            messages.success(request, f"{faculty.full_name} assigned to teach {subject.name} in {division}.")
+        else:
+            messages.info(request, f"{faculty.full_name} is already assigned to teach {subject.name} in {division}.")
         return redirect(f"{reverse('academics:hub')}?tab=allocations&year={year.id}")
 
 

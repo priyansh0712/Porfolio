@@ -11,7 +11,7 @@
                     </span>
                 {% endif %}
             </div>
-            <p class="text-xs text-gray-500 mt-0.5">Assign Class Teachers (1-to-1) and Subject Teachers across all active classes.</p>
+            <p class="text-xs text-gray-500 mt-0.5">Assign Class Teachers (1-to-1) and Subject Teachers / Co-Teachers across all active classes.</p>
         </div>
     </div>
 
@@ -69,35 +69,31 @@
                         <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Subject Teacher Mappings</h4>
                         <div class="divide-y divide-gray-100">
                             {% for sub_data in div_data.subjects %}
-                            <div class="py-2.5 flex items-center justify-between text-xs">
-                                <div class="flex items-center space-x-2">
-                                    <span class="font-bold text-[#1d1d1f]">{{ sub_data.subject.name }}</span>
-                                    <span class="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{{ sub_data.subject.code }}</span>
+                            <div class="py-2.5 flex items-center justify-between text-xs gap-3">
+                                <div class="flex items-center space-x-2 min-w-0">
+                                    <span class="font-bold text-[#1d1d1f] truncate">{{ sub_data.subject.name }}</span>
+                                    <span class="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">{{ sub_data.subject.code }}</span>
                                 </div>
 
-                                <div class="flex items-center space-x-2">
-                                    {% if sub_data.assigned_faculty %}
-                                        <span class="text-gray-700 font-medium bg-gray-50 border border-gray-200/80 px-2 py-0.5 rounded-lg">
-                                            {{ sub_data.assigned_faculty.full_name }}
-                                        </span>
-                                        <button type="button"
-                                                onclick="openAssignSubjectTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name }} - {{ div_data.division.name }}', '{{ sub_data.subject.id }}', '{{ sub_data.subject.name }}', '{{ sub_data.assigned_faculty.id }}')"
-                                                class="text-gray-400 hover:text-[#0066cc] text-[11px] font-semibold">
-                                            Edit
-                                        </button>
-                                        <form method="POST" action="{% url 'academics:delete_subject_teacher' sub_data.allocation.id %}" class="inline" onsubmit="return confirm('Remove subject allocation?');">
-                                            {% csrf_token %}
-                                            <button type="submit" class="text-gray-400 hover:text-rose-600 text-[11px]">
-                                                ✕
-                                            </button>
-                                        </form>
-                                    {% else %}
-                                        <button type="button"
-                                                onclick="openAssignSubjectTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name }} - {{ div_data.division.name }}', '{{ sub_data.subject.id }}', '{{ sub_data.subject.name }}', '')"
-                                                class="text-xs font-semibold text-[#0066cc] hover:underline bg-blue-50/60 px-2 py-0.5 rounded-lg">
-                                            + Assign Teacher
-                                        </button>
-                                    {% endif %}
+                                <div class="flex items-center flex-wrap gap-1.5 justify-end">
+                                    {% for alloc in sub_data.allocations %}
+                                        <div class="inline-flex items-center bg-gray-50 border border-gray-200/80 rounded-lg px-2 py-0.5 text-gray-700 font-medium space-x-1.5">
+                                            <span>{{ alloc.faculty.full_name }}</span>
+                                            <form method="POST" action="{% url 'academics:delete_subject_teacher' alloc.id %}" class="inline" onsubmit="return confirm('Remove {{ alloc.faculty.full_name }} from teaching {{ sub_data.subject.name }}?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="text-gray-400 hover:text-rose-600 text-[10px] font-bold pl-0.5">
+                                                    ✕
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% endfor %}
+
+                                    <!-- Add / Add Co-Teacher Button -->
+                                    <button type="button"
+                                            onclick="openAssignSubjectTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name }} - {{ div_data.division.name }}', '{{ sub_data.subject.id }}', '{{ sub_data.subject.name }}', '')"
+                                            class="text-xs font-semibold text-[#0066cc] hover:underline bg-blue-50/60 hover:bg-blue-100/60 px-2 py-0.5 rounded-lg transition-colors">
+                                        {% if sub_data.is_assigned %}+ Add Co-Teacher{% else %}+ Assign Teacher{% endif %}
+                                    </button>
                                 </div>
                             </div>
                             {% empty %}

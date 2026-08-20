@@ -295,8 +295,8 @@ class SubjectTeacherAllocation(TenantModel):
         verbose_name_plural = 'Subject Teacher Allocations'
         constraints = [
             models.UniqueConstraint(
-                fields=['school', 'academic_year', 'division', 'subject'],
-                name='unique_subject_teacher_per_division_subject_year',
+                fields=['school', 'academic_year', 'division', 'subject', 'faculty'],
+                name='unique_subject_teacher_allocation',
             ),
         ]
 

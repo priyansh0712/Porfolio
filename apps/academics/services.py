@@ -3,6 +3,7 @@ Academics Business Logic Services.
 
 Provides helpers for session resolution, teacher allocations, and matrix generation.
 """
+from collections import defaultdict
 from django.db import transaction
 
 from apps.academics.models import (
@@ -50,14 +51,15 @@ class AcademicService:
     @transaction.atomic
     def assign_subject_teacher(school, academic_year, division, subject, faculty):
         """
-        Assigns or reallocates a Subject Teacher to a Division + Subject for an Academic Year.
+        Assigns a Subject Teacher to a Division + Subject for an Academic Year.
+        Supports multi-teacher allocation (co-teaching).
         """
-        allocation, created = SubjectTeacherAllocation.objects.update_or_create(
+        allocation, created = SubjectTeacherAllocation.objects.get_or_create(
             school=school,
             academic_year=academic_year,
             division=division,
             subject=subject,
-            defaults={'faculty': faculty},
+            faculty=faculty,
         )
         return allocation, created
 
@@ -85,14 +87,13 @@ class AcademicService:
             ).select_related('faculty', 'division')
         }
 
-        # Fetch all subject teacher allocations for this year
-        subject_allocations = {
-            (alloc.division_id, alloc.subject_id): alloc
-            for alloc in SubjectTeacherAllocation.objects.filter(
-                school=school,
-                academic_year=academic_year,
-            ).select_related('faculty', 'division', 'subject')
-        }
+        # Fetch all subject teacher allocations for this year grouped by (division_id, subject_id)
+        subject_allocations = defaultdict(list)
+        for alloc in SubjectTeacherAllocation.objects.filter(
+            school=school,
+            academic_year=academic_year,
+        ).select_related('faculty', 'division', 'subject').order_by('id'):
+            subject_allocations[(alloc.division_id, alloc.subject_id)].append(alloc)
 
         matrix = []
         for std in standards:
@@ -100,11 +101,12 @@ class AcademicService:
             for div in std.divisions.filter(is_active=True).order_by('name'):
                 div_subjects = []
                 for sub in subjects:
-                    alloc = subject_allocations.get((div.id, sub.id))
+                    allocs = subject_allocations.get((div.id, sub.id), [])
                     div_subjects.append({
                         'subject': sub,
-                        'allocation': alloc,
-                        'assigned_faculty': alloc.faculty if alloc else None,
+                        'allocations': allocs,
+                        'assigned_faculties': [a.faculty for a in allocs],
+                        'is_assigned': len(allocs) > 0,
                     })
 
                 divisions_data.append({

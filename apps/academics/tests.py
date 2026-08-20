@@ -287,8 +287,8 @@ class AllocationModelTests(AcademicsBaseTestCase):
         self.assertFalse(created, "Reassigning existing class teacher updates the row rather than creating duplicate.")
         self.assertEqual(alloc2.faculty, self.faculty_a2)
 
-    def test_subject_teacher_unique_allocation(self):
-        """Strictly 1 primary Subject Teacher per division + subject per academic year."""
+    def test_subject_teacher_multi_allocation_and_uniqueness(self):
+        """Allows multiple teachers (co-teaching) per subject+division, but prevents exact duplicates."""
         alloc1 = SubjectTeacherAllocation.objects.create(
             school=self.school_a,
             academic_year=self.year,
@@ -298,18 +298,7 @@ class AllocationModelTests(AcademicsBaseTestCase):
         )
         self.assertIsNotNone(alloc1.pk)
 
-        # Duplicate create raises IntegrityError
-        with transaction.atomic():
-            with self.assertRaises(IntegrityError):
-                SubjectTeacherAllocation.objects.create(
-                    school=self.school_a,
-                    academic_year=self.year,
-                    division=self.division,
-                    subject=self.subject,
-                    faculty=self.faculty_a2,
-                )
-
-        # Reassignment using AcademicService.assign_subject_teacher updates cleanly
+        # Adding a second teacher (co-teacher) to the same subject and division succeeds
         alloc2, created = AcademicService.assign_subject_teacher(
             self.school_a,
             self.year,
@@ -317,8 +306,28 @@ class AllocationModelTests(AcademicsBaseTestCase):
             self.subject,
             self.faculty_a2,
         )
-        self.assertFalse(created)
-        self.assertEqual(alloc2.faculty, self.faculty_a2)
+        self.assertTrue(created)
+        self.assertEqual(
+            SubjectTeacherAllocation.objects.filter(
+                school=self.school_a,
+                academic_year=self.year,
+                division=self.division,
+                subject=self.subject,
+            ).count(),
+            2,
+            "Must support 2 or more co-teachers for the same subject in the same class.",
+        )
+
+        # Duplicate assignment of the SAME faculty to the SAME subject+division raises IntegrityError
+        with transaction.atomic():
+            with self.assertRaises(IntegrityError):
+                SubjectTeacherAllocation.objects.create(
+                    school=self.school_a,
+                    academic_year=self.year,
+                    division=self.division,
+                    subject=self.subject,
+                    faculty=self.faculty_a1,
+                )
 
     def test_cross_tenant_faculty_assignment_prevented(self):
         """Assigning faculty from School B to School A raises ValidationError."""
