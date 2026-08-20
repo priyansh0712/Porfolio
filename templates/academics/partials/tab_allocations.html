@@ -3,7 +3,7 @@
     <!-- Header Bar -->
     <div class="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-2.5">
                 <h2 class="text-lg font-bold text-[#1d1d1f] tracking-tight">Faculty Teaching Allocations</h2>
                 {% if selected_year %}
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-[#0066cc] border border-blue-200/80">
@@ -18,45 +18,46 @@
     <!-- Classes Allocation Matrix Grid -->
     {% for std_data in allocation_matrix %}
     <div class="space-y-4">
-        <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider px-1">
-            Grade: {{ std_data.standard.name }}
+        <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider px-1 flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-[#0066cc]"></span>
+            <span>Grade: {{ std_data.standard.name }}</span>
         </h3>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {% for div_data in std_data.divisions %}
-            <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden flex flex-col justify-between">
+            <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden flex flex-col justify-between hover:border-gray-300 transition-all">
                 <div>
                     <!-- Division Card Top Banner: Class Teacher -->
-                    <div class="p-5 bg-gradient-to-r from-gray-50 to-blue-50/20 border-b border-gray-100 flex items-center justify-between">
+                    <div class="p-5 bg-gradient-to-r from-gray-50/80 via-blue-50/20 to-gray-50/50 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
-                            <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Class</div>
+                            <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Class Division</div>
                             <div class="text-base font-extrabold text-[#1d1d1f] tracking-tight">
                                 {{ std_data.standard.name }} - Division {{ div_data.division.name }}
                             </div>
                         </div>
 
                         <!-- Class Teacher Badge / Action -->
-                        <div class="text-right">
-                            <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Class Teacher</div>
+                        <div class="text-left sm:text-right">
+                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Class Teacher</div>
                             {% if div_data.class_teacher %}
-                                <div class="inline-flex items-center space-x-2 mt-0.5">
-                                    <span class="text-xs font-bold text-emerald-800 bg-emerald-100/70 border border-emerald-200/80 px-2.5 py-0.5 rounded-full">
+                                <div class="inline-flex items-center space-x-2 bg-emerald-50 border border-emerald-200/80 rounded-full pl-3 pr-1.5 py-1 shadow-2xs">
+                                    <span class="text-xs font-bold text-emerald-800">
                                         👨‍🏫 {{ div_data.class_teacher.full_name }}
                                     </span>
                                     <button type="button"
                                             onclick="openAssignClassTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name }} - {{ div_data.division.name }}', '{{ div_data.class_teacher.id }}')"
-                                            class="text-xs font-semibold text-[#0066cc] hover:underline">
+                                            class="text-[11px] font-semibold text-[#0066cc] hover:text-[#0071e3] bg-white px-2.5 py-0.5 rounded-full border border-emerald-200/60 shadow-2xs hover:bg-gray-50 transition-colors">
                                         Change
                                     </button>
                                 </div>
                             {% else %}
-                                <div class="inline-flex items-center space-x-1.5 mt-0.5">
-                                    <span class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200/70 px-2.5 py-0.5 rounded-full">
+                                <div class="inline-flex items-center space-x-2 bg-amber-50 border border-amber-200/70 rounded-full pl-3 pr-1.5 py-1 shadow-2xs">
+                                    <span class="text-xs font-semibold text-amber-800">
                                         ⚠️ Unassigned
                                     </span>
                                     <button type="button"
                                             onclick="openAssignClassTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name }} - {{ div_data.division.name }}', '')"
-                                            class="text-xs font-bold text-[#0066cc] hover:underline">
+                                            class="text-[11px] font-bold text-white bg-[#0066cc] hover:bg-[#0071e3] px-2.5 py-0.5 rounded-full shadow-2xs transition-colors">
                                         + Assign
                                     </button>
                                 </div>
@@ -66,33 +67,43 @@
 
                     <!-- Subject Teachers Section -->
                     <div class="p-5">
-                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Subject Teacher Mappings</h4>
-                        <div class="divide-y divide-gray-100">
+                        <div class="flex items-center justify-between mb-3.5">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Subject Teacher Mappings</h4>
+                            <span class="text-[11px] text-gray-400 font-medium">{{ div_data.subjects|length }} Subjects</span>
+                        </div>
+
+                        <div class="divide-y divide-gray-100/90">
                             {% for sub_data in div_data.subjects %}
-                            <div class="py-2.5 flex items-center justify-between text-xs gap-3">
+                            <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-2.5">
+                                <!-- Subject Info -->
                                 <div class="flex items-center space-x-2 min-w-0">
-                                    <span class="font-bold text-[#1d1d1f] truncate">{{ sub_data.subject.name }}</span>
-                                    <span class="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">{{ sub_data.subject.code }}</span>
+                                    <span class="font-bold text-[#1d1d1f] text-sm">{{ sub_data.subject.name }}</span>
+                                    <span class="font-mono text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md border border-gray-200/60 shrink-0 font-semibold">{{ sub_data.subject.code }}</span>
                                 </div>
 
-                                <div class="flex items-center flex-wrap gap-1.5 justify-end">
+                                <!-- Faculty Badges & Add Co-Teacher Button -->
+                                <div class="flex items-center flex-wrap gap-2 justify-start sm:justify-end">
                                     {% for alloc in sub_data.allocations %}
-                                        <div class="inline-flex items-center bg-gray-50 border border-gray-200/80 rounded-lg px-2 py-0.5 text-gray-700 font-medium space-x-1.5">
+                                        <span class="inline-flex items-center bg-white hover:bg-gray-50 border border-gray-200/90 rounded-full pl-2.5 pr-1.5 py-1 text-xs font-semibold text-[#1d1d1f] shadow-2xs transition-all gap-1.5 group">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                             <span>{{ alloc.faculty.full_name }}</span>
-                                            <form method="POST" action="{% url 'academics:delete_subject_teacher' alloc.id %}" class="inline" onsubmit="return confirm('Remove {{ alloc.faculty.full_name }} from teaching {{ sub_data.subject.name }}?');">
+                                            <form method="POST" action="{% url 'academics:delete_subject_teacher' alloc.id %}" class="inline m-0 p-0" onsubmit="return confirm('Remove {{ alloc.faculty.full_name|escapejs }} from teaching {{ sub_data.subject.name|escapejs }}?');">
                                                 {% csrf_token %}
-                                                <button type="submit" class="text-gray-400 hover:text-rose-600 text-[10px] font-bold pl-0.5">
-                                                    ✕
+                                                <button type="submit" title="Remove {{ alloc.faculty.full_name }}" class="w-4 h-4 rounded-full flex items-center justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
                                                 </button>
                                             </form>
-                                        </div>
+                                        </span>
                                     {% endfor %}
 
                                     <!-- Add / Add Co-Teacher Button -->
                                     <button type="button"
                                             onclick="openAssignSubjectTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name }} - {{ div_data.division.name }}', '{{ sub_data.subject.id }}', '{{ sub_data.subject.name }}', '')"
-                                            class="text-xs font-semibold text-[#0066cc] hover:underline bg-blue-50/60 hover:bg-blue-100/60 px-2 py-0.5 rounded-lg transition-colors">
-                                        {% if sub_data.is_assigned %}+ Add Co-Teacher{% else %}+ Assign Teacher{% endif %}
+                                            class="inline-flex items-center space-x-1 text-xs font-semibold text-[#0066cc] bg-blue-50/80 hover:bg-[#0066cc] hover:text-white border border-blue-200/60 hover:border-transparent px-3 py-1 rounded-full transition-all shadow-2xs">
+                                        <span class="text-xs font-bold">+</span>
+                                        <span>{% if sub_data.is_assigned %}Add Co-Teacher{% else %}Assign Teacher{% endif %}</span>
                                     </button>
                                 </div>
                             </div>

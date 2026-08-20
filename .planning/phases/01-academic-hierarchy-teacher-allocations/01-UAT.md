@@ -5,15 +5,15 @@ source:
   - .planning/phases/01-academic-hierarchy-teacher-allocations/01-01-SUMMARY.md
   - .planning/phases/01-academic-hierarchy-teacher-allocations/01-02-SUMMARY.md
 started: 2026-08-20T17:52:00Z
-updated: 2026-08-20T17:57:48Z
+updated: 2026-08-20T18:02:15Z
 ---
 
 ## Current Test
 
-number: 6
-name: Teacher Allocations Matrix
+number: 7
+name: Multi-Tenant Role Security Guard
 expected: |
-  Under 'Teacher Allocations' tab, select the active academic session. The matrix displays Standard 10 - Division A. Assign a Class Teacher and Subject Teacher (Mathematics). Selected faculty names appear on the respective badges.
+  Attempting to access `/academics/` as a Platform Super Admin or Faculty user results in HTTP 403 Forbidden, protecting academic master data at the tenant boundary.
 awaiting: user response
 
 ## Tests
@@ -38,9 +38,9 @@ result: pass
 expected: Under 'Subjects' tab, click '+ Add Subject', provide name 'Mathematics' and code 'math-10'. Subject is created with auto-uppercase code 'MATH-10' and category badge ('Core Subject').
 result: pass
 
-### 6. Teacher Allocations Matrix
-expected: Under 'Teacher Allocations' tab, select the active academic session. The matrix displays Standard 10 - Division A. Assign a Class Teacher and Subject Teacher (Mathematics). Selected faculty names appear on the respective badges.
-result: pending
+### 6. Teacher Allocations Matrix & Multi-Teacher Co-Teaching
+expected: Under 'Teacher Allocations' tab, select the active academic session. The matrix displays Standard 10 - Division A. Assign a Class Teacher and multiple Subject Teachers/Co-Teachers (e.g. 2 teachers for Mathematics). Assigned faculty names appear with individual delete badges and '+ Add Co-Teacher' triggers.
+result: pass
 
 ### 7. Multi-Tenant Role Security Guard
 expected: Attempting to access `/academics/` as a Platform Super Admin or Faculty user results in HTTP 403 Forbidden, protecting academic master data at the tenant boundary.
@@ -49,9 +49,9 @@ result: pending
 ## Summary
 
 total: 7
-passed: 5
+passed: 6
 issues: 0
-pending: 2
+pending: 1
 skipped: 0
 
 ## Gaps
