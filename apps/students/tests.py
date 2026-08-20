@@ -850,53 +850,66 @@ class SubjectTeacherPermissionTests(StudentBaseTestCase):
     def setUp(self):
         super().setUp()
         self.client = Client()
-        # Create a faculty member who is NOT a class teacher
-        self.subject_teacher = Faculty.objects.create(
+        # Create a faculty user who is a Subject Teacher (NOT a Class Teacher)
+        self.subject_user = User.objects.create_user(
+            email='subject_teacher@greenwood.com',
+            username='sub_teacher',
+            password='Admin@123',
+            role=User.Role.FACULTY,
             school=self.school_a,
-            user=self.teacher_b,  # teacher_b is not assigned as Class Teacher in school_a
-            designation='Subject Teacher',
+        )
+        self.subject_faculty = Faculty.objects.create(
+            school=self.school_a,
+            user=self.subject_user,
+            first_name='Kavita',
+            last_name='Mehta',
+            email='subject_teacher@greenwood.com',
+            employee_code='GW-FAC-002',
+            department='Science',
             is_active=True,
         )
+        self.student = self._make_student(gr_number='GR-SUB-1', full_name='Arun Jetli')
 
     def test_subject_teacher_cannot_edit_student_profile_returns_403(self):
         """Subject Teacher POSTing to /students/<pk>/edit/ receives 403 Forbidden."""
-        self.client.force_login(self.teacher_b)
-        original_name = self.student_1.full_name
-        resp = self.client.post(f'/students/{self.student_1.pk}/edit/', {
+        self.client.force_login(self.subject_user)
+        original_name = self.student.full_name
+        resp = self.client.post(f'/students/{self.student.pk}/edit/', {
             'full_name': 'Hacked Name By Subject Teacher',
             'gender': 'MALE',
         }, HTTP_HOST='greenwood.localhost')
         self.assertEqual(resp.status_code, 403)
-        self.student_1.refresh_from_db()
-        self.assertEqual(self.student_1.full_name, original_name)
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.full_name, original_name)
 
     def test_subject_teacher_cannot_add_student_returns_403(self):
         """Subject Teacher POSTing to /students/add/ receives 403 Forbidden."""
-        self.client.force_login(self.teacher_b)
+        self.client.force_login(self.subject_user)
         resp = self.client.post('/students/add/', {
             'full_name': 'New Student By Subject Teacher',
             'gr_number': '99999',
-            'standard': self.standard_1.pk,
-            'division': self.division_1a.pk,
+            'standard': self.standard_a.pk,
+            'division': self.division_a.pk,
         }, HTTP_HOST='greenwood.localhost')
         self.assertEqual(resp.status_code, 403)
 
     def test_subject_teacher_cannot_request_transfer_returns_403(self):
         """Subject Teacher POSTing to /students/<pk>/transfer/ receives 403 Forbidden."""
-        self.client.force_login(self.teacher_b)
-        resp = self.client.post(f'/students/{self.student_1.pk}/transfer/', {
-            'to_standard': self.standard_1.pk,
-            'to_division': self.division_1b.pk,
+        self.client.force_login(self.subject_user)
+        resp = self.client.post(f'/students/{self.student.pk}/transfer/', {
+            'to_standard': self.standard_a.pk,
+            'to_division': self.division_a2.pk,
         }, HTTP_HOST='greenwood.localhost')
         self.assertEqual(resp.status_code, 403)
 
     def test_subject_teacher_sees_read_only_in_hub(self):
         """Subject Teacher sees read-only banner and read-only student table."""
-        self.client.force_login(self.teacher_b)
+        self.client.force_login(self.subject_user)
         resp = self.client.get('/students/', HTTP_HOST='greenwood.localhost')
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(resp.context['can_edit_students'])
         self.assertTrue(resp.context['is_subject_teacher'])
+
 
 
 
