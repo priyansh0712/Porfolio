@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}My Portal — {% if request.tenant %}{{ request.tenant.name }}{% else %}StudentERP{% endif %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-[#f5f5f7] py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {% if not student %}
+        <!-- Error state -->
+        <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xs p-12 text-center">
+            <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5">
+                <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <h2 class="text-lg font-bold text-[#1d1d1f] mb-2">Profile Not Found</h2>
+            <p class="text-sm text-gray-500">Your student profile could not be found. Please contact your school administrator.</p>
+        </div>
+        {% else %}
+
+        <!-- Header Banner: Student Profile -->
+        <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden mb-5">
+            <!-- Accent banner -->
+            <div class="h-2 bg-gradient-to-r from-[#0066cc] to-[#30b0c7]"></div>
+            <div class="px-6 py-6 flex flex-col sm:flex-row sm:items-center gap-5">
+                <!-- Avatar -->
+                <div class="w-16 h-16 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-2xl font-bold flex-shrink-0 shadow-sm">
+                    {{ student.initials }}
+                </div>
+
+                <!-- Name + Placement -->
+                <div class="flex-1 min-w-0">
+                    <h1 class="text-xl font-bold text-[#1d1d1f] tracking-tight truncate">{{ student.full_name }}</h1>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-[#0066cc] border border-blue-200">
+                            GR: {{ student.gr_number }}
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                            {{ student.standard.name }} — {{ student.division.name }}
+                        </span>
+                        {% if student.roll_number %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-600 border border-gray-200">
+                            Roll: {{ student.roll_number }}
+                        </span>
+                        {% endif %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-50 text-green-700 border border-green-200">Active</span>
+                    </div>
+                </div>
+
+                <!-- Academic Year -->
+                <div class="text-right hidden sm:block">
+                    <p class="text-xs text-gray-400">Academic Year</p>
+                    <p class="text-sm font-bold text-[#1d1d1f]">{{ student.academic_year.name }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+
+            <!-- Personal Information Card -->
+            <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Personal Information</h2>
+                <dl class="space-y-3">
+                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                        <dt class="text-xs font-medium text-gray-500">Date of Birth</dt>
+                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.dob|date:"d M Y"|default:"—" }}</dd>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                        <dt class="text-xs font-medium text-gray-500">Gender</dt>
+                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.get_gender_display }}</dd>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                        <dt class="text-xs font-medium text-gray-500">Blood Group</dt>
+                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.display_blood_group }}</dd>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                        <dt class="text-xs font-medium text-gray-500">Admission Date</dt>
+                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.admission_date|date:"d M Y" }}</dd>
+                    </div>
+                    {% if student.address %}
+                    <div class="py-2">
+                        <dt class="text-xs font-medium text-gray-500 mb-1">Address</dt>
+                        <dd class="text-xs text-[#1d1d1f]">{{ student.address }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if student.custom_fields %}
+                    <div class="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                        {% for key, val in student.custom_fields.items %}
+                        <div class="flex justify-between items-center py-1">
+                            <dt class="text-xs font-medium text-gray-500 capitalize">{{ key }}</dt>
+                            <dd class="text-xs font-semibold text-[#1d1d1f]">{{ val }}</dd>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+
+            <!-- Guardian Information Card -->
+            <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Guardian Information</h2>
+                <dl class="space-y-3">
+                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                        <dt class="text-xs font-medium text-gray-500">Guardian Name</dt>
+                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.guardian_name|default:"—" }}</dd>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                        <dt class="text-xs font-medium text-gray-500">Guardian Phone</dt>
+                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.guardian_phone|default:"—" }}</dd>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                        <dt class="text-xs font-medium text-gray-500">Emergency Contact</dt>
+                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.emergency_contact|default:"—" }}</dd>
+                    </div>
+                </dl>
+
+                <!-- School Info -->
+                <div class="mt-5 pt-4 border-t border-gray-100">
+                    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">School</h2>
+                    <p class="text-sm font-semibold text-[#1d1d1f]">{{ student.school.name }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Class Teacher Card -->
+        <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5 mb-5">
+            <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Class Teacher</h2>
+            {% if class_teacher %}
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-base font-bold flex-shrink-0">
+                    {{ class_teacher.first_name|first }}{{ class_teacher.last_name|first }}
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-[#1d1d1f]">{{ class_teacher.first_name }} {{ class_teacher.last_name }}</p>
+                    <p class="text-xs text-gray-500">{{ class_teacher.department }}</p>
+                    <p class="text-xs text-gray-400">{{ class_teacher.email }}</p>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-xs text-gray-400 italic">No class teacher assigned to your division yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Subjects Grid -->
+        {% if subject_allocations %}
+        <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+            <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">My Subjects & Teachers</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {% for alloc in subject_allocations %}
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#f5f5f7] border border-gray-200/60">
+                    <div class="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-xs font-bold text-[#0066cc] flex-shrink-0 shadow-xs">
+                        {{ alloc.subject.code|slice:":2" }}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-semibold text-[#1d1d1f] truncate">{{ alloc.subject.name }}</p>
+                        <p class="text-[10px] text-gray-500 truncate">
+                            {% if alloc.faculty %}{{ alloc.faculty.first_name }} {{ alloc.faculty.last_name }}{% else %}Not assigned{% endif %}
+                        </p>
+                        <span class="inline-flex mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-semibold {% if alloc.subject.subject_type == 'CORE' %}bg-blue-50 text-blue-600{% else %}bg-purple-50 text-purple-600{% endif %}">
+                            {{ alloc.subject.get_subject_type_display }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Portal info footer note -->
+        <div class="mt-5 text-center">
+            <p class="text-xs text-gray-400">This portal is read-only. Contact your school administrator to update your information.</p>
+            <a href="{% url 'accounts:logout' %}" class="inline-flex items-center mt-3 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-full px-4 py-2 transition-all">
+                Sign Out
+            </a>
+        </div>
+
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

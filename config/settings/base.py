@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'apps.leaves',
     'apps.notifications',
     'apps.academics',
+    'apps.students',
 ]
 
 MIDDLEWARE = [

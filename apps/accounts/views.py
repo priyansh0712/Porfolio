@@ -49,7 +49,8 @@ from django.http import HttpResponseForbidden
 class TenantDashboardView(LoginRequiredMixin, View):
     """
     Unified landing page for all tenant logins.
-    Routes School Admins to AdminDashboardView and Faculty members to FacultyDashboardView.
+    Routes School Admins to AdminDashboardView, Faculty to FacultyDashboardView,
+    and Students to StudentPortalView.
     """
     def get(self, request, *args, **kwargs):
         if request.user.role == User.Role.SCHOOL_ADMIN:
@@ -57,4 +58,8 @@ class TenantDashboardView(LoginRequiredMixin, View):
         elif request.user.role == User.Role.FACULTY:
             from apps.leaves.views import FacultyDashboardView
             return FacultyDashboardView.as_view()(request, *args, **kwargs)
+        elif request.user.role == User.Role.STUDENT:
+            from apps.students.views import StudentPortalView
+            return StudentPortalView.as_view()(request, *args, **kwargs)
         return HttpResponseForbidden("Access Denied: Invalid role for school tenant subdomain.")
+

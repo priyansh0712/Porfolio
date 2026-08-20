@@ -12,6 +12,7 @@ class User(AbstractUser):
       - SUPER_ADMIN: Platform administrator — no school tenant assigned.
       - SCHOOL_ADMIN: School-level administrator — must belong to a school.
       - FACULTY: Faculty member — must belong to a school.
+      - STUDENT: Student — must belong to a school; logs in via GR number.
 
     Database-level CheckConstraints plus application-level clean() ensure
     the school FK is NULL for Super Admins and NOT NULL for tenant users.
@@ -21,6 +22,7 @@ class User(AbstractUser):
         SUPER_ADMIN = 'SUPER_ADMIN', 'Platform Super Admin'
         SCHOOL_ADMIN = 'SCHOOL_ADMIN', 'School Administrator'
         FACULTY = 'FACULTY', 'School Faculty'
+        STUDENT = 'STUDENT', 'Student'
 
     email = models.EmailField('Email Address', unique=True)
     role = models.CharField(
@@ -54,10 +56,10 @@ class User(AbstractUser):
                 ),
                 name='super_admin_no_school',
             ),
-            # School Admin and Faculty MUST have a school tenant assigned
+            # School Admin, Faculty, and Students MUST have a school tenant assigned
             models.CheckConstraint(
                 check=(
-                    models.Q(role__in=['SCHOOL_ADMIN', 'FACULTY'], school__isnull=False) |
+                    models.Q(role__in=['SCHOOL_ADMIN', 'FACULTY', 'STUDENT'], school__isnull=False) |
                     models.Q(role='SUPER_ADMIN')
                 ),
                 name='tenant_user_requires_school',
@@ -74,7 +76,7 @@ class User(AbstractUser):
                     'Set school to blank/None for Super Admin accounts.'
                 )
             })
-        if self.role in (self.Role.SCHOOL_ADMIN, self.Role.FACULTY) and self.school_id is None:
+        if self.role in (self.Role.SCHOOL_ADMIN, self.Role.FACULTY, self.Role.STUDENT) and self.school_id is None:
             raise ValidationError({
                 'school': (
                     f'{self.get_role_display()} must be assigned to a school tenant. '
@@ -96,3 +98,7 @@ class User(AbstractUser):
     @property
     def is_faculty(self):
         return self.role == self.Role.FACULTY
+
+    @property
+    def is_student(self):
+        return self.role == self.Role.STUDENT

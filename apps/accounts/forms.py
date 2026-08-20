@@ -9,16 +9,16 @@ class TenantLoginForm(AuthenticationForm):
     Overrides the default Django AuthenticationForm to present
     an email field as the primary identifier.
     """
-    username = forms.EmailField(
-        label='Email Address',
-        widget=forms.EmailInput(attrs={
+    username = forms.CharField(
+        label='Email / GR Number',
+        widget=forms.TextInput(attrs={
             'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/50 '
                      'focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent '
                      'placeholder-gray-400 text-gray-900 transition-all duration-200',
-            'placeholder': 'Enter your email address',
-            'autocomplete': 'email',
+            'placeholder': 'Email address or GR Number',
+            'autocomplete': 'username',
             'autofocus': True,
-            'id': 'id_email',
+            'id': 'id_username',
         })
     )
     password = forms.CharField(
