@@ -26,6 +26,8 @@ TENANT_SCOPED_PREFIXES = (
     '/attendance/',
     '/reports/',
     '/dashboard/',
+    '/leaves/',
+    '/academics/',
 )
 
 # Paths that tenant users must NEVER access
