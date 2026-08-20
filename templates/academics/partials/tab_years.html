@@ -60,12 +60,11 @@
                                 class="text-xs font-semibold text-gray-600 hover:text-[#0066cc]">
                             Edit
                         </button>
-                        <form method="POST" action="{% url 'academics:year_delete' year.id %}" class="inline" onsubmit="return confirm('Are you sure you want to delete academic year {{ year.name }}?');">
-                            {% csrf_token %}
-                            <button type="submit" class="text-xs font-semibold text-rose-600 hover:underline">
-                                Delete
-                            </button>
-                        </form>
+                        <button type="button"
+                                onclick="openConfirmDeleteModal('{% url 'academics:year_delete' year.id %}', 'Delete Academic Year', 'Are you sure you want to delete session {{ year.name|escapejs }}?')"
+                                class="text-xs font-semibold text-rose-600 hover:underline">
+                            Delete
+                        </button>
                     </td>
                 </tr>
                 {% empty %}

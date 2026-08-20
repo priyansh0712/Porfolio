@@ -56,12 +56,11 @@
                                 class="text-xs font-semibold text-gray-600 hover:text-[#0066cc]">
                             Edit
                         </button>
-                        <form method="POST" action="{% url 'academics:subject_delete' sub.id %}" class="inline" onsubmit="return confirm('Delete subject {{ sub.name }}?');">
-                            {% csrf_token %}
-                            <button type="submit" class="text-xs font-semibold text-rose-600 hover:underline">
-                                Delete
-                            </button>
-                        </form>
+                        <button type="button"
+                                onclick="openConfirmDeleteModal('{% url 'academics:subject_delete' sub.id %}', 'Delete Subject', 'Are you sure you want to delete subject {{ sub.name|escapejs }} ({{ sub.code }})?')"
+                                class="text-xs font-semibold text-rose-600 hover:underline">
+                            Delete
+                        </button>
                     </td>
                 </tr>
                 {% empty %}

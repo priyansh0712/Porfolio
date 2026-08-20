@@ -28,12 +28,9 @@
                         <button type="button" onclick="openEditStandardModal('{{ std.id }}', '{{ std.name }}', '{{ std.order_index }}', {{ std.is_active|yesno:'true,false' }})" class="text-xs font-semibold text-gray-500 hover:text-[#0066cc]">
                             Edit
                         </button>
-                        <form method="POST" action="{% url 'academics:standard_delete' std.id %}" class="inline" onsubmit="return confirm('Delete standard {{ std.name }}?');">
-                            {% csrf_token %}
-                            <button type="submit" class="text-xs font-semibold text-rose-500 hover:text-rose-700">
-                                Delete
-                            </button>
-                        </form>
+                        <button type="button" onclick="openConfirmDeleteModal('{% url 'academics:standard_delete' std.id %}', 'Delete Grade Standard', 'Are you sure you want to delete standard {{ std.name|escapejs }}? Any division or student allocations linked to it will be validated.')" class="text-xs font-semibold text-rose-500 hover:text-rose-700">
+                            Delete
+                        </button>
                     </div>
                 </div>
 
@@ -50,12 +47,9 @@
                                 <button type="button" onclick="openEditDivisionModal('{{ div.id }}', '{{ std.id }}', '{{ div.name }}', {{ div.is_active|yesno:'true,false' }})" class="text-[10px] text-gray-500 hover:text-[#0066cc]">
                                     ✎
                                 </button>
-                                <form method="POST" action="{% url 'academics:division_delete' div.id %}" class="inline" onsubmit="return confirm('Delete division {{ div.name }}?');">
-                                    {% csrf_token %}
-                                    <button type="submit" class="text-[10px] text-rose-500 hover:text-rose-700">
-                                        ✕
-                                    </button>
-                                </form>
+                                <button type="button" onclick="openConfirmDeleteModal('{% url 'academics:division_delete' div.id %}', 'Delete Division', 'Are you sure you want to delete division {{ div.name|escapejs }} from {{ std.name|escapejs }}?')" class="text-[10px] text-rose-500 hover:text-rose-700">
+                                    ✕
+                                </button>
                             </div>
                         </div>
                         {% empty %}

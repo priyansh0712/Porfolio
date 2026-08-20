@@ -326,6 +326,28 @@ class SubjectTeacherAssignView(SchoolAdminRequiredMixin, View):
         return redirect(f"{reverse('academics:hub')}?tab=allocations&year={year.id}")
 
 
+class SubjectTeacherUpdateView(SchoolAdminRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        alloc = get_object_or_404(SubjectTeacherAllocation, pk=pk, school=request.tenant)
+        new_faculty_id = request.POST.get('faculty')
+        new_faculty = get_object_or_404(Faculty, pk=new_faculty_id, school=request.tenant, is_active=True)
+
+        if SubjectTeacherAllocation.objects.filter(
+            school=request.tenant,
+            academic_year=alloc.academic_year,
+            division=alloc.division,
+            subject=alloc.subject,
+            faculty=new_faculty,
+        ).exclude(pk=alloc.pk).exists():
+            messages.warning(request, f"{new_faculty.full_name} is already assigned to {alloc.subject.name} in {alloc.division}.")
+        else:
+            alloc.faculty = new_faculty
+            alloc.save()
+            messages.success(request, f"Updated subject teacher for {alloc.subject.name} to {new_faculty.full_name}.")
+
+        return redirect(f"{reverse('academics:hub')}?tab=allocations&year={alloc.academic_year_id}")
+
+
 class SubjectTeacherDeleteView(SchoolAdminRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         alloc = get_object_or_404(SubjectTeacherAllocation, pk=pk, school=request.tenant)

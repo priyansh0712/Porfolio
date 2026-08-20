@@ -342,7 +342,107 @@
     </div>
 </div>
 
+<!-- 11. Manage / Edit / Delete Subject Teacher Modal -->
+<div id="modal-manage-subject-teacher" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6 animate-scale-in">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Manage Subject Teacher</h3>
+            <button type="button" onclick="closeModal('modal-manage-subject-teacher')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Class</label>
+                <div id="manage-sub-class-display" class="font-bold text-[#1d1d1f] text-xs bg-gray-50 p-2.5 rounded-xl border border-gray-200/60 truncate"></div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Subject</label>
+                <div id="manage-sub-subject-display" class="font-bold text-[#0066cc] text-xs bg-blue-50/60 p-2.5 rounded-xl border border-blue-200/60 truncate"></div>
+            </div>
+        </div>
+
+        <!-- Main Edit View -->
+        <div id="manage-sub-main-view">
+            <form id="form-manage-subject-edit" method="POST" action="" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Assigned Faculty Member *</label>
+                    <select id="manage-sub-faculty-select" name="faculty" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                        {% for f in active_faculty %}
+                            <option value="{{ f.id }}">{{ f.full_name }} ({{ f.employee_code }}) - {{ f.department }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <!-- Trigger Inline Remove Confirmation -->
+                    <button type="button" onclick="showManageSubjectDeleteView()" class="px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-full transition-colors border border-rose-200">
+                        🗑️ Remove Teacher
+                    </button>
+
+                    <div class="flex space-x-2">
+                        <button type="button" onclick="closeModal('modal-manage-subject-teacher')" class="px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+                        <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Inline Delete Confirmation View (Replaces browser alert popup) -->
+        <div id="manage-sub-delete-view" class="hidden space-y-4 pt-1">
+            <div class="bg-rose-50/80 border border-rose-200/90 rounded-2xl p-4 text-center">
+                <div class="text-2xl mb-1.5">🗑️</div>
+                <h4 class="text-sm font-bold text-rose-900">Remove Teacher Allocation?</h4>
+                <p class="text-xs text-rose-700 mt-1">This will unassign this teacher from teaching <span id="delete-sub-name-display" class="font-bold text-rose-900"></span> in <span id="delete-sub-class-display" class="font-bold text-rose-900"></span>.</p>
+            </div>
+            <div class="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100">
+                <button type="button" onclick="showManageSubjectMainView()" class="px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">
+                    Back
+                </button>
+                <button type="button" onclick="document.getElementById('form-manage-subject-delete').submit()" class="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-full shadow-xs transition-colors">
+                    Yes, Remove
+                </button>
+            </div>
+        </div>
+
+        <!-- Hidden Delete Form -->
+        <form id="form-manage-subject-delete" method="POST" action="" class="hidden">
+            {% csrf_token %}
+        </form>
+    </div>
+</div>
+
+<!-- Universal Delete Confirmation Modal (Replaces all browser native confirm popups) -->
+<div id="modal-confirm-delete" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-sm w-full p-6 animate-scale-in text-center">
+        <div class="w-12 h-12 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto mb-3 text-2xl text-rose-600">
+            🗑️
+        </div>
+        <h3 id="confirm-delete-title" class="text-base font-bold text-[#1d1d1f]">Confirm Deletion</h3>
+        <p id="confirm-delete-message" class="text-xs text-gray-500 mt-1 mb-5 leading-relaxed"></p>
+
+        <form id="form-confirm-delete" method="POST" action="" class="flex items-center justify-center space-x-2.5">
+            {% csrf_token %}
+            <button type="button" onclick="closeModal('modal-confirm-delete')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-full shadow-xs transition-colors">
+                Yes, Delete
+            </button>
+        </form>
+    </div>
+</div>
+
 <script>
+    let currentSubjectAllocId = null;
+
+    function openConfirmDeleteModal(actionUrl, title, message) {
+        document.getElementById('form-confirm-delete').action = actionUrl;
+        document.getElementById('confirm-delete-title').innerText = title;
+        document.getElementById('confirm-delete-message').innerText = message;
+        openModal('modal-confirm-delete');
+    }
+
     function openEditYearModal(id, name, start, end, isCurrent) {
         document.getElementById('form-edit-year').action = '/academics/years/' + id + '/edit/';
         document.getElementById('edit-year-name').value = name;
@@ -398,5 +498,28 @@
         document.getElementById('assign-sub-subject-display').innerText = subjectName;
         document.getElementById('assign-sub-faculty-select').value = currentFacultyId || '';
         openModal('modal-assign-subject-teacher');
+    }
+
+    function showManageSubjectDeleteView() {
+        document.getElementById('manage-sub-main-view').classList.add('hidden');
+        document.getElementById('manage-sub-delete-view').classList.remove('hidden');
+    }
+
+    function showManageSubjectMainView() {
+        document.getElementById('manage-sub-delete-view').classList.add('hidden');
+        document.getElementById('manage-sub-main-view').classList.remove('hidden');
+    }
+
+    function openManageSubjectTeacherModal(allocId, yearId, divisionId, className, subjectId, subjectName, currentFacultyId, facultyName) {
+        currentSubjectAllocId = allocId;
+        document.getElementById('manage-sub-class-display').innerText = className;
+        document.getElementById('manage-sub-subject-display').innerText = subjectName;
+        document.getElementById('delete-sub-class-display').innerText = className;
+        document.getElementById('delete-sub-name-display').innerText = subjectName;
+        document.getElementById('manage-sub-faculty-select').value = currentFacultyId || '';
+        document.getElementById('form-manage-subject-edit').action = '/academics/allocations/' + allocId + '/edit-subject-teacher/';
+        document.getElementById('form-manage-subject-delete').action = '/academics/allocations/' + allocId + '/delete-subject-teacher/';
+        showManageSubjectMainView();
+        openModal('modal-manage-subject-teacher');
     }
 </script>

@@ -543,9 +543,29 @@ class AcademicCRUDViewTests(AcademicsBaseTestCase):
                 'academic_year': year.id,
                 'division': div.id,
                 'subject': sub.id,
-                'faculty': self.faculty_a2.id,
+                'faculty': self.faculty_a1.id,
             },
             HTTP_HOST='greenwood.localhost',
         )
         self.assertEqual(sub_alloc_resp.status_code, 302)
-        self.assertTrue(SubjectTeacherAllocation.objects.filter(school=self.school_a, division=div, subject=sub, faculty=self.faculty_a2).exists())
+        alloc = SubjectTeacherAllocation.objects.get(school=self.school_a, division=div, subject=sub, faculty=self.faculty_a1)
+
+        # Edit Subject Teacher allocation via SubjectTeacherUpdateView
+        edit_resp = self.client.post(
+            f'/academics/allocations/{alloc.id}/edit-subject-teacher/',
+            {
+                'faculty': self.faculty_a2.id,
+            },
+            HTTP_HOST='greenwood.localhost',
+        )
+        self.assertEqual(edit_resp.status_code, 302)
+        alloc.refresh_from_db()
+        self.assertEqual(alloc.faculty, self.faculty_a2)
+
+        # Delete Subject Teacher allocation via SubjectTeacherDeleteView
+        del_resp = self.client.post(
+            f'/academics/allocations/{alloc.id}/delete-subject-teacher/',
+            HTTP_HOST='greenwood.localhost',
+        )
+        self.assertEqual(del_resp.status_code, 302)
+        self.assertFalse(SubjectTeacherAllocation.objects.filter(pk=alloc.id).exists())
