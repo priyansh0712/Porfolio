@@ -28,7 +28,7 @@
   3. Class Teacher can submit class transfer requests and Principal can approve/reject them.
   4. Students can log in with their GR Number and view their personal academic profile (read-only).
 
-### Phase 3: 4-Step Bulk Excel/CSV Onboarding Engine
+### Phase 3: 4-Step Bulk Excel/CSV Onboarding Engine (Completed 2026-08-21)
 **Goal:** Implement 4-step sequential bulk import wizard (`.xlsx` & `.csv`) with downloadable templates, data validation preview tables, and atomic database commits.
 - **Requirements:** `BULK-01`, `BULK-02`, `BULK-03`, `BULK-04`, `BULK-05`
 - **Success Criteria:**
@@ -37,7 +37,7 @@
   3. Steps 2 & 3 import class divisions and subject mappings with dependency checks.
   4. Step 4 imports students with duplicate GR No checks, auto-creates student login accounts, and shows an interactive validation preview before atomic commit.
 
-### Phase 4: Faculty & Student Views, Password Security & Integration Polish
+### Phase 4: Faculty & Student Views, Password Security & Integration Polish (Completed 2026-08-21)
 **Goal:** Provide faculty with dedicated "My Class" and "My Subjects" dashboards, self-service password changing for faculty and students, and end-to-end security test verification.
 - **Requirements:** `FAC-01`, `FAC-02`, `AUTH-01`, `SEC-01`
 - **Success Criteria:**

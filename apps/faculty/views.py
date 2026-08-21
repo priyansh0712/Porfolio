@@ -12,10 +12,104 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.accounts.permissions import SchoolAdminRequiredMixin
+from apps.academics.models import AcademicYear, ClassTeacherAllocation, SubjectTeacherAllocation
 from apps.faculty.forms import FacultyForm
 from apps.faculty.models import Faculty
 from apps.faculty.services import FacultyService
+from apps.students.models import Student
+
+
+class MyClassView(LoginRequiredMixin, ListView):
+    """
+    Dedicated dashboard for Class Teachers displaying assigned division details,
+    student roster, and quick-add student modal.
+    """
+    model = Student
+    template_name = 'faculty/my_class.html'
+    context_object_name = 'students'
+
+    def get_queryset(self):
+        faculty = getattr(self.request.user, 'faculty_profile', None)
+        if not faculty:
+            return Student.objects.none()
+
+        curr_ay = AcademicYear.objects.filter(school=self.request.tenant, is_current=True).first()
+        allocation = ClassTeacherAllocation.objects.filter(
+            school=self.request.tenant,
+            academic_year=curr_ay,
+            faculty=faculty
+        ).select_related('division', 'division__standard').first()
+
+        if not allocation:
+            return Student.objects.none()
+
+        return Student.objects.filter(
+            school=self.request.tenant,
+            academic_year=curr_ay,
+            division=allocation.division,
+            is_active=True
+        ).order_by('roll_number', 'full_name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        faculty = getattr(self.request.user, 'faculty_profile', None)
+        curr_ay = AcademicYear.objects.filter(school=self.request.tenant, is_current=True).first()
+        allocation = ClassTeacherAllocation.objects.filter(
+            school=self.request.tenant,
+            academic_year=curr_ay,
+            faculty=faculty
+        ).select_related('division', 'division__standard').first() if faculty else None
+
+        context['allocation'] = allocation
+        context['academic_year'] = curr_ay
+        context['total_students'] = self.get_queryset().count()
+        return context
+
+
+class MySubjectsView(LoginRequiredMixin, ListView):
+    """
+    Subject Teacher view showing assigned classes, subjects taught, and read-only student rosters.
+    """
+    model = SubjectTeacherAllocation
+    template_name = 'faculty/my_subjects.html'
+    context_object_name = 'allocations'
+
+    def get_queryset(self):
+        faculty = getattr(self.request.user, 'faculty_profile', None)
+        if not faculty:
+            return SubjectTeacherAllocation.objects.none()
+
+        curr_ay = AcademicYear.objects.filter(school=self.request.tenant, is_current=True).first()
+        return SubjectTeacherAllocation.objects.filter(
+            school=self.request.tenant,
+            academic_year=curr_ay,
+            faculty=faculty
+        ).select_related('division', 'division__standard', 'subject').order_by('division__standard__order_index', 'division__name', 'subject__name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        curr_ay = AcademicYear.objects.filter(school=self.request.tenant, is_current=True).first()
+        context['academic_year'] = curr_ay
+
+        allocations = self.get_queryset()
+        subject_rosters = []
+        for alloc in allocations:
+            roster = Student.objects.filter(
+                school=self.request.tenant,
+                academic_year=curr_ay,
+                division=alloc.division,
+                is_active=True
+            ).order_by('roll_number', 'full_name')
+            subject_rosters.append({
+                'allocation': alloc,
+                'students': roster,
+                'count': roster.count(),
+            })
+
+        context['subject_rosters'] = subject_rosters
+        return context
 
 
 class FacultyListView(SchoolAdminRequiredMixin, ListView):

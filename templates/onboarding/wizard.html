@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Bulk Onboarding Wizard — {{ school.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 pb-16">
+    <!-- Header Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-[#1d1d1f] tracking-tight">4-Step Bulk Onboarding Suite</h1>
+            <p class="text-sm text-[#86868b] mt-1">Import school master data sequentially using Excel (.xlsx) or CSV files with instant validation preview.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'academics:hub' %}" class="bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] px-4 py-2 rounded-full text-xs font-medium transition-all">
+                🏫 Academic Settings
+            </a>
+            <a href="{% url 'students:hub' %}" class="bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] px-4 py-2 rounded-full text-xs font-medium transition-all">
+                🎓 Student Roster
+            </a>
+        </div>
+    </div>
+
+    <!-- Apple Stepper Header Tabs -->
+    <div class="apple-card p-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <button onclick="switchStep(1)" id="step-tab-1" class="step-tab p-3.5 rounded-xl border text-left transition-all bg-[#0066cc]/10 border-[#0066cc]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-[#0066cc]">Step 1</div>
+                <div class="text-xs font-semibold text-[#1d1d1f] mt-0.5">Faculty Roster</div>
+            </button>
+            <button onclick="switchStep(2)" id="step-tab-2" class="step-tab p-3.5 rounded-xl border text-left transition-all border-gray-200 bg-gray-50/50">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Step 2</div>
+                <div class="text-xs font-semibold text-[#1d1d1f] mt-0.5">Classes & Teachers</div>
+            </button>
+            <button onclick="switchStep(3)" id="step-tab-3" class="step-tab p-3.5 rounded-xl border text-left transition-all border-gray-200 bg-gray-50/50">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Step 3</div>
+                <div class="text-xs font-semibold text-[#1d1d1f] mt-0.5">Subject Mappings</div>
+            </button>
+            <button onclick="switchStep(4)" id="step-tab-4" class="step-tab p-3.5 rounded-xl border text-left transition-all border-gray-200 bg-gray-50/50">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Step 4</div>
+                <div class="text-xs font-semibold text-[#1d1d1f] mt-0.5">Student Roster</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Active Step Card & Upload Zone -->
+    <div class="apple-card p-6 sm:p-8 space-y-6">
+        <div id="step-info-container">
+            <!-- Rendered dynamically by JavaScript -->
+        </div>
+
+        <!-- Sample Download & Upload Form -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 border-t border-gray-100">
+            <!-- Left: Sample Download -->
+            <div class="space-y-3">
+                <label class="block text-xs font-bold uppercase tracking-wider text-[#1d1d1f]">1. Download Sample Template</label>
+                <p class="text-xs text-[#86868b]">Get pre-formatted templates pre-populated with required headers and realistic dummy data.</p>
+                <div class="flex items-center gap-3 pt-2">
+                    <a id="download-xlsx-btn" href="{% url 'onboarding:sample-download' step=1 fmt='xlsx' %}" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all">
+                        📊 Sample .xlsx
+                    </a>
+                    <a id="download-csv-btn" href="{% url 'onboarding:sample-download' step=1 fmt='fmt' %}" class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-[#0066cc] border border-blue-200 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all">
+                        📄 Sample .csv
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right: Upload Dropzone (2 cols) -->
+            <div class="lg:col-span-2 space-y-3">
+                <label class="block text-xs font-bold uppercase tracking-wider text-[#1d1d1f]">2. Upload File for Validation</label>
+                <form id="upload-form" class="space-y-4" onsubmit="handleValidation(event)">
+                    {% csrf_token %}
+                    <input type="hidden" id="current-step-input" name="step" value="1">
+                    
+                    <div class="border-2 border-dashed border-gray-200 hover:border-[#0066cc] rounded-2xl p-6 text-center transition-all bg-gray-50/50 cursor-pointer" onclick="document.getElementById('file-input').click()">
+                        <div class="text-3xl mb-2">📁</div>
+                        <div class="text-sm font-semibold text-[#1d1d1f]" id="file-name-display">Click or drag Excel / CSV file here</div>
+                        <div class="text-xs text-[#86868b] mt-1">Supports .xlsx and .csv files up to 10MB</div>
+                        <input type="file" id="file-input" name="file" accept=".xlsx,.csv" class="hidden" onchange="updateFileNameDisplay(this)">
+                    </div>
+
+                    <div class="flex items-center justify-end">
+                        <button type="submit" id="validate-btn" class="apple-btn-primary px-6 py-2.5 text-xs font-medium inline-flex items-center gap-2">
+                            <span>🔍 Validate & Preview Data</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Validation Preview Section (Hidden by default) -->
+    <div id="preview-section" class="apple-card p-6 sm:p-8 space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+            <div>
+                <h3 class="text-lg font-bold text-[#1d1d1f]" id="preview-header-title">Import Validation Preview</h3>
+                <p class="text-xs text-[#86868b] mt-0.5">Review data validation status before executing atomic database import.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="px-3 py-1 bg-gray-100 rounded-full text-xs font-medium text-[#1d1d1f]" id="summary-total">Total: 0</div>
+                <div class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-medium" id="summary-valid">Valid: 0</div>
+                <div class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium" id="summary-error">Errors: 0</div>
+            </div>
+        </div>
+
+        <!-- Preview Table -->
+        <div class="overflow-x-auto max-h-96">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead class="sticky top-0 bg-white border-b border-gray-200">
+                    <tr id="preview-table-header" class="text-[#86868b] font-semibold uppercase tracking-wider">
+                        <th class="py-2.5 px-3">Row</th>
+                        <th class="py-2.5 px-3">Status</th>
+                        <th class="py-2.5 px-3">Data Details</th>
+                        <th class="py-2.5 px-3">Validation Message</th>
+                    </tr>
+                </thead>
+                <tbody id="preview-table-body" class="divide-y divide-gray-100">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Commit Confirmation Bar -->
+        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+            <div class="text-xs text-[#86868b]" id="commit-help-text">Only valid rows will be committed to the database.</div>
+            <button id="commit-btn" onclick="handleCommit()" class="apple-btn-primary px-6 py-2.5 text-xs font-semibold">
+                🚀 Confirm & Import Valid Rows
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentStep = 1;
+    let currentValidationResults = [];
+
+    const STEP_INFOS = {
+        1: {
+            title: "Step 1: Faculty Roster Import",
+            desc: "Upload teacher details. System will create Faculty profiles and linked User accounts with default password 'Admin@123'.",
+            cols: "First Name, Last Name, Email, Employee Code, Department, Designation"
+        },
+        2: {
+            title: "Step 2: Classes & Class Teachers Import",
+            desc: "Upload Standard & Division details. Automatically creates Academic Standards, Divisions, and links Class Teachers.",
+            cols: "Standard Name, Standard Code, Division Name, Class Teacher Employee Code"
+        },
+        3: {
+            title: "Step 3: Subject Teacher Mappings Import",
+            desc: "Map subjects to classes and assign Subject Teachers for the active academic year.",
+            cols: "Standard Name, Division Name, Subject Name, Subject Code, Subject Teacher Employee Code"
+        },
+        4: {
+            title: "Step 4: Student Roster Import",
+            desc: "Upload student roster with unique GR numbers. Automatically creates Student profiles and Student Portal Login accounts.",
+            cols: "GR Number, First Name, Last Name, Standard Name, Division Name, Roll Number, Gender, Date of Birth, Parent Phone, Parent Email"
+        }
+    };
+
+    function switchStep(stepNum) {
+        currentStep = stepNum;
+        document.getElementById('current-step-input').value = stepNum;
+
+        // Update tabs styling
+        for (let i = 1; i <= 4; i++) {
+            const tab = document.getElementById(`step-tab-${i}`);
+            if (i === stepNum) {
+                tab.className = "step-tab p-3.5 rounded-xl border text-left transition-all bg-[#0066cc]/10 border-[#0066cc]";
+                tab.querySelector('div').className = "text-[10px] font-bold uppercase tracking-wider text-[#0066cc]";
+            } else {
+                tab.className = "step-tab p-3.5 rounded-xl border text-left transition-all border-gray-200 bg-gray-50/50";
+                tab.querySelector('div').className = "text-[10px] font-bold uppercase tracking-wider text-[#86868b]";
+            }
+        }
+
+        // Update step info
+        const info = STEP_INFOS[stepNum];
+        document.getElementById('step-info-container').innerHTML = `
+            <div class="space-y-1">
+                <h2 class="text-lg font-bold text-[#1d1d1f]">${info.title}</h2>
+                <p class="text-xs text-[#86868b]">${info.desc}</p>
+                <div class="text-[11px] text-[#0066cc] font-medium pt-1">Required Headers: ${info.cols}</div>
+            </div>
+        `;
+
+        // Update download URLs
+        document.getElementById('download-xlsx-btn').href = `/onboarding/sample/${stepNum}/xlsx/`;
+        document.getElementById('download-csv-btn').href = `/onboarding/sample/${stepNum}/csv/`;
+
+        // Hide preview section
+        document.getElementById('preview-section').classList.add('hidden');
+        document.getElementById('file-input').value = '';
+        document.getElementById('file-name-display').textContent = 'Click or drag Excel / CSV file here';
+    }
+
+    function updateFileNameDisplay(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('file-name-display').textContent = `Selected: ${input.files[0].name}`;
+        }
+    }
+
+    async function handleValidation(e) {
+        e.preventDefault();
+        const fileInput = document.getElementById('file-input');
+        if (!fileInput.files || !fileInput.files[0]) {
+            alert('Please select a file to validate.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('step', currentStep);
+        formData.append('file', fileInput.files[0]);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        const validateBtn = document.getElementById('validate-btn');
+        validateBtn.disabled = true;
+        validateBtn.innerHTML = '<span>⏳ Validating...</span>';
+
+        try {
+            const resp = await fetch("{% url 'onboarding:api-validate' %}", {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await resp.json();
+
+            if (!data.success) {
+                alert(data.error || 'Validation failed.');
+                return;
+            }
+
+            renderPreview(data);
+        } catch (err) {
+            console.error(err);
+            alert('An error occurred during file validation.');
+        } finally {
+            validateBtn.disabled = false;
+            validateBtn.innerHTML = '<span>🔍 Validate & Preview Data</span>';
+        }
+    }
+
+    function renderPreview(data) {
+        currentValidationResults = data.results;
+        document.getElementById('preview-section').classList.remove('hidden');
+
+        document.getElementById('summary-total').textContent = `Total: ${data.total_rows}`;
+        document.getElementById('summary-valid').textContent = `Valid: ${data.valid_count}`;
+        document.getElementById('summary-error').textContent = `Errors: ${data.error_count}`;
+
+        const tbody = document.getElementById('preview-table-body');
+        tbody.innerHTML = '';
+
+        data.results.forEach(res => {
+            const tr = document.createElement('tr');
+            tr.className = res.status === 'VALID' ? 'hover:bg-emerald-50/30' : 'bg-red-50/20 hover:bg-red-50/40';
+
+            const detailsStr = Object.entries(res.data)
+                .map(([k, v]) => `<span class="text-[#86868b]">${k}:</span> <strong>${v}</strong>`)
+                .join(' | ');
+
+            const statusBadge = res.status === 'VALID' 
+                ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">VALID</span>'
+                : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800">ERROR</span>';
+
+            const errorText = res.errors.length > 0
+                ? `<span class="text-red-600 font-medium">${res.errors.join(', ')}</span>`
+                : '<span class="text-emerald-600">Ready for import</span>';
+
+            tr.innerHTML = `
+                <td class="py-2.5 px-3 font-mono font-bold text-[#1d1d1f]">Row ${res.row_index}</td>
+                <td class="py-2.5 px-3">${statusBadge}</td>
+                <td class="py-2.5 px-3">${detailsStr}</td>
+                <td class="py-2.5 px-3">${errorText}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        const commitBtn = document.getElementById('commit-btn');
+        if (data.valid_count === 0) {
+            commitBtn.disabled = true;
+            commitBtn.className = 'px-6 py-2.5 text-xs font-semibold bg-gray-200 text-gray-400 rounded-full cursor-not-allowed';
+        } else {
+            commitBtn.disabled = false;
+            commitBtn.className = 'apple-btn-primary px-6 py-2.5 text-xs font-semibold';
+        }
+    }
+
+    async function handleCommit() {
+        const validRows = currentValidationResults.filter(r => r.status === 'VALID');
+        if (validRows.length === 0) {
+            alert('No valid rows to import.');
+            return;
+        }
+
+        if (!confirm(`Import ${validRows.length} valid rows into the database for Step ${currentStep}?`)) {
+            return;
+        }
+
+        const commitBtn = document.getElementById('commit-btn');
+        commitBtn.disabled = true;
+        commitBtn.innerHTML = '<span>⏳ Importing...</span>';
+
+        try {
+            const resp = await fetch("{% url 'onboarding:api-commit' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    step: currentStep,
+                    valid_rows: validRows,
+                })
+            });
+            const data = await resp.json();
+
+            if (!data.success) {
+                alert(data.error || 'Import failed.');
+                return;
+            }
+
+            alert(data.message);
+            // Advance to next step if available
+            if (currentStep < 4) {
+                switchStep(currentStep + 1);
+            } else {
+                window.location.href = "{% url 'students:hub' %}";
+            }
+        } catch (err) {
+            console.error(err);
+            alert('An error occurred during import commitment.');
+        } finally {
+            commitBtn.disabled = false;
+            commitBtn.innerHTML = '🚀 Confirm & Import Valid Rows';
+        }
+    }
+
+    // Initialize Step 1 on page load
+    document.addEventListener('DOMContentLoaded', () => switchStep(1));
+</script>
+{% endblock %}

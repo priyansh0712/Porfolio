@@ -14,4 +14,6 @@ urlpatterns = [
     path('<int:pk>/delete/', views.FacultyDeleteView.as_view(), name='delete'),
     path('<int:pk>/toggle-status/', views.FacultyToggleStatusView.as_view(), name='toggle_status'),
     path('<int:pk>/detail/', views.FacultyDetailAPIView.as_view(), name='detail_api'),
+    path('my-class/', views.MyClassView.as_view(), name='my_class'),
+    path('my-subjects/', views.MySubjectsView.as_view(), name='my_subjects'),
 ]

@@ -1,5 +1,6 @@
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
 from django.utils.decorators import method_decorator
@@ -62,4 +63,24 @@ class TenantDashboardView(LoginRequiredMixin, View):
             from apps.students.views import StudentPortalView
             return StudentPortalView.as_view()(request, *args, **kwargs)
         return HttpResponseForbidden("Access Denied: Invalid role for school tenant subdomain.")
+
+
+from django.contrib import messages
+from django.contrib.auth.views import PasswordChangeView
+from django.contrib.auth import update_session_auth_hash
+from django.shortcuts import redirect
+
+class SelfPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    """
+    Self-service password update view for logged-in users of all roles (Admin, Faculty, Student).
+    """
+    template_name = 'accounts/password_change.html'
+    success_url = reverse_lazy('accounts:password_change')
+
+    def form_valid(self, form):
+        form.save()
+        update_session_auth_hash(self.request, form.user)
+        messages.success(self.request, 'Your password was successfully updated!')
+        return redirect(self.success_url)
+
 

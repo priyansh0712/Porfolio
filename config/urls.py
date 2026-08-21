@@ -17,4 +17,5 @@ urlpatterns = [
     path('notifications/', include('apps.notifications.urls', namespace='notifications')),
     path('academics/', include('apps.academics.urls', namespace='academics')),
     path('students/', include('apps.students.urls', namespace='students')),
+    path('onboarding/', include('apps.onboarding.urls', namespace='onboarding')),
 ]

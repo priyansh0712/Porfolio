@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Taught Subjects — {{ school.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 pb-16">
+    <!-- Header Title -->
+    <div>
+        <h1 class="text-2xl font-bold text-[#1d1d1f] tracking-tight">Subject Teacher Dashboard</h1>
+        <p class="text-sm text-[#86868b] mt-1">Assigned Taught Subjects & Read-Only Student Rosters (Academic Session {{ academic_year.name }})</p>
+    </div>
+
+    {% if subject_rosters %}
+        <div class="space-y-6">
+            {% for item in subject_rosters %}
+                <div class="apple-card p-6 sm:p-8 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+                        <div>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-[#0066cc] uppercase tracking-wider">Subject</span>
+                            <h2 class="text-lg font-bold text-[#1d1d1f] mt-1">{{ item.allocation.subject.name }} ({{ item.allocation.subject.code }})</h2>
+                            <p class="text-xs text-[#86868b]">Class Division: <strong>{{ item.allocation.division.standard.name }} - {{ item.allocation.division.name }}</strong></p>
+                        </div>
+                        <div class="text-xs font-semibold text-[#86868b]">
+                            Enrolled: <strong class="text-[#1d1d1f]">{{ item.count }} Students</strong>
+                        </div>
+                    </div>
+
+                    <!-- Student Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="text-[#86868b] border-b border-gray-100 font-semibold uppercase tracking-wider">
+                                    <th class="py-2.5 px-3">Roll No</th>
+                                    <th class="py-2.5 px-3">GR Number</th>
+                                    <th class="py-2.5 px-3">Student Name</th>
+                                    <th class="py-2.5 px-3">Gender</th>
+                                    <th class="py-2.5 px-3">Guardian Contact</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                {% for student in item.students %}
+                                    <tr class="hover:bg-gray-50/50">
+                                        <td class="py-2.5 px-3 font-mono font-bold text-[#1d1d1f]">{{ student.roll_number|default:"—" }}</td>
+                                        <td class="py-2.5 px-3 font-mono text-[#0066cc] font-semibold">{{ student.gr_number }}</td>
+                                        <td class="py-2.5 px-3 font-semibold text-[#1d1d1f]">{{ student.full_name }}</td>
+                                        <td class="py-2.5 px-3 text-[#86868b]">{{ student.get_gender_display }}</td>
+                                        <td class="py-2.5 px-3 text-[#1d1d1f]">
+                                            {% if student.guardian_phone %}
+                                                <a href="tel:{{ student.guardian_phone }}" class="text-[#0066cc] hover:underline font-mono">📞 {{ student.guardian_phone }}</a>
+                                            {% else %}
+                                                <span class="text-[#86868b]">Not Provided</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="py-4 text-center text-[#86868b]">No students enrolled in this division.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="apple-card p-12 text-center space-y-3">
+            <div class="text-4xl">📚</div>
+            <h3 class="text-base font-bold text-[#1d1d1f]">No Subjects Allocated</h3>
+            <p class="text-xs text-[#86868b]">You have not been assigned to teach any subjects for the active academic session.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
