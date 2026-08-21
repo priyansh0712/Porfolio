@@ -13,7 +13,7 @@
             </div>
             <input type="text" name="q" id="student-search-input" value="{{ search }}" placeholder="Search by Name, GR No, Roll No…" autocomplete="off"
                 style="padding-left: 36px !important; padding-right: 34px !important;"
-                class="w-full py-2 text-sm rounded-xl border border-gray-300 focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 bg-white text-[#1d1d1f] placeholder:text-gray-400 transition-all leading-normal h-[38px]">
+                class="w-full py-2 text-sm rounded-xl border border-gray-300 focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20 bg-white text-[#1D1D1F] placeholder:text-gray-400 transition-all leading-normal h-[38px]">
             <button type="button" id="student-clear-search-btn" onclick="clearStudentSearch()"
                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; border: none; background: transparent; padding: 0; {% if not search %}display: none;{% else %}display: flex;{% endif %} align-items: center; justify-content: center;"
                title="Clear search">
@@ -27,7 +27,7 @@
     <div class="min-w-[140px]">
         <label class="block text-xs font-semibold text-gray-500 mb-1.5">Standard</label>
         <select name="standard"
-            class="w-full rounded-xl border border-gray-300 px-3.5 py-2 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 bg-white text-[#1d1d1f] cursor-pointer transition-all h-[38px]">
+            class="w-full rounded-xl border border-gray-300 px-3.5 py-2 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20 bg-white text-[#1D1D1F] cursor-pointer transition-all h-[38px]">
             <option value="">All Standards</option>
             {% for s in standards %}
             <option value="{{ s.id }}" {% if request.GET.standard == s.id|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>
@@ -39,7 +39,7 @@
     <div class="min-w-[130px]">
         <label class="block text-xs font-semibold text-gray-500 mb-1.5">Division</label>
         <select name="division"
-            class="w-full rounded-xl border border-gray-300 px-3.5 py-2 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 bg-white text-[#1d1d1f] cursor-pointer transition-all h-[38px]">
+            class="w-full rounded-xl border border-gray-300 px-3.5 py-2 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20 bg-white text-[#1D1D1F] cursor-pointer transition-all h-[38px]">
             <option value="">All Divisions</option>
             {% for d in divisions %}
             <option value="{{ d.id }}" {% if request.GET.division == d.id|stringformat:"s" %}selected{% endif %}>{{ d.standard.name }} — {{ d.name }}</option>
@@ -52,7 +52,7 @@
     <div class="min-w-[130px]">
         <label class="block text-xs font-semibold text-gray-500 mb-1.5">Status</label>
         <select name="status"
-            class="w-full rounded-xl border border-gray-300 px-3.5 py-2 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 bg-white text-[#1d1d1f] cursor-pointer transition-all h-[38px]">
+            class="w-full rounded-xl border border-gray-300 px-3.5 py-2 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20 bg-white text-[#1D1D1F] cursor-pointer transition-all h-[38px]">
             <option value="active" {% if status_filter == 'active' or not status_filter and not show_inactive %}selected{% endif %}>Active</option>
             <option value="inactive" {% if status_filter == 'inactive' or show_inactive %}selected{% endif %}>Inactive</option>
             <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Students</option>

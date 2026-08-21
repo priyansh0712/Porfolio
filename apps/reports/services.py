@@ -115,7 +115,7 @@ class ReportService:
         Returns:
             QuerySet: Filtered AttendanceLog records with select_related('faculty').
         """
-        qs = AttendanceLog.objects.filter(school=school).select_related('faculty')
+        qs = AttendanceLog.objects.filter(school=school).select_related('faculty').prefetch_related('corrections')
 
         if start_date:
             qs = qs.filter(date__gte=start_date)

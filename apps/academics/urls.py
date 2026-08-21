@@ -26,10 +26,14 @@ urlpatterns = [
     path('divisions/<int:pk>/edit/', views.DivisionUpdateView.as_view(), name='division_edit'),
     path('divisions/<int:pk>/delete/', views.DivisionDeleteView.as_view(), name='division_delete'),
 
-    # Subjects CRUD
+    # Subjects CRUD (Global Subject Master)
     path('subjects/create/', views.SubjectCreateView.as_view(), name='subject_create'),
     path('subjects/<int:pk>/edit/', views.SubjectUpdateView.as_view(), name='subject_edit'),
     path('subjects/<int:pk>/delete/', views.SubjectDeleteView.as_view(), name='subject_delete'),
+
+    # Curriculum Subject Assignments (Grade / Class-wise)
+    path('curriculum/add/', views.CurriculumSubjectAssignView.as_view(), name='curriculum_add'),
+    path('curriculum/<int:pk>/delete/', views.CurriculumSubjectDeleteView.as_view(), name='curriculum_delete'),
 
     # Allocations
     path('allocations/class-teacher/', views.ClassTeacherAssignView.as_view(), name='assign_class_teacher'),

@@ -1,78 +1,223 @@
-<!-- Subjects Tab -->
-<div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden">
-    <!-- Header with Action -->
-    <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<!-- Grade / Class-wise Curriculum Subjects Tab -->
+<div class="space-y-5">
+
+    <!-- Header Bar with Session Context & Master Actions -->
+    <div class="bg-white rounded-2xl border border-gray-200/80 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h2 class="text-lg font-bold text-[#1d1d1f] tracking-tight">Curriculum Subjects</h2>
-            <p class="text-xs text-gray-500 mt-0.5">Manage subjects, unique course codes, and Core vs Elective designations.</p>
+            <div class="flex items-center space-x-2.5 flex-wrap gap-y-1">
+                <h2 class="text-base sm:text-lg font-bold text-[#1D1D1F] tracking-tight">Curriculum Subjects</h2>
+                {% if selected_year %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#5A2132]/8 text-[#5A2132] border border-[#5A2132]/20">
+                        {{ selected_year.name }}
+                    </span>
+                {% endif %}
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">Configure class-wise curriculum subjects and course codes for the selected session.</p>
         </div>
-        <button type="button" onclick="openModal('modal-create-subject')" class="inline-flex items-center justify-center px-4 py-2 bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-semibold rounded-full shadow-xs transition-colors">
-            + Add Subject
-        </button>
+
+        <div class="flex items-center space-x-2.5 flex-wrap gap-y-2 self-start sm:self-auto">
+            <!-- Secondary Action: Global Subject Master -->
+            <button type="button"
+                    onclick="openManageSubjectMasterModal()"
+                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-white hover:bg-gray-50 text-[#1D1D1F] text-xs font-semibold rounded-full border border-gray-200/80 shadow-2xs transition-colors">
+                <svg class="w-3.5 h-3.5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>
+                </svg>
+                <span>Manage Subject Master</span>
+                <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200/60">{{ global_subjects|length }}</span>
+            </button>
+
+            <!-- Primary Action: Add Subject to Class -->
+            <button type="button"
+                    onclick="openAddCurriculumModal('', '')"
+                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#5A2132] hover:bg-[#481A28] text-white text-xs font-semibold rounded-full shadow-xs transition-colors">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Add Subject to Class</span>
+            </button>
+        </div>
     </div>
 
-    <!-- Table -->
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="border-b border-gray-100 bg-gray-50/50 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                    <th class="py-3.5 px-6">Subject Name</th>
-                    <th class="py-3.5 px-6">Subject Code</th>
-                    <th class="py-3.5 px-6">Category</th>
-                    <th class="py-3.5 px-6">Status</th>
-                    <th class="py-3.5 px-6 text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 text-sm">
-                {% for sub in subjects %}
-                <tr class="hover:bg-gray-50/60 transition-colors">
-                    <td class="py-4 px-6 font-semibold text-[#1d1d1f]">
-                        {{ sub.name }}
-                    </td>
-                    <td class="py-4 px-6 font-mono text-xs text-gray-700">
-                        <span class="bg-gray-100 px-2 py-0.5 rounded-md border border-gray-200/60 font-semibold">{{ sub.code }}</span>
-                    </td>
-                    <td class="py-4 px-6">
-                        {% if sub.subject_type == 'CORE' %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-[#0066cc] border border-blue-200/80">
-                                Core Subject
-                            </span>
-                        {% else %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200/80">
-                                Elective / Optional
-                            </span>
-                        {% endif %}
-                    </td>
-                    <td class="py-4 px-6">
-                        {% if sub.is_active %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">Active</span>
-                        {% else %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Inactive</span>
-                        {% endif %}
-                    </td>
-                    <td class="py-4 px-6 text-right space-x-2">
-                        <button type="button"
-                                onclick="openEditSubjectModal('{{ sub.id }}', '{{ sub.name }}', '{{ sub.code }}', '{{ sub.subject_type }}', {{ sub.is_active|yesno:'true,false' }})"
-                                class="text-xs font-semibold text-gray-600 hover:text-[#0066cc]">
-                            Edit
-                        </button>
-                        <button type="button"
-                                onclick="openConfirmDeleteModal('{% url 'academics:subject_delete' sub.id %}', 'Delete Subject', 'Are you sure you want to delete subject {{ sub.name|escapejs }} ({{ sub.code }})?')"
-                                class="text-xs font-semibold text-rose-600 hover:underline">
-                            Delete
-                        </button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="py-12 px-6 text-center text-gray-400">
-                        <div class="text-3xl mb-2">📚</div>
-                        <p class="font-medium text-gray-600">No Subjects added yet.</p>
-                        <p class="text-xs text-gray-400 mt-1">Click "+ Add Subject" to build your school curriculum list.</p>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Quick Grade Jumping Pills Bar -->
+    {% if curriculum_matrix %}
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+        <span class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider mr-1 flex-shrink-0">Jump to Grade:</span>
+        <button type="button" onclick="filterCurriculumGrade('all')" id="pill-grade-all"
+                class="curriculum-grade-pill px-3 py-1 rounded-full font-semibold transition-colors bg-[#5A2132] text-white flex-shrink-0">
+            All Grades ({{ curriculum_matrix|length }})
+        </button>
+        {% for std_data in curriculum_matrix %}
+        <button type="button" onclick="filterCurriculumGrade('grade-card-{{ std_data.standard.id }}')" id="pill-grade-{{ std_data.standard.id }}"
+                class="curriculum-grade-pill px-3 py-1 rounded-full font-medium transition-colors bg-white hover:bg-gray-100 text-gray-700 border border-gray-200/80 flex items-center gap-1.5 flex-shrink-0">
+            <span>{{ std_data.standard.name }}</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full {% if std_data.subject_count > 0 %}bg-[#5A2132]/8 text-[#5A2132]{% else %}bg-gray-100 text-gray-400{% endif %}">
+                {{ std_data.subject_count }}
+            </span>
+        </button>
+        {% endfor %}
     </div>
+    {% endif %}
+
+    <!-- Grade-by-Grade Curriculum Sections -->
+    <div class="space-y-4" id="curriculum-grades-container">
+        {% for std_data in curriculum_matrix %}
+        <div id="grade-card-{{ std_data.standard.id }}" class="curriculum-grade-section bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden">
+            <!-- Grade Card Header -->
+            <div class="p-4 sm:p-5 bg-gray-50/60 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-[#5A2132]/8 border border-[#5A2132]/15 flex items-center justify-center text-[#5A2132] font-bold text-xs flex-shrink-0">
+                        {{ std_data.standard.name|slice:":2" }}
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h3 class="text-sm sm:text-base font-bold text-[#1D1D1F] tracking-tight">{{ std_data.standard.name }}</h3>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold {% if std_data.subject_count > 0 %}bg-emerald-50 text-emerald-700 border border-emerald-200/80{% else %}bg-amber-50 text-amber-700 border border-amber-200/80{% endif %}">
+                                {{ std_data.subject_count }} {% if std_data.subject_count == 1 %}Subject{% else %}Subjects{% endif %}
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-gray-500 mt-0.5">
+                            Curriculum for {{ selected_year.name }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Quick Add Subject for this specific grade -->
+                <button type="button"
+                        onclick="openAddCurriculumModal('{{ std_data.standard.id }}', '{{ std_data.standard.name|escapejs }}')"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#5A2132] hover:text-[#481A28] bg-[#5A2132]/8 hover:bg-[#5A2132]/15 rounded-full border border-[#5A2132]/20 transition-colors self-start sm:self-auto">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Add Subject to {{ std_data.standard.name }}</span>
+                </button>
+            </div>
+
+            <!-- Subjects Table -->
+            {% if std_data.curriculum_subjects %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-100 bg-gray-50/30 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            <th class="py-2.5 px-4 sm:px-6">Subject</th>
+                            <th class="py-2.5 px-4 sm:px-6">Subject Code</th>
+                            <th class="py-2.5 px-4 sm:px-6">Category</th>
+                            <th class="py-2.5 px-4 sm:px-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-xs sm:text-sm">
+                        {% for curr in std_data.curriculum_subjects %}
+                        <tr class="hover:bg-gray-50/60 transition-colors group">
+                            <!-- Subject Name -->
+                            <td class="py-3 px-4 sm:px-6 font-semibold text-[#1D1D1F]">
+                                <div class="flex items-center space-x-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-gray-100 border border-gray-200/80 flex items-center justify-center text-gray-700 text-xs font-bold flex-shrink-0">
+                                        {{ curr.subject.name|slice:":2" }}
+                                    </div>
+                                    <span class="truncate">{{ curr.subject.name }}</span>
+                                </div>
+                            </td>
+
+                            <!-- Subject Code -->
+                            <td class="py-3 px-4 sm:px-6 font-mono text-xs">
+                                {% if curr.subject.code %}
+                                    <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md border border-gray-200/60 font-semibold">{{ curr.subject.code }}</span>
+                                {% else %}
+                                    <span class="text-gray-400 font-sans text-xs italic">—</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Category -->
+                            <td class="py-3 px-4 sm:px-6">
+                                {% if curr.subject.subject_type == 'CORE' %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#5A2132]/8 text-[#5A2132] border border-[#5A2132]/20">
+                                        Core Subject
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 border border-gray-200/80">
+                                        Elective / Optional
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Actions: Remove from Class -->
+                            <td class="py-3 px-4 sm:px-6 text-right">
+                                <button type="button"
+                                        onclick="openConfirmDeleteModal('{% url 'academics:curriculum_delete' curr.id %}', 'Remove Subject from Class Curriculum', 'Are you sure you want to remove {{ curr.subject.name|escapejs }}{% if curr.subject.code %} ({{ curr.subject.code }}){% endif %} from {{ std_data.standard.name|escapejs }} curriculum for {{ selected_year.name }}?')"
+                                        class="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline transition-colors"
+                                        title="Remove subject from this grade">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                    </svg>
+                                    <span>Remove</span>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <!-- Grade Empty State -->
+            <div class="py-8 px-4 text-center">
+                <p class="text-xs text-gray-400">No curriculum subjects configured for {{ std_data.standard.name }} in {{ selected_year.name }}.</p>
+                <button type="button"
+                        onclick="openAddCurriculumModal('{{ std_data.standard.id }}', '{{ std_data.standard.name|escapejs }}')"
+                        class="mt-2.5 inline-flex items-center gap-1 px-3 py-1.5 bg-[#5A2132] hover:bg-[#481A28] text-white text-xs font-semibold rounded-full shadow-xs transition-colors">
+                    + Add Subject to {{ std_data.standard.name }}
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="bg-white rounded-2xl border border-gray-200/80 p-12 text-center text-gray-400 shadow-xs">
+            <div class="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-200/80 flex items-center justify-center mx-auto mb-3 text-gray-400">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>
+                </svg>
+            </div>
+            <h4 class="font-bold text-sm text-[#1D1D1F]">No classes / standards found</h4>
+            <p class="text-xs text-[#6B7280] mt-1 max-w-sm mx-auto">Please configure your school standards/classes in the "Classes & Divisions" tab before setting up curriculum.</p>
+        </div>
+        {% endfor %}
+    </div>
+
 </div>
+
+<script>
+    function filterCurriculumGrade(targetId) {
+        const sections = document.querySelectorAll('.curriculum-grade-section');
+        const pills = document.querySelectorAll('.curriculum-grade-pill');
+
+        pills.forEach(p => {
+            p.classList.remove('bg-[#5A2132]', 'text-white');
+            p.classList.add('bg-white', 'text-gray-700');
+        });
+
+        if (targetId === 'all') {
+            sections.forEach(s => s.classList.remove('hidden'));
+            const allPill = document.getElementById('pill-grade-all');
+            if (allPill) {
+                allPill.classList.remove('bg-white', 'text-gray-700');
+                allPill.classList.add('bg-[#5A2132]', 'text-white');
+            }
+        } else {
+            sections.forEach(s => {
+                if (s.id === targetId) {
+                    s.classList.remove('hidden');
+                    s.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    s.classList.add('hidden');
+                }
+            });
+            const stdId = targetId.replace('grade-card-', '');
+            const activePill = document.getElementById('pill-grade-' + stdId);
+            if (activePill) {
+                activePill.classList.remove('bg-white', 'text-gray-700');
+                activePill.classList.add('bg-[#5A2132]', 'text-white');
+            }
+        }
+    }
+</script>

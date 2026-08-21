@@ -9,6 +9,7 @@ import logging
 from datetime import datetime
 
 from django.contrib import messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
@@ -92,9 +93,22 @@ class AttendanceReportView(SchoolAdminRequiredMixin, TemplateView):
 
         departments = Faculty.objects.filter(school=school).values_list('department', flat=True).distinct()
 
+        # ── Server-Side Pagination (25 rows per page) ──
+        page_num = self.request.GET.get('page', 1)
+        paginator = Paginator(qs, 25)
+        try:
+            page_obj = paginator.page(page_num)
+        except PageNotAnInteger:
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
+
         context.update({
-            'attendance_logs': qs[:100],  # Top 100 results
-            'total_count': qs.count(),
+            'page_obj': page_obj,
+            'attendance_logs': page_obj,
+            'total_count': paginator.count,
+            'is_paginated': paginator.num_pages > 1,
+            'paginator': paginator,
             'departments': [d for d in departments if d],
             'status_choices': AttendanceLog.Status.choices,
             'selected_start_date': start_date_str,
