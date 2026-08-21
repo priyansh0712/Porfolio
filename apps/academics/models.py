@@ -155,7 +155,9 @@ class Subject(TenantModel):
     )
     code = models.CharField(
         max_length=30,
-        help_text='Unique subject identifier code (e.g. MATH-01, SCI-10)',
+        blank=True,
+        default='',
+        help_text='Optional unique subject identifier code (e.g. MATH-01, SCI-10)',
     )
     subject_type = models.CharField(
         max_length=20,
@@ -175,6 +177,7 @@ class Subject(TenantModel):
         constraints = [
             models.UniqueConstraint(
                 fields=['school', 'code'],
+                condition=~models.Q(code=''),
                 name='unique_subject_code_per_school',
             ),
         ]
@@ -183,13 +186,88 @@ class Subject(TenantModel):
         super().clean()
         if self.code:
             self.code = self.code.strip().upper()
+        else:
+            self.code = ''
 
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} ({self.code})"
+        if self.code:
+            return f"{self.name} ({self.code})"
+        return self.name
+
+
+class ClassCurriculum(TenantModel):
+    """
+    Represents the assignment of a Subject from the Global Subject Master
+    to a specific Standard / Grade level for a specific Academic Year.
+
+    Rules:
+      - A Subject can be assigned to multiple Standards across multiple Academic Years.
+      - A Standard has an explicit set of subjects taught in a specific Academic Year.
+      - Enforces uniqueness on (school, academic_year, standard, subject).
+      - Multi-tenant isolated via TenantModel.
+    """
+    academic_year = models.ForeignKey(
+        AcademicYear,
+        on_delete=models.CASCADE,
+        related_name='curriculum_subjects',
+        help_text='Academic session for this curriculum assignment',
+    )
+    standard = models.ForeignKey(
+        Standard,
+        on_delete=models.CASCADE,
+        related_name='curriculum_subjects',
+        help_text='Grade / Standard to which the subject is assigned',
+    )
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.PROTECT,
+        related_name='class_curriculums',
+        help_text='Subject from Global Subject Master',
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text='Whether this subject is currently active in this grade curriculum',
+    )
+
+    class Meta:
+        ordering = ['standard__order_index', 'subject__name']
+        verbose_name = 'Class Curriculum'
+        verbose_name_plural = 'Class Curriculums'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['school', 'academic_year', 'standard', 'subject'],
+                name='unique_curriculum_per_standard_year',
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.academic_year_id and self.school_id:
+            if self.academic_year.school_id != self.school_id:
+                raise ValidationError({
+                    'academic_year': 'Academic Year must belong to the same school tenant.'
+                })
+        if self.standard_id and self.school_id:
+            if self.standard.school_id != self.school_id:
+                raise ValidationError({
+                    'standard': 'Standard must belong to the same school tenant.'
+                })
+        if self.subject_id and self.school_id:
+            if self.subject.school_id != self.school_id:
+                raise ValidationError({
+                    'subject': 'Subject must belong to the same school tenant.'
+                })
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.academic_year.name}: {self.standard.name} → {self.subject.name} ({self.subject.code})"
 
 
 class ClassTeacherAllocation(TenantModel):
@@ -325,6 +403,23 @@ class SubjectTeacherAllocation(TenantModel):
             if self.academic_year.school_id != self.school_id:
                 raise ValidationError({
                     'academic_year': 'Academic year must belong to the same school tenant.'
+                })
+        if self.division_id and self.subject_id and self.academic_year_id and self.school_id:
+            # If curriculum is configured for this standard and year, enforce subject membership
+            has_curriculum = ClassCurriculum.objects.filter(
+                school=self.school,
+                academic_year=self.academic_year,
+                standard=self.division.standard,
+            ).exists()
+            if has_curriculum and not ClassCurriculum.objects.filter(
+                school=self.school,
+                academic_year=self.academic_year,
+                standard=self.division.standard,
+                subject=self.subject,
+                is_active=True,
+            ).exists():
+                raise ValidationError({
+                    'subject': f"'{self.subject.name}' is not in the curriculum for {self.division.standard.name} in {self.academic_year.name}."
                 })
 
     def save(self, *args, **kwargs):

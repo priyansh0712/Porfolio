@@ -26,6 +26,7 @@ from apps.academics.models import (
     Standard,
     Division,
     Subject,
+    ClassCurriculum,
     ClassTeacherAllocation,
     SubjectTeacherAllocation,
 )
@@ -34,6 +35,7 @@ from apps.academics.forms import (
     StandardForm,
     DivisionForm,
     SubjectForm,
+    ClassCurriculumForm,
     ClassTeacherAllocationForm,
     SubjectTeacherAllocationForm,
 )
@@ -208,7 +210,7 @@ class AcademicModelTests(AcademicsBaseTestCase):
         self.assertIsNotNone(div_9a.pk)
 
     def test_subject_code_uppercase_and_uniqueness(self):
-        """Subject codes are auto-uppercased and unique per school."""
+        """Subject codes are auto-uppercased and unique per school when provided."""
         set_current_tenant(self.school_a)
 
         subj = Subject.objects.create(
@@ -227,6 +229,21 @@ class AcademicModelTests(AcademicsBaseTestCase):
                     name='Higher Mathematics',
                     code='MATH-01',
                 )
+
+    def test_subject_code_optional_and_multiple_blank_allowed(self):
+        """Subject code is optional. Multiple subjects can have empty code without constraint collision."""
+        set_current_tenant(self.school_a)
+
+        s1 = Subject.objects.create(school=self.school_a, name='Drawing', code='')
+        s2 = Subject.objects.create(school=self.school_a, name='Music', code='')
+
+        self.assertEqual(s1.code, '')
+        self.assertEqual(s2.code, '')
+        self.assertEqual(str(s1), 'Drawing')
+
+        # Form validation allows blank code
+        form = SubjectForm(data={'name': 'Physical Education', 'code': '', 'subject_type': 'CORE', 'is_active': True}, tenant=self.school_a)
+        self.assertTrue(form.is_valid(), form.errors)
 
     def test_multi_tenant_isolation(self):
         """Records from School A must not appear in School B queries."""
@@ -569,3 +586,231 @@ class AcademicCRUDViewTests(AcademicsBaseTestCase):
         )
         self.assertEqual(del_resp.status_code, 302)
         self.assertFalse(SubjectTeacherAllocation.objects.filter(pk=alloc.id).exists())
+
+
+class ClassCurriculumWorkflowTests(AcademicsBaseTestCase):
+    """
+    Tests for Grade/Class-wise Curriculum Management:
+      1. Grade 1 vs Grade 2 curriculum isolation (Math, English, EVS vs Math, English, Science, Hindi).
+      2. Grade 1 does not show Science or Hindi.
+      3. Grade 2 does not show EVS unless assigned.
+      4. Mathematics can exist in both grades without duplicating the global Subject Master.
+      5. Changing academic year isolates curriculum assignments.
+      6. Teaching assignments only show subjects belonging to that grade's curriculum.
+      7. Duplicate Grade + Subject + Academic Year is rejected.
+      8. Multi-tenant isolation for curriculum.
+      9. Curriculum CRUD views (assign, remove with allocation protection).
+    """
+
+    def setUp(self):
+        super().setUp()
+        set_current_tenant(self.school_a)
+        self.client.force_login(self.admin_user_a)
+
+        # Academic Years
+        self.year_2026 = AcademicYear.objects.create(
+            school=self.school_a,
+            name='2026-2027',
+            start_date=date(2026, 6, 1),
+            end_date=date(2027, 4, 30),
+            is_current=True,
+        )
+        self.year_2027 = AcademicYear.objects.create(
+            school=self.school_a,
+            name='2027-2028',
+            start_date=date(2027, 6, 1),
+            end_date=date(2028, 4, 30),
+            is_current=False,
+        )
+
+        # Standards / Grades
+        self.grade_1 = Standard.objects.create(school=self.school_a, name='Grade 1', order_index=1)
+        self.grade_2 = Standard.objects.create(school=self.school_a, name='Grade 2', order_index=2)
+
+        # Divisions
+        self.div_1a = Division.objects.create(school=self.school_a, standard=self.grade_1, name='A')
+        self.div_2a = Division.objects.create(school=self.school_a, standard=self.grade_2, name='A')
+
+        # Global Subject Master records
+        self.sub_math = Subject.objects.create(school=self.school_a, name='Mathematics', code='MATH-10', subject_type='CORE')
+        self.sub_eng = Subject.objects.create(school=self.school_a, name='English', code='ENG-10', subject_type='CORE')
+        self.sub_evs = Subject.objects.create(school=self.school_a, name='EVS', code='EVS-10', subject_type='CORE')
+        self.sub_sci = Subject.objects.create(school=self.school_a, name='Science', code='SCI-10', subject_type='CORE')
+        self.sub_hin = Subject.objects.create(school=self.school_a, name='Hindi', code='HIN-10', subject_type='ELECTIVE')
+
+    def test_grade_1_and_grade_2_curriculum_setup(self):
+        """
+        Grade 1 is assigned Math, English, EVS.
+        Grade 2 is assigned Math, English, Science, Hindi.
+        Grade 1 must not contain Science or Hindi.
+        Grade 2 must not contain EVS.
+        Math is shared across both grades using a single Subject master record.
+        """
+        # Assign Grade 1 curriculum
+        c1 = ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_1, subject=self.sub_math)
+        c2 = ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_1, subject=self.sub_eng)
+        c3 = ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_1, subject=self.sub_evs)
+
+        # Assign Grade 2 curriculum
+        c4 = ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_2, subject=self.sub_math)
+        c5 = ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_2, subject=self.sub_eng)
+        c6 = ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_2, subject=self.sub_sci)
+        c7 = ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_2, subject=self.sub_hin)
+
+        # Verify Grade 1 subjects
+        g1_subjects = list(Subject.objects.filter(class_curriculums__standard=self.grade_1, class_curriculums__academic_year=self.year_2026))
+        self.assertIn(self.sub_math, g1_subjects)
+        self.assertIn(self.sub_eng, g1_subjects)
+        self.assertIn(self.sub_evs, g1_subjects)
+        self.assertNotIn(self.sub_sci, g1_subjects)
+        self.assertNotIn(self.sub_hin, g1_subjects)
+        self.assertEqual(len(g1_subjects), 3)
+
+        # Verify Grade 2 subjects
+        g2_subjects = list(Subject.objects.filter(class_curriculums__standard=self.grade_2, class_curriculums__academic_year=self.year_2026))
+        self.assertIn(self.sub_math, g2_subjects)
+        self.assertIn(self.sub_eng, g2_subjects)
+        self.assertIn(self.sub_sci, g2_subjects)
+        self.assertIn(self.sub_hin, g2_subjects)
+        self.assertNotIn(self.sub_evs, g2_subjects)
+        self.assertEqual(len(g2_subjects), 4)
+
+        # Verify Global Subject Master was NOT duplicated
+        math_count = Subject.objects.filter(school=self.school_a, code='MATH-10').count()
+        self.assertEqual(math_count, 1)
+
+    def test_curriculum_matrix_service(self):
+        """AcademicService.get_class_curriculum_matrix returns structured grade-by-grade curriculums."""
+        ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_1, subject=self.sub_math)
+        ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_1, subject=self.sub_eng)
+        ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_2, subject=self.sub_sci)
+
+        matrix = AcademicService.get_class_curriculum_matrix(self.school_a, self.year_2026)
+        self.assertEqual(len(matrix), 2)
+
+        g1_data = next(m for m in matrix if m['standard'] == self.grade_1)
+        self.assertEqual(g1_data['subject_count'], 2)
+        g1_sub_names = [c.subject.name for c in g1_data['curriculum_subjects']]
+        self.assertEqual(sorted(g1_sub_names), ['English', 'Mathematics'])
+
+        g2_data = next(m for m in matrix if m['standard'] == self.grade_2)
+        self.assertEqual(g2_data['subject_count'], 1)
+        self.assertEqual(g2_data['curriculum_subjects'][0].subject.name, 'Science')
+
+    def test_academic_year_isolation(self):
+        """Curriculum assignments in 2026-2027 do not carry to 2027-2028 unless explicitly created."""
+        ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_1, subject=self.sub_math)
+
+        # 2026-2027 has 1 subject
+        matrix_2026 = AcademicService.get_class_curriculum_matrix(self.school_a, self.year_2026)
+        g1_2026 = next(m for m in matrix_2026 if m['standard'] == self.grade_1)
+        self.assertEqual(g1_2026['subject_count'], 1)
+
+        # 2027-2028 has 0 subjects
+        matrix_2027 = AcademicService.get_class_curriculum_matrix(self.school_a, self.year_2027)
+        g1_2027 = next(m for m in matrix_2027 if m['standard'] == self.grade_1)
+        self.assertEqual(g1_2027['subject_count'], 0)
+
+    def test_allocation_matrix_only_shows_grade_curriculum_subjects(self):
+        """Teaching Assignment allocation matrix must only list subjects configured in that grade's curriculum."""
+        # Grade 1 has only Math
+        ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_1, subject=self.sub_math)
+        # Grade 2 has Science and Hindi
+        ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_2, subject=self.sub_sci)
+        ClassCurriculum.objects.create(school=self.school_a, academic_year=self.year_2026, standard=self.grade_2, subject=self.sub_hin)
+
+        matrix = AcademicService.get_allocation_matrix(self.school_a, self.year_2026)
+
+        g1_matrix = next(m for m in matrix if m['standard'] == self.grade_1)
+        div_1a_data = g1_matrix['divisions'][0]
+        g1_subject_names = [s['subject'].name for s in div_1a_data['subjects']]
+        self.assertEqual(g1_subject_names, ['Mathematics'])
+        self.assertNotIn('Science', g1_subject_names)
+        self.assertNotIn('Hindi', g1_subject_names)
+
+        g2_matrix = next(m for m in matrix if m['standard'] == self.grade_2)
+        div_2a_data = g2_matrix['divisions'][0]
+        g2_subject_names = [s['subject'].name for s in div_2a_data['subjects']]
+        self.assertEqual(sorted(g2_subject_names), ['Hindi', 'Science'])
+        self.assertNotIn('Mathematics', g2_subject_names)
+
+    def test_duplicate_curriculum_assignment_prevented(self):
+        """Assigning the same Subject to the same Grade in the same Academic Year must be rejected."""
+        ClassCurriculum.objects.create(
+            school=self.school_a,
+            academic_year=self.year_2026,
+            standard=self.grade_1,
+            subject=self.sub_math,
+        )
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                ClassCurriculum.objects.create(
+                    school=self.school_a,
+                    academic_year=self.year_2026,
+                    standard=self.grade_1,
+                    subject=self.sub_math,
+                )
+
+    def test_curriculum_views_add_and_delete(self):
+        """Admin can assign and remove a subject from a grade curriculum via POST views."""
+        # 1. Add subject via POST view
+        resp = self.client.post(
+            '/academics/curriculum/add/',
+            {
+                'academic_year': self.year_2026.id,
+                'standard': self.grade_1.id,
+                'subject': self.sub_math.id,
+            },
+            HTTP_HOST='greenwood.localhost',
+        )
+        self.assertEqual(resp.status_code, 302)
+        curr = ClassCurriculum.objects.get(school=self.school_a, academic_year=self.year_2026, standard=self.grade_1, subject=self.sub_math)
+        self.assertIsNotNone(curr)
+
+        # 2. Delete subject via POST view
+        del_resp = self.client.post(
+            f'/academics/curriculum/{curr.id}/delete/',
+            HTTP_HOST='greenwood.localhost',
+        )
+        self.assertEqual(del_resp.status_code, 302)
+        self.assertFalse(ClassCurriculum.objects.filter(pk=curr.id).exists())
+
+    def test_curriculum_deletion_prevented_when_teacher_assigned(self):
+        """Curriculum subject cannot be removed if active teacher allocations exist for that subject in that year."""
+        curr = ClassCurriculum.objects.create(
+            school=self.school_a,
+            academic_year=self.year_2026,
+            standard=self.grade_1,
+            subject=self.sub_math,
+        )
+        SubjectTeacherAllocation.objects.create(
+            school=self.school_a,
+            academic_year=self.year_2026,
+            division=self.div_1a,
+            subject=self.sub_math,
+            faculty=self.faculty_a1,
+        )
+
+        del_resp = self.client.post(
+            f'/academics/curriculum/{curr.id}/delete/',
+            HTTP_HOST='greenwood.localhost',
+        )
+        self.assertEqual(del_resp.status_code, 302)
+        # Verify it was NOT deleted
+        self.assertTrue(ClassCurriculum.objects.filter(pk=curr.id).exists())
+
+    def test_cross_tenant_curriculum_prevented(self):
+        """School A cannot assign a subject or standard belonging to School B."""
+        std_b = Standard.objects.create(school=self.school_b, name='Grade 1 B')
+        sub_b = Subject.objects.create(school=self.school_b, name='French', code='FR-01')
+
+        with self.assertRaises(ValidationError):
+            curr = ClassCurriculum(
+                school=self.school_a,
+                academic_year=self.year_2026,
+                standard=std_b,  # belongs to school B!
+                subject=self.sub_math,
+            )
+            curr.clean()
+

@@ -11,6 +11,7 @@ from apps.academics.models import (
     Standard,
     Division,
     Subject,
+    ClassCurriculum,
     ClassTeacherAllocation,
     SubjectTeacherAllocation,
 )
@@ -23,19 +24,19 @@ class AcademicYearForm(forms.ModelForm):
         fields = ['name', 'start_date', 'end_date', 'is_current']
         widgets = {
             'name': forms.TextInput(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
                 'placeholder': 'e.g. 2026-2027',
             }),
             'start_date': forms.DateInput(attrs={
                 'type': 'date',
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
             }),
             'end_date': forms.DateInput(attrs={
                 'type': 'date',
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
             }),
             'is_current': forms.CheckboxInput(attrs={
-                'class': 'rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4',
+                'class': 'rounded border-gray-300 text-[#5A2132] focus:ring-[#5A2132] h-4 w-4',
             }),
         }
 
@@ -71,15 +72,15 @@ class StandardForm(forms.ModelForm):
         fields = ['name', 'order_index', 'is_active']
         widgets = {
             'name': forms.TextInput(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
                 'placeholder': 'e.g. Standard 10, Grade 1, UKG',
             }),
             'order_index': forms.NumberInput(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
                 'min': '0',
             }),
             'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4',
+                'class': 'rounded border-gray-300 text-[#5A2132] focus:ring-[#5A2132] h-4 w-4',
             }),
         }
 
@@ -107,14 +108,14 @@ class DivisionForm(forms.ModelForm):
         fields = ['standard', 'name', 'is_active']
         widgets = {
             'standard': forms.Select(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
             }),
             'name': forms.TextInput(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
                 'placeholder': 'e.g. A, B, C, Rose',
             }),
             'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4',
+                'class': 'rounded border-gray-300 text-[#5A2132] focus:ring-[#5A2132] h-4 w-4',
             }),
         }
 
@@ -148,37 +149,85 @@ class SubjectForm(forms.ModelForm):
         fields = ['name', 'code', 'subject_type', 'is_active']
         widgets = {
             'name': forms.TextInput(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
                 'placeholder': 'e.g. Mathematics, English, Science',
             }),
             'code': forms.TextInput(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 uppercase',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20 uppercase',
                 'placeholder': 'e.g. MATH-01, ENG-01',
             }),
             'subject_type': forms.Select(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
             }),
             'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4',
+                'class': 'rounded border-gray-300 text-[#5A2132] focus:ring-[#5A2132] h-4 w-4',
             }),
         }
 
     def __init__(self, *args, tenant=None, **kwargs):
         self.tenant = tenant
         super().__init__(*args, **kwargs)
+        self.fields['code'].required = False
 
     def clean_code(self):
-        code = self.cleaned_data.get('code', '').strip().upper()
-        if not code:
-            raise ValidationError('Subject code is required.')
-        qs = Subject.objects.filter(code__iexact=code)
-        if self.tenant:
-            qs = qs.filter(school=self.tenant)
-        if self.instance and self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-        if qs.exists():
-            raise ValidationError(f"A Subject with code '{code}' already exists in your school.")
+        code = self.cleaned_data.get('code', '')
+        if code:
+            code = code.strip().upper()
+        else:
+            code = ''
+        if code:
+            qs = Subject.objects.filter(code__iexact=code)
+            if self.tenant:
+                qs = qs.filter(school=self.tenant)
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise ValidationError(f"A Subject with code '{code}' already exists in your school.")
         return code
+
+
+class ClassCurriculumForm(forms.ModelForm):
+    class Meta:
+        model = ClassCurriculum
+        fields = ['academic_year', 'standard', 'subject']
+        widgets = {
+            'academic_year': forms.Select(attrs={
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
+            }),
+            'standard': forms.Select(attrs={
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
+            }),
+            'subject': forms.Select(attrs={
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
+            }),
+        }
+
+    def __init__(self, *args, tenant=None, **kwargs):
+        self.tenant = tenant
+        super().__init__(*args, **kwargs)
+        if self.tenant:
+            self.fields['academic_year'].queryset = AcademicYear.objects.filter(school=self.tenant)
+            self.fields['standard'].queryset = Standard.objects.filter(school=self.tenant, is_active=True).order_by('order_index', 'name')
+            self.fields['subject'].queryset = Subject.objects.filter(school=self.tenant, is_active=True).order_by('name')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        academic_year = cleaned_data.get('academic_year')
+        standard = cleaned_data.get('standard')
+        subject = cleaned_data.get('subject')
+
+        if academic_year and standard and subject and self.tenant:
+            qs = ClassCurriculum.objects.filter(
+                school=self.tenant,
+                academic_year=academic_year,
+                standard=standard,
+                subject=subject,
+            )
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise ValidationError(f"'{subject.name}' is already assigned to {standard.name} for {academic_year.name}.")
+        return cleaned_data
 
 
 class ClassTeacherAllocationForm(forms.ModelForm):
@@ -187,13 +236,13 @@ class ClassTeacherAllocationForm(forms.ModelForm):
         fields = ['academic_year', 'division', 'faculty']
         widgets = {
             'academic_year': forms.Select(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
             }),
             'division': forms.Select(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
             }),
             'faculty': forms.Select(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
             }),
         }
 
@@ -212,16 +261,16 @@ class SubjectTeacherAllocationForm(forms.ModelForm):
         fields = ['academic_year', 'division', 'subject', 'faculty']
         widgets = {
             'academic_year': forms.Select(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
             }),
             'division': forms.Select(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
             }),
             'subject': forms.Select(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
             }),
             'faculty': forms.Select(attrs={
-                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20',
+                'class': 'w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20',
             }),
         }
 
@@ -233,3 +282,4 @@ class SubjectTeacherAllocationForm(forms.ModelForm):
             self.fields['division'].queryset = Division.objects.filter(school=self.tenant, is_active=True).select_related('standard')
             self.fields['subject'].queryset = Subject.objects.filter(school=self.tenant, is_active=True)
             self.fields['faculty'].queryset = Faculty.objects.filter(school=self.tenant, is_active=True)
+

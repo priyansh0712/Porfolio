@@ -1,11 +1,11 @@
-<!-- Reusable Modals for Academic Management -->
+<!-- Reusable Modals for Academic Management (12 Unified Modals) -->
 
 <!-- 1. Create Academic Year Modal -->
 <div id="modal-create-year" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6 animate-scale-in">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
         <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-            <h3 class="text-base font-bold text-[#1d1d1f]">New Academic Year</h3>
-            <button type="button" onclick="closeModal('modal-create-year')" class="text-gray-400 hover:text-gray-600">✕</button>
+            <h3 class="text-base font-bold text-[#1d1d1f] tracking-tight">New Academic Year</h3>
+            <button type="button" onclick="closeModal('modal-create-year')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
         </div>
         <form method="POST" action="{% url 'academics:year_create' %}" class="space-y-4">
             {% csrf_token %}
@@ -28,8 +28,8 @@
                 <label class="text-xs text-gray-700 font-medium">Set as Active Current Session</label>
             </div>
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
-                <button type="button" onclick="closeModal('modal-create-year')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Session</button>
+                <button type="button" onclick="closeModal('modal-create-year')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Save Session</button>
             </div>
         </form>
     </div>
@@ -37,34 +37,34 @@
 
 <!-- 2. Edit Academic Year Modal -->
 <div id="modal-edit-year" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
         <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-            <h3 class="text-base font-bold text-[#1d1d1f]">Edit Academic Year</h3>
-            <button type="button" onclick="closeModal('modal-edit-year')" class="text-gray-400 hover:text-gray-600">✕</button>
+            <h3 class="text-base font-bold text-[#1D1D1F] tracking-tight">Edit Academic Year</h3>
+            <button type="button" onclick="closeModal('modal-edit-year')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
         </div>
         <form id="form-edit-year" method="POST" action="" class="space-y-4">
             {% csrf_token %}
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Session Name *</label>
-                <input type="text" id="edit-year-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                <input type="text" id="edit-year-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20">
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Start Date *</label>
-                    <input type="text" id="edit-year-start" name="start_date" required placeholder="Select Start Date" autocomplete="off" class="apple-datepicker w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 bg-white">
+                    <input type="text" id="edit-year-start" name="start_date" required placeholder="Select Start Date" autocomplete="off" class="apple-datepicker w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20 bg-white">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">End Date *</label>
-                    <input type="text" id="edit-year-end" name="end_date" required placeholder="Select End Date" autocomplete="off" class="apple-datepicker w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 bg-white">
+                    <input type="text" id="edit-year-end" name="end_date" required placeholder="Select End Date" autocomplete="off" class="apple-datepicker w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20 bg-white">
                 </div>
             </div>
             <div class="flex items-center space-x-2 pt-1">
-                <input type="checkbox" id="edit-year-current" name="is_current" class="rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4">
+                <input type="checkbox" id="edit-year-current" name="is_current" class="rounded border-gray-300 text-[#5A2132] focus:ring-[#5A2132] h-4 w-4">
                 <label class="text-xs text-gray-700 font-medium">Set as Active Current Session</label>
             </div>
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
-                <button type="button" onclick="closeModal('modal-edit-year')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Update Session</button>
+                <button type="button" onclick="closeModal('modal-edit-year')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Update Session</button>
             </div>
         </form>
     </div>
@@ -72,29 +72,29 @@
 
 <!-- 3. Create Standard Modal -->
 <div id="modal-create-standard" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
         <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-            <h3 class="text-base font-bold text-[#1d1d1f]">Add Grade Standard</h3>
-            <button type="button" onclick="closeModal('modal-create-standard')" class="text-gray-400 hover:text-gray-600">✕</button>
+            <h3 class="text-base font-bold text-[#1D1D1F] tracking-tight">Add Class / Grade</h3>
+            <button type="button" onclick="closeModal('modal-create-standard')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
         </div>
         <form method="POST" action="{% url 'academics:standard_create' %}" class="space-y-4">
             {% csrf_token %}
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Standard / Grade Name *</label>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Class / Standard Name *</label>
                 {{ standard_form.name }}
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Sort Order Index *</label>
                 {{ standard_form.order_index }}
-                <p class="text-[11px] text-gray-400 mt-1">Lower numbers appear first (e.g. UKG=0, Std 1=1, Std 10=10).</p>
+                <p class="text-[11px] text-gray-400 mt-1">Lower numbers appear first (e.g. Nursery=0, Std 1=1, Std 10=10).</p>
             </div>
             <div class="flex items-center space-x-2 pt-1">
                 {{ standard_form.is_active }}
-                <label class="text-xs text-gray-700 font-medium">Active Standard</label>
+                <label class="text-xs text-gray-700 font-medium">Active Class</label>
             </div>
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
-                <button type="button" onclick="closeModal('modal-create-standard')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Standard</button>
+                <button type="button" onclick="closeModal('modal-create-standard')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Save Class</button>
             </div>
         </form>
     </div>
@@ -102,28 +102,28 @@
 
 <!-- 4. Edit Standard Modal -->
 <div id="modal-edit-standard" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
         <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-            <h3 class="text-base font-bold text-[#1d1d1f]">Edit Grade Standard</h3>
-            <button type="button" onclick="closeModal('modal-edit-standard')" class="text-gray-400 hover:text-gray-600">✕</button>
+            <h3 class="text-base font-bold text-[#1D1D1F] tracking-tight">Edit Class / Grade</h3>
+            <button type="button" onclick="closeModal('modal-edit-standard')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
         </div>
         <form id="form-edit-standard" method="POST" action="" class="space-y-4">
             {% csrf_token %}
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Standard / Grade Name *</label>
-                <input type="text" id="edit-standard-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Class / Standard Name *</label>
+                <input type="text" id="edit-standard-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20">
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Sort Order Index *</label>
-                <input type="number" id="edit-standard-order" name="order_index" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                <input type="number" id="edit-standard-order" name="order_index" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20">
             </div>
             <div class="flex items-center space-x-2 pt-1">
-                <input type="checkbox" id="edit-standard-active" name="is_active" class="rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4">
-                <label class="text-xs text-gray-700 font-medium">Active Standard</label>
+                <input type="checkbox" id="edit-standard-active" name="is_active" class="rounded border-gray-300 text-[#5A2132] focus:ring-[#5A2132] h-4 w-4">
+                <label class="text-xs text-gray-700 font-medium">Active Class</label>
             </div>
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
-                <button type="button" onclick="closeModal('modal-edit-standard')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Update Standard</button>
+                <button type="button" onclick="closeModal('modal-edit-standard')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Update Class</button>
             </div>
         </form>
     </div>
@@ -131,23 +131,23 @@
 
 <!-- 5. Create Division Modal -->
 <div id="modal-create-division" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
         <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-            <h3 class="text-base font-bold text-[#1d1d1f]">Add Division</h3>
-            <button type="button" onclick="closeModal('modal-create-division')" class="text-gray-400 hover:text-gray-600">✕</button>
+            <h3 class="text-base font-bold text-[#1d1d1f] tracking-tight">Add Division Section</h3>
+            <button type="button" onclick="closeModal('modal-create-division')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
         </div>
         <form method="POST" action="{% url 'academics:division_create' %}" class="space-y-4">
             {% csrf_token %}
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Standard *</label>
-                <select id="create-division-standard-select" name="standard" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Class / Standard *</label>
+                <select id="create-division-standard-select" name="standard" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20">
                     {% for std in standards %}
                         <option value="{{ std.id }}">{{ std.name }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Division Section Name *</label>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Division Name *</label>
                 {{ division_form.name }}
                 <p class="text-[11px] text-gray-400 mt-1">e.g. A, B, C, Rose, Yellow</p>
             </div>
@@ -156,8 +156,8 @@
                 <label class="text-xs text-gray-700 font-medium">Active Division</label>
             </div>
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
-                <button type="button" onclick="closeModal('modal-create-division')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Division</button>
+                <button type="button" onclick="closeModal('modal-create-division')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Save Division</button>
             </div>
         </form>
     </div>
@@ -165,43 +165,46 @@
 
 <!-- 6. Edit Division Modal -->
 <div id="modal-edit-division" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
         <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-            <h3 class="text-base font-bold text-[#1d1d1f]">Edit Division</h3>
-            <button type="button" onclick="closeModal('modal-edit-division')" class="text-gray-400 hover:text-gray-600">✕</button>
+            <h3 class="text-base font-bold text-[#1D1D1F] tracking-tight">Edit Division Section</h3>
+            <button type="button" onclick="closeModal('modal-edit-division')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
         </div>
         <form id="form-edit-division" method="POST" action="" class="space-y-4">
             {% csrf_token %}
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Standard *</label>
-                <select id="edit-division-standard" name="standard" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Class / Standard *</label>
+                <select id="edit-division-standard" name="standard" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20">
                     {% for std in standards %}
                         <option value="{{ std.id }}">{{ std.name }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Division Section Name *</label>
-                <input type="text" id="edit-division-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Division Name *</label>
+                <input type="text" id="edit-division-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20">
             </div>
             <div class="flex items-center space-x-2 pt-1">
-                <input type="checkbox" id="edit-division-active" name="is_active" class="rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4">
+                <input type="checkbox" id="edit-division-active" name="is_active" class="rounded border-gray-300 text-[#5A2132] focus:ring-[#5A2132] h-4 w-4">
                 <label class="text-xs text-gray-700 font-medium">Active Division</label>
             </div>
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
-                <button type="button" onclick="closeModal('modal-edit-division')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Update Division</button>
+                <button type="button" onclick="closeModal('modal-edit-division')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Update Division</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- 7. Create Subject Modal -->
-<div id="modal-create-subject" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+<!-- 7. Create Subject Modal (Global Subject Master) -->
+<div id="modal-create-subject" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-[60] items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
         <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-            <h3 class="text-base font-bold text-[#1d1d1f]">Add Subject</h3>
-            <button type="button" onclick="closeModal('modal-create-subject')" class="text-gray-400 hover:text-gray-600">✕</button>
+            <div>
+                <h3 class="text-base font-bold text-[#1D1D1F] tracking-tight">Add Master Subject</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Creates a reusable course entry in the Global Subject Master.</p>
+            </div>
+            <button type="button" onclick="closeModal('modal-create-subject')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
         </div>
         <form method="POST" action="{% url 'academics:subject_create' %}" class="space-y-4">
             {% csrf_token %}
@@ -210,7 +213,7 @@
                 {{ subject_form.name }}
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Subject Code *</label>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Subject Code <span class="text-gray-400 font-normal">(Optional)</span></label>
                 {{ subject_form.code }}
             </div>
             <div>
@@ -222,44 +225,175 @@
                 <label class="text-xs text-gray-700 font-medium">Active Subject</label>
             </div>
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
-                <button type="button" onclick="closeModal('modal-create-subject')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Subject</button>
+                <button type="button" onclick="closeModal('modal-create-subject')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Save to Master</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- 8. Edit Subject Modal -->
-<div id="modal-edit-subject" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+<!-- 7b. Add Subject to Class Curriculum Modal -->
+<div id="modal-add-curriculum-subject" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
         <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-            <h3 class="text-base font-bold text-[#1d1d1f]">Edit Subject</h3>
-            <button type="button" onclick="closeModal('modal-edit-subject')" class="text-gray-400 hover:text-gray-600">✕</button>
+            <div>
+                <h3 class="text-base font-bold text-[#1D1D1F] tracking-tight">Add Subject to Class</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Academic Session: <span class="font-semibold text-[#5A2132]">{{ selected_year.name }}</span></p>
+            </div>
+            <button type="button" onclick="closeModal('modal-add-curriculum-subject')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
+        </div>
+        <form method="POST" action="{% url 'academics:curriculum_add' %}" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" id="curriculum-academic-year" name="academic_year" value="{{ selected_year.id }}">
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Target Class / Grade *</label>
+                <select id="curriculum-standard-select" name="standard" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20">
+                    <option value="">-- Choose Grade / Class --</option>
+                    {% for std in standards %}
+                        <option value="{{ std.id }}">{{ std.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Subject (from Subject Master) *</label>
+                <select id="curriculum-subject-select" name="subject" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20">
+                    <option value="">-- Select Subject --</option>
+                    {% for sub in global_subjects %}
+                        {% if sub.is_active %}
+                        <option value="{{ sub.id }}">{{ sub.name }}{% if sub.code %} ({{ sub.code }}){% endif %} — {{ sub.get_subject_type_display }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <p class="text-[11px] text-gray-500 mt-1">Don't see the subject? Use <a href="javascript:void(0)" onclick="closeModal('modal-add-curriculum-subject'); openModal('modal-create-subject');" class="text-[#5A2132] font-semibold hover:underline">Manage Subject Master</a> to create a new one.</p>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button type="button" onclick="closeModal('modal-add-curriculum-subject')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Add to Curriculum</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 7c. Manage Global Subject Master Catalog Modal -->
+<div id="modal-manage-subject-master" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-5 sm:p-6 animate-scale-in max-h-[80vh] flex flex-col" style="max-width: 520px;">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-3.5 border-b border-gray-100 flex-shrink-0 gap-3">
+            <div class="min-w-0 flex-1">
+                <h3 class="text-base font-bold text-[#1D1D1F] tracking-tight">Subject Master</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Central school course catalog.</p>
+            </div>
+            <div class="flex items-center space-x-2 flex-shrink-0">
+                <button type="button" onclick="closeModal('modal-manage-subject-master'); openModal('modal-create-subject');" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#5A2132] hover:bg-[#481A28] text-white text-xs font-semibold rounded-full shadow-xs transition-colors whitespace-nowrap">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>New Subject</span>
+                </button>
+                <button type="button" onclick="closeModal('modal-manage-subject-master')" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg text-sm font-bold">✕</button>
+            </div>
+        </div>
+
+        <!-- Subject Master Table (Scrollable) -->
+        <div class="overflow-y-auto flex-1 my-4 divide-y divide-gray-100 border border-gray-100 rounded-xl">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/70 text-[10px] font-bold text-gray-400 uppercase tracking-wider sticky top-0 bg-gray-50 z-10 border-b border-gray-100">
+                        <th class="py-2.5 px-4">Subject Name</th>
+                        <th class="py-2.5 px-4">Code</th>
+                        <th class="py-2.5 px-4">Category</th>
+                        <th class="py-2.5 px-4 text-right"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-xs">
+                    {% for sub in global_subjects %}
+                    <tr onclick="openEditSubjectModal('{{ sub.id }}', '{{ sub.name|escapejs }}', '{{ sub.code|default_if_none:""|escapejs }}', '{{ sub.subject_type }}', {{ sub.is_active|yesno:'true,false' }})"
+                        class="hover:bg-[#5A2132]/5 transition-colors cursor-pointer group">
+                        <td class="py-3 px-4 font-semibold text-[#1D1D1F] group-hover:text-[#5A2132] transition-colors">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-6 h-6 rounded-md bg-[#5A2132]/8 flex items-center justify-center text-[#5A2132] text-[10px] font-bold">
+                                    {{ sub.name|slice:":2" }}
+                                </div>
+                                <span>{{ sub.name }}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 font-mono font-semibold text-gray-700">
+                            {% if sub.code %}
+                                <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded border border-gray-200/60 text-xs">{{ sub.code }}</span>
+                            {% else %}
+                                <span class="text-gray-400 font-sans font-normal italic">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4">
+                            {% if sub.subject_type == 'CORE' %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#5A2132]/8 text-[#5A2132] border border-[#5A2132]/20">Core</span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700 border border-gray-200">Elective</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-gray-400 group-hover:text-[#5A2132] text-xs font-semibold inline-flex items-center gap-0.5 transition-colors">
+                                Edit &rsaquo;
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-gray-400">
+                            No subjects in Master. Click "+ New Master Subject" to create one.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end pt-3 border-t border-gray-100 flex-shrink-0">
+            <button type="button" onclick="closeModal('modal-manage-subject-master')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- 8. Edit Subject Modal -->
+<div id="modal-edit-subject" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-[60] items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1D1D1F] tracking-tight">Edit Subject</h3>
+            <button type="button" onclick="closeModal('modal-edit-subject')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
         </div>
         <form id="form-edit-subject" method="POST" action="" class="space-y-4">
             {% csrf_token %}
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Subject Name *</label>
-                <input type="text" id="edit-subject-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                <input type="text" id="edit-subject-name" name="name" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Subject Code *</label>
-                <input type="text" id="edit-subject-code" name="code" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 uppercase">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Subject Code <span class="text-gray-400 font-normal">(Optional)</span></label>
+                <input type="text" id="edit-subject-code" name="code" class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20 uppercase" placeholder="e.g. MATH-01">
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Category *</label>
-                <select id="edit-subject-type" name="subject_type" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                <select id="edit-subject-type" name="subject_type" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20">
                     <option value="CORE">Core Subject</option>
                     <option value="ELECTIVE">Elective / Optional</option>
                 </select>
             </div>
-            <div class="flex items-center space-x-2 pt-1">
-                <input type="checkbox" id="edit-subject-active" name="is_active" class="rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] h-4 w-4">
-                <label class="text-xs text-gray-700 font-medium">Active Subject</label>
-            </div>
-            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
-                <button type="button" onclick="closeModal('modal-edit-subject')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Update Subject</button>
+            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                <button type="button" onclick="triggerDeleteFromEditModal()" class="px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-full transition-colors flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                    </svg>
+                    <span>Delete Subject</span>
+                </button>
+                <div class="flex space-x-2">
+                    <button type="button" onclick="closeModal('modal-edit-subject')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Update Subject</button>
+                </div>
             </div>
         </form>
     </div>
@@ -267,10 +401,10 @@
 
 <!-- 9. Assign Class Teacher Modal -->
 <div id="modal-assign-class-teacher" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
         <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-            <h3 class="text-base font-bold text-[#1d1d1f]">Assign Class Teacher</h3>
-            <button type="button" onclick="closeModal('modal-assign-class-teacher')" class="text-gray-400 hover:text-gray-600">✕</button>
+            <h3 class="text-base font-bold text-[#1d1d1f] tracking-tight">Assign Class Teacher</h3>
+            <button type="button" onclick="closeModal('modal-assign-class-teacher')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
         </div>
         <form method="POST" action="{% url 'academics:assign_class_teacher' %}" class="space-y-4">
             {% csrf_token %}
@@ -278,23 +412,36 @@
             <input type="hidden" id="assign-class-division" name="division" value="">
 
             <div>
-                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Class</label>
+                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Target Class</label>
                 <div id="assign-class-name-display" class="font-bold text-[#1d1d1f] text-sm bg-gray-50 p-2.5 rounded-xl border border-gray-200/60"></div>
             </div>
 
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Select Faculty Member *</label>
-                <select id="assign-class-faculty-select" name="faculty" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                <div id="assign-class-faculty-combobox" class="relative mb-2">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </span>
+                    <input id="assign-class-faculty-search" type="text" placeholder="Type to filter teachers by name, code or dept..."
+                           role="combobox" aria-autocomplete="list" aria-expanded="false"
+                           aria-controls="assign-class-faculty-results" autocomplete="off"
+                           class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20 transition-all focus:outline-none">
+                    <div id="assign-class-faculty-results" role="listbox" aria-label="Matching faculty"
+                         class="hidden absolute left-0 right-0 top-full z-20 mt-1 max-h-52 overflow-y-auto rounded-xl border border-[#E5E1E1] bg-white py-1 shadow-lg"></div>
+                </div>
+                <select id="assign-class-faculty-select" name="faculty" required class="sr-only" tabindex="-1" aria-hidden="true">
                     <option value="">-- Choose Teacher --</option>
                     {% for f in active_faculty %}
-                        <option value="{{ f.id }}">{{ f.full_name }} ({{ f.employee_code }}) - {{ f.department }}</option>
+                        <option value="{{ f.id }}" data-faculty-name="{{ f.full_name }}" data-employee-code="{{ f.employee_code }}" data-department="{{ f.department }}">{{ f.full_name }} ({{ f.employee_code }}) — {{ f.department }}</option>
                     {% endfor %}
                 </select>
             </div>
 
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
-                <button type="button" onclick="closeModal('modal-assign-class-teacher')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Assignment</button>
+                <button type="button" onclick="closeModal('modal-assign-class-teacher')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Save Assignment</button>
             </div>
         </form>
     </div>
@@ -302,10 +449,10 @@
 
 <!-- 10. Assign Subject Teacher Modal -->
 <div id="modal-assign-subject-teacher" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
         <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-            <h3 class="text-base font-bold text-[#1d1d1f]">Assign Subject Teacher</h3>
-            <button type="button" onclick="closeModal('modal-assign-subject-teacher')" class="text-gray-400 hover:text-gray-600">✕</button>
+            <h3 class="text-base font-bold text-[#1D1D1F] tracking-tight">Assign Subject Teacher</h3>
+            <button type="button" onclick="closeModal('modal-assign-subject-teacher')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
         </div>
         <form method="POST" action="{% url 'academics:assign_subject_teacher' %}" class="space-y-4">
             {% csrf_token %}
@@ -315,28 +462,41 @@
 
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Class</label>
-                    <div id="assign-sub-class-display" class="font-bold text-[#1d1d1f] text-xs bg-gray-50 p-2.5 rounded-xl border border-gray-200/60 truncate"></div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Class</label>
+                    <div id="assign-sub-class-display" class="font-bold text-[#1D1D1F] text-xs bg-gray-50 p-2.5 rounded-xl border border-gray-200/60 truncate"></div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Subject</label>
-                    <div id="assign-sub-subject-display" class="font-bold text-[#0066cc] text-xs bg-blue-50/60 p-2.5 rounded-xl border border-blue-200/60 truncate"></div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Subject</label>
+                    <div id="assign-sub-subject-display" class="font-bold text-[#5A2132] text-xs bg-[#5A2132]/8 p-2.5 rounded-xl border border-[#5A2132]/20 truncate"></div>
                 </div>
             </div>
 
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Select Subject Teacher *</label>
-                <select id="assign-sub-faculty-select" name="faculty" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                <div id="assign-sub-faculty-combobox" class="relative mb-2">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </span>
+                    <input id="assign-sub-faculty-search" type="text" placeholder="Type to filter teachers by name, code or dept..."
+                           role="combobox" aria-autocomplete="list" aria-expanded="false"
+                           aria-controls="assign-sub-faculty-results" autocomplete="off"
+                           class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20 transition-all focus:outline-none">
+                    <div id="assign-sub-faculty-results" role="listbox" aria-label="Matching faculty"
+                         class="hidden absolute left-0 right-0 top-full z-20 mt-1 max-h-52 overflow-y-auto rounded-xl border border-[#E5E1E1] bg-white py-1 shadow-lg"></div>
+                </div>
+                <select id="assign-sub-faculty-select" name="faculty" required class="sr-only" tabindex="-1" aria-hidden="true">
                     <option value="">-- Choose Teacher --</option>
                     {% for f in active_faculty %}
-                        <option value="{{ f.id }}">{{ f.full_name }} ({{ f.employee_code }}) - {{ f.department }}</option>
+                        <option value="{{ f.id }}" data-faculty-name="{{ f.full_name }}" data-employee-code="{{ f.employee_code }}" data-department="{{ f.department }}">{{ f.full_name }} ({{ f.employee_code }}) — {{ f.department }}</option>
                     {% endfor %}
                 </select>
             </div>
 
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
-                <button type="button" onclick="closeModal('modal-assign-subject-teacher')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
-                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Subject Allocation</button>
+                <button type="button" onclick="closeModal('modal-assign-subject-teacher')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Assign Teacher</button>
             </div>
         </form>
     </div>
@@ -344,20 +504,20 @@
 
 <!-- 11. Manage / Edit / Delete Subject Teacher Modal -->
 <div id="modal-manage-subject-teacher" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-6 animate-scale-in">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 animate-scale-in">
         <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-            <h3 class="text-base font-bold text-[#1d1d1f]">Manage Subject Teacher</h3>
-            <button type="button" onclick="closeModal('modal-manage-subject-teacher')" class="text-gray-400 hover:text-gray-600">✕</button>
+            <h3 class="text-base font-bold text-[#1D1D1F] tracking-tight">Manage Subject Teacher</h3>
+            <button type="button" onclick="closeModal('modal-manage-subject-teacher')" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
         </div>
 
         <div class="grid grid-cols-2 gap-3 mb-4">
             <div>
-                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Class</label>
-                <div id="manage-sub-class-display" class="font-bold text-[#1d1d1f] text-xs bg-gray-50 p-2.5 rounded-xl border border-gray-200/60 truncate"></div>
+                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Class</label>
+                <div id="manage-sub-class-display" class="font-bold text-[#1D1D1F] text-xs bg-gray-50 p-2.5 rounded-xl border border-gray-200/60 truncate"></div>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Subject</label>
-                <div id="manage-sub-subject-display" class="font-bold text-[#0066cc] text-xs bg-blue-50/60 p-2.5 rounded-xl border border-blue-200/60 truncate"></div>
+                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Subject</label>
+                <div id="manage-sub-subject-display" class="font-bold text-[#5A2132] text-xs bg-[#5A2132]/8 p-2.5 rounded-xl border border-[#5A2132]/20 truncate"></div>
             </div>
         </div>
 
@@ -367,36 +527,56 @@
                 {% csrf_token %}
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Assigned Faculty Member *</label>
-                    <select id="manage-sub-faculty-select" name="faculty" required class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20">
+                    <div id="manage-sub-faculty-combobox" class="relative mb-2">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </span>
+                        <input id="manage-sub-faculty-search" type="text" placeholder="Type to filter teachers by name, code or dept..."
+                               role="combobox" aria-autocomplete="list" aria-expanded="false"
+                               aria-controls="manage-sub-faculty-results" autocomplete="off"
+                               class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white focus:border-[#5A2132] focus:ring-2 focus:ring-[#5A2132]/20 transition-all focus:outline-none">
+                        <div id="manage-sub-faculty-results" role="listbox" aria-label="Matching faculty"
+                             class="hidden absolute left-0 right-0 top-full z-20 mt-1 max-h-52 overflow-y-auto rounded-xl border border-[#E5E1E1] bg-white py-1 shadow-lg"></div>
+                    </div>
+                    <select id="manage-sub-faculty-select" name="faculty" required class="sr-only" tabindex="-1" aria-hidden="true">
                         {% for f in active_faculty %}
-                            <option value="{{ f.id }}">{{ f.full_name }} ({{ f.employee_code }}) - {{ f.department }}</option>
+                            <option value="{{ f.id }}" data-faculty-name="{{ f.full_name }}" data-employee-code="{{ f.employee_code }}" data-department="{{ f.department }}">{{ f.full_name }} ({{ f.employee_code }}) — {{ f.department }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <div class="flex items-center justify-between pt-3 border-t border-gray-100">
                     <!-- Trigger Inline Remove Confirmation -->
-                    <button type="button" onclick="showManageSubjectDeleteView()" class="px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-full transition-colors border border-rose-200">
-                        🗑️ Remove Teacher
+                    <button type="button" onclick="showManageSubjectDeleteView()" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-full transition-colors border border-rose-200/80">
+                        <svg class="w-3.5 h-3.5 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                        </svg>
+                        <span>Remove</span>
                     </button>
 
                     <div class="flex space-x-2">
-                        <button type="button" onclick="closeModal('modal-manage-subject-teacher')" class="px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
-                        <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full">Save Changes</button>
+                        <button type="button" onclick="closeModal('modal-manage-subject-teacher')" class="px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">Cancel</button>
+                        <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-[#5A2132] hover:bg-[#481A28] rounded-full shadow-xs transition-colors">Save</button>
                     </div>
                 </div>
             </form>
         </div>
 
-        <!-- Inline Delete Confirmation View (Replaces browser alert popup) -->
+        <!-- Inline Delete Confirmation View -->
         <div id="manage-sub-delete-view" class="hidden space-y-4 pt-1">
             <div class="bg-rose-50/80 border border-rose-200/90 rounded-2xl p-4 text-center">
-                <div class="text-2xl mb-1.5">🗑️</div>
-                <h4 class="text-sm font-bold text-rose-900">Remove Teacher Allocation?</h4>
+                <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-2 text-rose-600">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                    </svg>
+                </div>
+                <h4 class="text-sm font-bold text-rose-900">Remove Teacher Assignment?</h4>
                 <p class="text-xs text-rose-700 mt-1">This will unassign this teacher from teaching <span id="delete-sub-name-display" class="font-bold text-rose-900"></span> in <span id="delete-sub-class-display" class="font-bold text-rose-900"></span>.</p>
             </div>
             <div class="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100">
-                <button type="button" onclick="showManageSubjectMainView()" class="px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">
+                <button type="button" onclick="showManageSubjectMainView()" class="px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
                     Back
                 </button>
                 <button type="button" onclick="document.getElementById('form-manage-subject-delete').submit()" class="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-full shadow-xs transition-colors">
@@ -412,11 +592,13 @@
     </div>
 </div>
 
-<!-- Universal Delete Confirmation Modal (Replaces all browser native confirm popups) -->
-<div id="modal-confirm-delete" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-sm w-full p-6 animate-scale-in text-center">
-        <div class="w-12 h-12 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto mb-3 text-2xl text-rose-600">
-            🗑️
+<!-- 12. Universal Delete Confirmation Modal -->
+<div id="modal-confirm-delete" class="modal-dialog hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-[70] items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-sm w-full p-6 animate-scale-in text-center">
+        <div class="w-12 h-12 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto mb-3 text-rose-600">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+            </svg>
         </div>
         <h3 id="confirm-delete-title" class="text-base font-bold text-[#1d1d1f]">Confirm Deletion</h3>
         <p id="confirm-delete-message" class="text-xs text-gray-500 mt-1 mb-5 leading-relaxed"></p>
@@ -473,13 +655,48 @@
         openModal('modal-edit-division');
     }
 
+    let currentEditSubjectId = null;
+    let currentEditSubjectName = '';
+    let currentEditSubjectCode = '';
+
     function openEditSubjectModal(id, name, code, type, isActive) {
+        currentEditSubjectId = id;
+        currentEditSubjectName = name;
+        currentEditSubjectCode = code;
         document.getElementById('form-edit-subject').action = '/academics/subjects/' + id + '/edit/';
         document.getElementById('edit-subject-name').value = name;
         document.getElementById('edit-subject-code').value = code;
         document.getElementById('edit-subject-type').value = type;
-        document.getElementById('edit-subject-active').checked = isActive;
+        if (document.getElementById('edit-subject-active')) {
+            document.getElementById('edit-subject-active').checked = isActive;
+        }
+        closeModal('modal-manage-subject-master');
         openModal('modal-edit-subject');
+    }
+
+    function triggerDeleteFromEditModal() {
+        if (!currentEditSubjectId) return;
+        closeModal('modal-edit-subject');
+        const codeSuffix = currentEditSubjectCode ? ` (${currentEditSubjectCode})` : '';
+        openConfirmDeleteModal(
+            '/academics/subjects/' + currentEditSubjectId + '/delete/',
+            'Delete Master Subject',
+            `Are you sure you want to delete ${currentEditSubjectName}${codeSuffix} from the Subject Master?`
+        );
+    }
+
+    function openAddCurriculumModal(standardId, standardName) {
+        if (standardId) {
+            document.getElementById('curriculum-standard-select').value = standardId;
+        } else {
+            document.getElementById('curriculum-standard-select').value = '';
+        }
+        document.getElementById('curriculum-subject-select').value = '';
+        openModal('modal-add-curriculum-subject');
+    }
+
+    function openManageSubjectMasterModal() {
+        openModal('modal-manage-subject-master');
     }
 
     function openAssignClassTeacherModal(yearId, divisionId, className, currentFacultyId) {
@@ -522,4 +739,162 @@
         showManageSubjectMainView();
         openModal('modal-manage-subject-teacher');
     }
+
+    function normaliseFacultySearch(value) {
+        return (value || '').toLocaleLowerCase().replace(/[\s\-_—–()]+/g, '');
+    }
+
+    function initFacultyCombobox({ wrapperId, inputId, resultsId, selectId, modalId }) {
+        const wrapper = document.getElementById(wrapperId);
+        const input = document.getElementById(inputId);
+        const results = document.getElementById(resultsId);
+        const select = document.getElementById(selectId);
+        if (!wrapper || !input || !results || !select || wrapper.dataset.initialised) return;
+
+        wrapper.dataset.initialised = 'true';
+        const facultyOptions = Array.from(select.options)
+            .filter((option) => option.value)
+            .map((option) => ({
+                value: option.value,
+                name: option.dataset.facultyName || option.textContent.trim(),
+                employeeCode: option.dataset.employeeCode || '',
+                department: option.dataset.department || '',
+                label: option.textContent.trim()
+            }));
+        let filteredOptions = facultyOptions;
+        let activeIndex = -1;
+
+        const closeResults = () => {
+            results.classList.add('hidden');
+            input.setAttribute('aria-expanded', 'false');
+            input.removeAttribute('aria-activedescendant');
+            activeIndex = -1;
+        };
+        const openResults = () => {
+            results.classList.remove('hidden');
+            input.setAttribute('aria-expanded', 'true');
+        };
+        const syncSelectedFaculty = () => {
+            const faculty = facultyOptions.find((option) => option.value === select.value);
+            input.value = faculty ? faculty.label : '';
+            closeResults();
+        };
+        const setActiveResult = (index) => {
+            activeIndex = index;
+            Array.from(results.querySelectorAll('[role="option"]')).forEach((option, optionIndex) => {
+                const isActive = optionIndex === activeIndex;
+                option.classList.toggle('bg-[#5A2132]/8', isActive);
+                option.classList.toggle('text-[#5A2132]', isActive);
+                if (isActive) {
+                    input.setAttribute('aria-activedescendant', option.id);
+                    option.scrollIntoView({ block: 'nearest' });
+                }
+            });
+        };
+        const selectFaculty = (faculty) => {
+            select.value = faculty.value;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            syncSelectedFaculty();
+        };
+        const renderResults = () => {
+            const query = normaliseFacultySearch(input.value);
+            filteredOptions = facultyOptions.filter((faculty) => {
+                const searchableText = normaliseFacultySearch(`${faculty.name} ${faculty.employeeCode} ${faculty.department}`);
+                return !query || searchableText.includes(query);
+            });
+            results.replaceChildren();
+            activeIndex = -1;
+
+            if (!filteredOptions.length) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'px-3 py-2.5 text-xs text-[#6B7280]';
+                emptyState.setAttribute('role', 'status');
+                emptyState.textContent = 'No faculty found';
+                results.appendChild(emptyState);
+                openResults();
+                return;
+            }
+
+            filteredOptions.forEach((faculty, index) => {
+                const result = document.createElement('button');
+                const isSelected = faculty.value === select.value;
+                result.type = 'button';
+                result.id = `${resultsId}-option-${index}`;
+                result.className = `w-full px-3 py-2 text-left transition-colors hover:bg-[#5A2132]/8 focus:bg-[#5A2132]/8 focus:outline-none ${isSelected ? 'bg-[#5A2132]/8' : ''}`;
+                result.setAttribute('role', 'option');
+                result.setAttribute('aria-selected', String(isSelected));
+                result.tabIndex = -1;
+
+                const name = document.createElement('div');
+                name.className = 'text-xs font-semibold text-[#1D1D1F]';
+                name.textContent = faculty.name;
+                const details = document.createElement('div');
+                details.className = 'mt-0.5 text-[10px] text-[#6B7280]';
+                details.textContent = `${faculty.employeeCode} — ${faculty.department}`;
+                result.append(name, details);
+                result.addEventListener('click', () => selectFaculty(faculty));
+                results.appendChild(result);
+            });
+            openResults();
+        };
+
+        input.addEventListener('focus', () => {
+            input.select();
+            renderResults();
+        });
+        input.addEventListener('input', renderResults);
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeResults();
+                return;
+            }
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (results.classList.contains('hidden')) renderResults();
+                if (!filteredOptions.length) return;
+                const direction = event.key === 'ArrowDown' ? 1 : -1;
+                const nextIndex = activeIndex === -1
+                    ? (direction === 1 ? 0 : filteredOptions.length - 1)
+                    : (activeIndex + direction + filteredOptions.length) % filteredOptions.length;
+                setActiveResult(nextIndex);
+                return;
+            }
+            if (event.key === 'Enter' && activeIndex >= 0 && filteredOptions[activeIndex]) {
+                event.preventDefault();
+                selectFaculty(filteredOptions[activeIndex]);
+            }
+        });
+        document.addEventListener('click', (event) => {
+            if (!wrapper.contains(event.target)) closeResults();
+        });
+
+        const modal = document.getElementById(modalId);
+        if (modal && typeof MutationObserver !== 'undefined') {
+            new MutationObserver(() => {
+                if (!modal.classList.contains('hidden')) syncSelectedFaculty();
+            }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+        }
+    }
+
+    initFacultyCombobox({
+        wrapperId: 'assign-class-faculty-combobox',
+        inputId: 'assign-class-faculty-search',
+        resultsId: 'assign-class-faculty-results',
+        selectId: 'assign-class-faculty-select',
+        modalId: 'modal-assign-class-teacher'
+    });
+    initFacultyCombobox({
+        wrapperId: 'assign-sub-faculty-combobox',
+        inputId: 'assign-sub-faculty-search',
+        resultsId: 'assign-sub-faculty-results',
+        selectId: 'assign-sub-faculty-select',
+        modalId: 'modal-assign-subject-teacher'
+    });
+    initFacultyCombobox({
+        wrapperId: 'manage-sub-faculty-combobox',
+        inputId: 'manage-sub-faculty-search',
+        resultsId: 'manage-sub-faculty-results',
+        selectId: 'manage-sub-faculty-select',
+        modalId: 'modal-manage-subject-teacher'
+    });
 </script>

@@ -24,13 +24,15 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
         :root {
-            --apple-canvas: #f5f5f7;
-            --apple-surface: #ffffff;
-            --apple-ink: #1d1d1f;
-            --apple-muted: #86868b;
-            --apple-blue: #0066cc;
-            --apple-blue-hover: #0071e3;
-            --apple-hairline: #e5e5ea;
+            --apple-canvas: #F5F1F1;
+            --apple-surface: #FFFFFF;
+            --apple-sidebar: #FAF8F8;
+            --apple-topbar: #FAF8F8;
+            --apple-ink: #1D1D1F;
+            --apple-muted: #6B7280;
+            --apple-blue: #5A2132;
+            --apple-blue-hover: #481A28;
+            --apple-hairline: #E5E1E1;
         }
 
         *,
@@ -223,22 +225,22 @@
 
         .flatpickr-day:hover {
             background: #f5f5f7 !important;
-            color: #0066cc !important;
+            color: var(--apple-blue) !important;
         }
 
         .flatpickr-day.today {
-            border: 1.5px solid #0066cc !important;
+            border: 1.5px solid var(--apple-blue) !important;
             background: transparent !important;
-            color: #0066cc !important;
+            color: var(--apple-blue) !important;
             font-weight: 700 !important;
         }
 
         .flatpickr-day.selected,
         .flatpickr-day.selected:hover {
-            background: #0066cc !important;
+            background: var(--apple-blue) !important;
             color: #ffffff !important;
             font-weight: 700 !important;
-            box-shadow: 0 4px 10px rgba(0, 102, 204, 0.3) !important;
+            box-shadow: 0 4px 10px rgba(90, 33, 50, 0.25) !important;
         }
 
         .flatpickr-day.prevMonthDay,
@@ -283,6 +285,91 @@
             padding-right: 36px !important;
             cursor: pointer !important;
         }
+
+        /* ── Admin ERP Persistent Sidebar Shell ── */
+        #admin-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 260px;
+            z-index: 45;
+            background: var(--apple-sidebar, #faf8f8);
+            border-right: 1px solid var(--apple-hairline);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #admin-sidebar::-webkit-scrollbar { width: 4px; }
+        #admin-sidebar::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
+        #admin-sidebar:hover::-webkit-scrollbar-thumb { background: var(--apple-hairline); }
+
+        .erp-nav-active {
+            background: color-mix(in srgb, var(--apple-blue) 8%, transparent) !important;
+            color: var(--apple-blue) !important;
+            font-weight: 600 !important;
+            border: 1px solid color-mix(in srgb, var(--apple-blue) 18%, transparent) !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+        .erp-nav-active svg { color: var(--apple-blue); }
+
+        .erp-nav-default {
+            color: #555558;
+            border: 1px solid transparent;
+        }
+        .erp-nav-default:hover {
+            color: #1d1d1f;
+            background: rgba(0, 0, 0, 0.035);
+        }
+
+        .erp-subnav-active {
+            color: var(--apple-blue) !important;
+            font-weight: 700 !important;
+            background: color-mix(in srgb, var(--apple-blue) 12%, transparent) !important;
+            border: 1px solid color-mix(in srgb, var(--apple-blue) 22%, transparent) !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+        .erp-subnav-active .erp-dot {
+            background-color: var(--apple-blue) !important;
+        }
+
+        .erp-subnav-default {
+            color: #555558;
+            border: 1px solid transparent;
+        }
+        .erp-subnav-default:hover {
+            color: #1d1d1f;
+            background: rgba(0, 0, 0, 0.035);
+        }
+        .erp-subnav-default .erp-dot {
+            background-color: #d1d5db;
+        }
+
+        #erp-main-wrapper {
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Mobile drawer */
+        @media (max-width: 767px) {
+            #admin-sidebar {
+                transform: translateX(-100%);
+                width: 270px;
+                z-index: 55;
+                box-shadow: none;
+            }
+            #admin-sidebar.sidebar-open {
+                transform: translateX(0);
+                box-shadow: 16px 0 40px rgba(0, 0, 0, 0.15);
+            }
+            #erp-main-wrapper {
+                margin-left: 0 !important;
+            }
+        }
     </style>
     <!-- Lenis Smooth Scroll JS Library -->
     <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
@@ -294,17 +381,74 @@
     <div id="page-scroll-progress"
         class="fixed top-0 left-0 h-[3px] theme-bg-accent z-50 transition-all duration-150 w-0"></div>
 
-    <!-- Apple Translucent Header Navigation -->
+    {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}
+    <!-- ═══ School Admin ERP Layout Shell (Sidebar + Main Workspace) ═══ -->
     {% include "components/navbar.html" %}
 
+    <div id="erp-main-wrapper">
+        <!-- Top Utility Header for Admin -->
+        <header id="admin-topbar" class="sticky top-0 z-30 border-b border-[var(--apple-hairline)] px-4 sm:px-6 py-2.5 flex items-center justify-between" style="background-color: color-mix(in srgb, var(--apple-topbar) 92%, transparent); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+            <div class="flex items-center gap-3">
+                <!-- Hamburger for mobile -->
+                <button type="button" onclick="toggleSidebar()" class="md:hidden text-gray-700 hover:text-gray-900 p-1.5 rounded-lg hover:bg-gray-100 focus:outline-none" aria-label="Open Navigation">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <div class="text-xs font-semibold text-gray-500 tracking-tight flex items-center gap-1.5">
+                    {% block breadcrumb %}
+                    <span class="text-[#1d1d1f] font-bold">{% block page_title %}Academic Management{% endblock %}</span>
+                    <span class="text-gray-300">/</span>
+                    <span class="text-gray-500 font-medium">{% if request.tenant %}{{ request.tenant.name }}{% else %}School ERP{% endif %}</span>
+                    {% endblock %}
+                </div>
+            </div>
+
+            <!-- Top Header Right Actions -->
+            <div class="flex items-center gap-2.5">
+                <!-- Topbar Theme Switcher -->
+                <div class="bg-white/80 border border-[var(--apple-hairline)] shadow-2xs rounded-full px-2.5 py-1 flex items-center space-x-1.5" role="group" aria-label="Theme selector">
+                    <button type="button" onclick="setLiveTheme('burgundy')" title="Rosewood Theme" aria-label="Switch to Rosewood Theme"
+                        class="w-4 h-4 rounded-full bg-[#5A2132] border border-[#EBE6E6] hover:scale-110 active:scale-95 transition-transform focus:outline-none flex items-center justify-center text-[7px] text-white font-bold">1</button>
+                    <button type="button" onclick="setLiveTheme('espresso')" title="Espresso Theme" aria-label="Switch to Espresso Theme"
+                        class="w-4 h-4 rounded-full bg-[#3B2A22] border border-[#E6DCCE] hover:scale-110 active:scale-95 transition-transform focus:outline-none flex items-center justify-center text-[7px] text-white font-bold">2</button>
+                    <button type="button" onclick="setLiveTheme('blue')" title="Classic Warm Theme" aria-label="Switch to Classic Warm Theme"
+                        class="w-4 h-4 rounded-full bg-[#7D4755] border border-[#EBE6E6] hover:scale-110 active:scale-95 transition-transform focus:outline-none flex items-center justify-center text-[7px] text-white font-bold">3</button>
+                </div>
+
+                <a href="{% url 'notifications:notification_list' %}" class="relative p-1.5 text-gray-500 hover:text-[var(--apple-blue)] rounded-lg hover:bg-gray-100 transition-colors" title="Notifications" aria-label="Notifications">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+                    </svg>
+                    {% if unread_notifications_count > 0 %}
+                    <span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-red-500"></span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'attendance:kiosk' %}" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#5A2132] bg-[#5A2132]/8 hover:bg-[#5A2132]/12 border border-[#5A2132]/20 rounded-full px-3 py-1 transition-colors">
+                    <svg class="w-3.5 h-3.5 text-[#5A2132]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
+                    </svg>
+                    <span>Launch Kiosk</span>
+                </a>
+            </div>
+        </header>
+    {% else %}
+    <!-- ═══ Standard Layout for Faculty, Student, and Public ═══ -->
+    {% include "components/navbar.html" %}
+    {% endif %}
+
     <!-- Main Container -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 box-border overflow-x-clip">
+    <main class="flex-grow {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8{% else %}max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8{% endif %} box-border overflow-x-clip">
         {% include "components/alerts.html" %}
         {% block content %}{% endblock %}
     </main>
 
     <!-- Page Footer -->
     {% include "components/footer.html" %}
+
+    {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}
+    </div><!-- End #erp-main-wrapper -->
+    {% endif %}
 
     <!-- Global Command Palette Modal (Ctrl + K) -->
     <div id="cmd-palette-modal"
@@ -496,29 +640,32 @@
         </div>
     </div>
 
-    <!-- Floating Live Theme Switcher Widget (3 DEMO DOTS + Ctrl+K Button) -->
-    <div id="theme-switcher-widget"
-        class="fixed bottom-5 right-5 z-40 bg-white/90 backdrop-blur-xl border border-[#e0e0e0] shadow-xl rounded-full px-4 py-2.5 flex items-center space-x-3 transition-all transform hover:scale-105">
-        <button onclick="toggleCmdPalette()" title="Press Ctrl+K to search"
-            class="text-xs font-bold text-[var(--apple-ink)] hover:text-[var(--apple-blue)] flex items-center gap-1.5 font-luxury-sans focus:outline-none">
-            🔍 <span class="hidden sm:inline">Search</span> <span
-                class="text-[10px] bg-[var(--apple-canvas)] border border-[var(--apple-hairline)] px-1.5 py-0.5 rounded font-mono">Ctrl+K</span>
+    <!-- Floating Live Theme Switcher Widget (3 Themes + Ctrl+K Search Shortcut) -->
+    <aside id="theme-switcher-widget" aria-label="Theme switcher and command palette"
+        class="fixed bottom-4 right-4 z-40 bg-white/95 backdrop-blur-md border border-[var(--apple-hairline)] shadow-md rounded-full px-3 py-1.5 flex items-center space-x-2.5 transition-all opacity-85 hover:opacity-100 hover:shadow-lg">
+        <button type="button" onclick="toggleCmdPalette()" title="Press Ctrl+K to search" aria-label="Open Command Palette"
+            class="text-[11px] font-semibold text-[var(--apple-ink)] hover:text-[var(--apple-blue)] flex items-center gap-1.5 focus:outline-none">
+            <svg class="w-3.5 h-3.5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span class="hidden sm:inline">Search</span>
+            <span class="text-[9px] bg-[var(--apple-canvas)] border border-[var(--apple-hairline)] px-1.5 py-0.5 rounded font-mono text-gray-500">Ctrl+K</span>
         </button>
-        <span class="text-[var(--apple-hairline)]">|</span>
-        <div class="flex items-center space-x-2.5">
-            <!-- Dot 1: Deep Rosewood Plum & Pearl (#5A2132 / #EFE9E9) -->
-            <button onclick="setLiveTheme('burgundy')" title="1. Rosewood & Pearl (#5A2132 / #EFE9E9)"
-                class="w-7 h-7 rounded-full bg-[#5A2132] border-2 border-[#EFE9E9] shadow-md hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-[#5A2132] flex items-center justify-center text-[10px] text-white font-bold font-luxury-sans">1</button>
+        <span class="text-[var(--apple-hairline)]" aria-hidden="true">|</span>
+        <div class="flex items-center space-x-1.5" role="group" aria-label="Color themes">
+            <!-- Dot 1: Rosewood & Warm Neutral -->
+            <button type="button" onclick="setLiveTheme('burgundy')" title="Rosewood Warm Neutral Theme" aria-label="Switch to Rosewood Theme"
+                class="w-5 h-5 rounded-full bg-[#5A2132] border border-[#EBE6E6] shadow-xs hover:scale-110 active:scale-95 transition-transform focus:outline-none flex items-center justify-center text-[8px] text-white font-bold">1</button>
 
-            <!-- Dot 2: Espresso & Linen (#3B2A22 / #F9F6F1) -->
-            <button onclick="setLiveTheme('espresso')" title="2. Espresso & Linen (#3B2A22 / #F9F6F1)"
-                class="w-7 h-7 rounded-full bg-[#3B2A22] border-2 border-[#F9F6F1] shadow-md hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-[#3B2A22] flex items-center justify-center text-[10px] text-white font-bold font-luxury-sans">2</button>
+            <!-- Dot 2: Espresso Sand Linen -->
+            <button type="button" onclick="setLiveTheme('espresso')" title="Espresso Sand Linen Theme" aria-label="Switch to Espresso Theme"
+                class="w-5 h-5 rounded-full bg-[#3B2A22] border border-[#E6DCCE] shadow-xs hover:scale-110 active:scale-95 transition-transform focus:outline-none flex items-center justify-center text-[8px] text-white font-bold">2</button>
 
-            <!-- Dot 3: Apple Royal Blue (#0066cc / #f5f5f7) -->
-            <button onclick="setLiveTheme('blue')" title="3. Apple Royal Blue (#0066cc / #f5f5f7)"
-                class="w-7 h-7 rounded-full bg-[#0066cc] border-2 border-white shadow-md hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-[#0066cc] flex items-center justify-center text-[10px] text-white font-bold font-luxury-sans">3</button>
+            <!-- Dot 3: Classic Warm Neutral -->
+            <button type="button" onclick="setLiveTheme('blue')" title="Classic Warm Theme" aria-label="Switch to Classic Warm Theme"
+                class="w-5 h-5 rounded-full bg-[#7D4755] border border-[#EBE6E6] shadow-xs hover:scale-110 active:scale-95 transition-transform focus:outline-none flex items-center justify-center text-[8px] text-white font-bold">3</button>
         </div>
-    </div>
+    </aside>
 
     <!-- Quick Floating Action Drawer FAB Button (Bottom Left) -->
     <div class="fixed bottom-6 left-6 z-40">
@@ -577,7 +724,7 @@
                 </a>
                 <a href="{% url 'faculty:list' %}" onclick="toggleQuickDrawer()"
                     class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors">
-                    <span class="p-1.5 bg-blue-100 text-blue-600 rounded-lg text-sm">👥</span>
+                    <span class="p-1.5 bg-[#5A2132]/8 text-[#5A2132] rounded-lg text-sm">👥</span>
                     <div>
                         <div class="text-xs font-bold text-[var(--apple-ink)]">Faculty Directory</div>
                         <div class="text-[10px] text-[var(--apple-muted)]">Add staff & enroll biometrics</div>
@@ -635,42 +782,50 @@
     <script>
         const THEMES = {
             burgundy: {
-                canvas: '#EFE9E9',      // Soft Rosewood Pearl Canvas
-                surface: '#FFFFFF',     // Pure White Card Surface
-                ink: '#5A2132',         // Deep Rosewood Plum Text
-                muted: '#7D4755',       // Muted Rosewood Text
-                blue: '#5A2132',        // Primary Accent Button
-                blueHover: '#752A41',   // Hover Button Accent
-                hairline: '#D9CDCE',    // Border Hairline
+                canvas: '#F5F1F1',      // Warm Off-White / Rosewood Neutral Canvas
+                sidebar: '#FAF8F8',     // Subtle Warm-Neutral Sidebar
+                topbar: '#FAF8F8',      // Subtle Warm-Neutral Topbar
+                surface: '#FFFFFF',     // Pure White Elevated Cards
+                ink: '#1d1d1f',         // Deep Off-Black Text
+                muted: '#6B7280',       // Secondary text
+                blue: '#5A2132',        // Approved brand action color
+                blueHover: '#481A28',   // Brand action hover
+                hairline: '#E5E1E1',    // Brand hairline
                 fontFamily: "'Plus Jakarta Sans', sans-serif"
             },
             espresso: {
                 canvas: '#F9F6F1',      // Soft Clean Linen Sand
+                sidebar: '#FAF8F5',     // Light Sand Linen Sidebar
+                topbar: '#FAF8F5',      // Light Sand Linen Topbar
                 surface: '#FFFFFF',     // Pure White Card Surface
                 ink: '#32231B',         // Deep Espresso Coffee Text
-                muted: '#6E5C50',       // Muted Espresso Text
-                blue: '#3B2A22',        // Primary Button Espresso
-                blueHover: '#523B30',   // Hover Espresso
-                hairline: '#E6DCCE',    // Sand Hairline Border
+                muted: '#6B7280',       // Secondary text
+                blue: '#5A2132',        // Approved brand action color
+                blueHover: '#481A28',   // Brand action hover
+                hairline: '#E5E1E1',    // Brand hairline
                 fontFamily: "'Plus Jakarta Sans', sans-serif"
             },
             blue: {
-                canvas: '#f5f5f7',
-                surface: '#ffffff',
-                ink: '#1d1d1f',
-                muted: '#86868b',
-                blue: '#0066cc',
-                blueHover: '#0071e3',
-                hairline: '#e0e0e0',
+                canvas: '#F5F1F1',      // Warm Off-White Canvas
+                sidebar: '#FAF8F8',     // Warm-Neutral Sidebar
+                topbar: '#FAF8F8',      // Warm-Neutral Topbar
+                surface: '#FFFFFF',     // Pure White Surface
+                ink: '#1d1d1f',         // Off-Black Text
+                muted: '#6B7280',       // Secondary text
+                blue: '#5A2132',        // Approved brand action color
+                blueHover: '#481A28',   // Brand action hover
+                hairline: '#E5E1E1',    // Brand hairline
                 fontFamily: "'Plus Jakarta Sans', sans-serif"
             }
         };
 
         function setLiveTheme(themeKey) {
-            const theme = THEMES[themeKey] || THEMES.burgundy;
+            const theme = THEMES[themeKey] || THEMES.blue;
             const root = document.documentElement;
 
             root.style.setProperty('--apple-canvas', theme.canvas);
+            root.style.setProperty('--apple-sidebar', theme.sidebar || '#FAF8F8');
+            root.style.setProperty('--apple-topbar', theme.topbar || '#FAF8F8');
             root.style.setProperty('--apple-surface', theme.surface);
             root.style.setProperty('--apple-ink', theme.ink);
             root.style.setProperty('--apple-muted', theme.muted);
@@ -774,12 +929,42 @@
             });
         }
 
+        // ── Admin Sidebar Drawer Toggle ──
+        function toggleSidebar() {
+            var sidebar = document.getElementById('admin-sidebar');
+            var backdrop = document.getElementById('sidebar-backdrop');
+            if (!sidebar) return;
+            var isOpen = sidebar.classList.contains('sidebar-open');
+            if (isOpen) {
+                closeSidebar();
+            } else {
+                sidebar.classList.add('sidebar-open');
+                if (backdrop) backdrop.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeSidebar() {
+            var sidebar = document.getElementById('admin-sidebar');
+            var backdrop = document.getElementById('sidebar-backdrop');
+            if (sidebar) sidebar.classList.remove('sidebar-open');
+            if (backdrop) backdrop.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
         document.addEventListener('keydown', function (e) {
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
                 toggleCmdPalette();
             } else if (e.key === 'Escape') {
-                const modal = document.getElementById('cmd-palette-modal');
+                // Close mobile sidebar drawer if open
+                var sidebar = document.getElementById('admin-sidebar');
+                if (sidebar && sidebar.classList.contains('sidebar-open')) {
+                    closeSidebar();
+                    return;
+                }
+                // Then close command palette
+                var modal = document.getElementById('cmd-palette-modal');
                 if (modal && !modal.classList.contains('hidden')) {
                     modal.classList.add('hidden');
                 }
@@ -788,11 +973,11 @@
 
         // Restore saved theme
         document.addEventListener('DOMContentLoaded', function () {
-            const savedTheme = localStorage.getItem('studenterp_theme') || 'burgundy';
+            var savedTheme = localStorage.getItem('studenterp_theme') || 'burgundy';
             setLiveTheme(savedTheme);
 
-            const btn = document.getElementById('mobile-menu-btn');
-            const menu = document.getElementById('mobile-menu');
+            var btn = document.getElementById('mobile-menu-btn');
+            var menu = document.getElementById('mobile-menu');
             if (btn && menu) {
                 btn.addEventListener('click', function () {
                     menu.classList.toggle('hidden');
@@ -852,6 +1037,13 @@
             const submitBtn = form.querySelector('button[type="submit"]:not([data-no-disable])');
             if (submitBtn) {
                 form.dataset.submitting = 'true';
+                const originalText = submitBtn.innerText.trim();
+                let loadingText = 'Processing...';
+                if (/save|create|add/i.test(originalText)) loadingText = 'Saving...';
+                else if (/assign/i.test(originalText)) loadingText = 'Assigning...';
+                else if (/update/i.test(originalText)) loadingText = 'Updating...';
+                else if (/delete|remove/i.test(originalText)) loadingText = 'Deleting...';
+
                 submitBtn.disabled = true;
                 submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
                 submitBtn.innerHTML = `
@@ -859,7 +1051,7 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span>Saving...</span>
+                    <span>${loadingText}</span>
                 `;
             }
         });

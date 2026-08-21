@@ -1,13 +1,17 @@
 <!-- Academic Years Tab -->
 <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden">
     <!-- Header with Action -->
-    <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="p-5 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h2 class="text-lg font-bold text-[#1d1d1f] tracking-tight">Academic Sessions</h2>
+            <h2 class="text-base sm:text-lg font-bold text-[#1d1d1f] tracking-tight">Academic Sessions</h2>
             <p class="text-xs text-gray-500 mt-0.5">Manage session years and toggle the active attendance session.</p>
         </div>
-        <button type="button" onclick="openModal('modal-create-year')" class="inline-flex items-center justify-center px-4 py-2 bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-semibold rounded-full shadow-xs transition-colors">
-            + New Academic Year
+        <button type="button" onclick="openModal('modal-create-year')" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#5A2132] hover:bg-[#481A28] text-white text-xs font-semibold rounded-full shadow-xs transition-colors self-start sm:self-auto">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>New Academic Year</span>
         </button>
     </div>
 
@@ -29,16 +33,16 @@
                     <td class="py-4 px-6 font-semibold text-[#1d1d1f]">
                         {{ year.name }}
                     </td>
-                    <td class="py-4 px-6 text-gray-600">
+                    <td class="py-4 px-6 text-gray-600 text-xs sm:text-sm">
                         {{ year.start_date|date:"M d, Y" }}
                     </td>
-                    <td class="py-4 px-6 text-gray-600">
+                    <td class="py-4 px-6 text-gray-600 text-xs sm:text-sm">
                         {{ year.end_date|date:"M d, Y" }}
                     </td>
                     <td class="py-4 px-6">
                         {% if year.is_current %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-2xs">
-                                ★ Active Current Session
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                                Active
                             </span>
                         {% else %}
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
@@ -50,14 +54,14 @@
                         {% if not year.is_current %}
                             <form method="POST" action="{% url 'academics:year_set_current' year.id %}" class="inline">
                                 {% csrf_token %}
-                                <button type="submit" class="text-xs font-semibold text-[#0066cc] hover:underline">
+                                <button type="submit" class="text-xs font-semibold text-[#5A2132] hover:underline">
                                     Set Active
                                 </button>
                             </form>
                         {% endif %}
                         <button type="button"
-                                onclick="openEditYearModal('{{ year.id }}', '{{ year.name }}', '{{ year.start_date|date:'Y-m-d' }}', '{{ year.end_date|date:'Y-m-d' }}', {{ year.is_current|yesno:'true,false' }})"
-                                class="text-xs font-semibold text-gray-600 hover:text-[#0066cc]">
+                                onclick="openEditYearModal('{{ year.id }}', '{{ year.name|escapejs }}', '{{ year.start_date|date:'Y-m-d' }}', '{{ year.end_date|date:'Y-m-d' }}', {{ year.is_current|yesno:'true,false' }})"
+                                class="text-xs font-semibold text-gray-600 hover:text-[#5A2132]">
                             Edit
                         </button>
                         <button type="button"
@@ -69,10 +73,17 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="py-12 px-6 text-center text-gray-400">
-                        <div class="text-3xl mb-2">🗓️</div>
-                        <p class="font-medium text-gray-600">No Academic Years created yet.</p>
-                        <p class="text-xs text-gray-400 mt-1">Click "+ New Academic Year" to initialize your first school session.</p>
+                    <td colspan="5" class="py-14 px-6 text-center text-gray-400">
+                        <div class="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-200/80 flex items-center justify-center mx-auto mb-3 text-gray-400">
+                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-sm text-[#1D1D1F]">No academic years yet</h4>
+                        <p class="text-xs text-[#6B7280] mt-1 max-w-sm mx-auto">Create your first academic session to start configuring your school.</p>
+                        <button type="button" onclick="openModal('modal-create-year')" class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#5A2132] hover:bg-[#481A28] text-white text-xs font-semibold rounded-full shadow-xs transition-colors">
+                            + Create Academic Year
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}

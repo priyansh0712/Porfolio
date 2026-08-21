@@ -1,70 +1,231 @@
 {% extends "base.html" %}
 
-{% block title %}Academic Management — {% if request.tenant %}{{ request.tenant.name }}{% else %}StudentERP{% endif %}{% endblock %}
+{% block title %}
+    {% if active_tab == 'years' %}Academic Years — {% elif active_tab == 'classes' %}Classes & Divisions — {% elif active_tab == 'subjects' %}Curriculum Subjects — {% elif active_tab == 'allocations' %}Teaching Assignments — {% else %}Academic Overview — {% endif %}{% if request.tenant %}{{ request.tenant.name }}{% else %}StudentERP{% endif %}
+{% endblock %}
+
+{% block page_title %}
+    {% if active_tab == 'years' %}Academic Years
+    {% elif active_tab == 'classes' %}Classes & Divisions
+    {% elif active_tab == 'subjects' %}Curriculum Subjects
+    {% elif active_tab == 'allocations' %}Teaching Assignments
+    {% else %}Academic Overview{% endif %}
+{% endblock %}
+
+{% block breadcrumb %}
+    <div class="text-xs font-semibold text-gray-500 tracking-tight flex items-center gap-1.5">
+        <a href="{% url 'academics:hub' %}?tab=overview{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}" class="hover:text-[#5A2132] transition-colors">Academics</a>
+        <span class="text-gray-300">/</span>
+        <span class="text-[#1D1D1F] font-bold">
+            {% if active_tab == 'years' %}Academic Years
+            {% elif active_tab == 'classes' %}Classes & Divisions
+            {% elif active_tab == 'subjects' %}Subjects
+            {% elif active_tab == 'allocations' %}Teaching Assignments
+            {% else %}Overview{% endif %}
+        </span>
+    </div>
+{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-[#f5f5f7] py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="space-y-6">
 
-        <!-- Top Header & Session Selector -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-[#1d1d1f] tracking-tight">Academic Management</h1>
-                <p class="text-sm text-gray-500 mt-1">Configure academic years, grade standards, class divisions, subjects, and faculty allocations.</p>
-            </div>
+    {% if active_tab == 'overview' %}
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- DEDICATED ACADEMIC OVERVIEW PAGE (Only visible on ?tab=overview) -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
 
-            <!-- Active / Browsing Academic Session Switcher -->
-            <div class="flex items-center space-x-3 bg-white px-3.5 py-2 rounded-2xl border border-gray-200/80 shadow-xs self-start md:self-auto">
-                <span class="text-xs font-semibold text-gray-500">Session:</span>
-                <form method="GET" action="{% url 'academics:hub' %}" class="inline-flex items-center">
-                    <input type="hidden" name="tab" value="{{ active_tab }}">
-                    <select name="year" onchange="this.form.submit()" class="text-xs font-bold text-[#1d1d1f] bg-transparent border-0 focus:ring-0 cursor-pointer pr-6 py-0">
-                        {% for y in academic_years %}
-                            <option value="{{ y.id }}" {% if selected_year and selected_year.id == y.id %}selected{% endif %}>
-                                {{ y.name }}{% if y.is_current %} ★ (Active){% endif %}
-                            </option>
-                        {% empty %}
-                            <option value="">No Sessions Configured</option>
-                        {% endfor %}
-                    </select>
-                </form>
-            </div>
+    <!-- Top Header & Session Selector -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight">Academic Management</h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1">Manage your school's academic structure, classes, subjects and teaching assignments.</p>
         </div>
 
-        <!-- Segmented Control Tabs (Apple Style) -->
-        <div class="bg-gray-200/70 p-1 rounded-2xl inline-flex space-x-1 mb-8 overflow-x-auto max-w-full no-scrollbar shadow-inner">
-            <a href="?tab=years{% if selected_year %}&year={{ selected_year.id }}{% endif %}"
-               class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {% if active_tab == 'years' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
-                🗓️ Academic Years
-            </a>
-            <a href="?tab=classes{% if selected_year %}&year={{ selected_year.id }}{% endif %}"
-               class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {% if active_tab == 'classes' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
-                🏫 Standards & Divisions
-            </a>
-            <a href="?tab=subjects{% if selected_year %}&year={{ selected_year.id }}{% endif %}"
-               class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {% if active_tab == 'subjects' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
-                📚 Subjects
-            </a>
-            <a href="?tab=allocations{% if selected_year %}&year={{ selected_year.id }}{% endif %}"
-               class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {% if active_tab == 'allocations' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
-                👨‍🏫 Teacher Allocations
-            </a>
+        <!-- Academic Session Switcher -->
+        <div class="flex items-center space-x-2.5 bg-white px-3.5 py-2 rounded-2xl border border-gray-200/80 shadow-xs self-start sm:self-auto">
+            <span class="text-xs font-semibold text-gray-500">Academic Session:</span>
+            <form method="GET" action="{% url 'academics:hub' %}" class="inline-flex items-center">
+                <input type="hidden" name="tab" value="overview">
+                <select name="year" onchange="this.form.submit()" class="text-xs font-bold text-[#5A2132] bg-transparent border-0 focus:ring-0 cursor-pointer pr-6 py-0 focus:outline-none">
+                    {% for y in academic_years %}
+                        <option value="{{ y.id }}" {% if selected_year and selected_year.id == y.id %}selected{% endif %}>
+                            {{ y.name }}{% if y.is_current %} (Active){% endif %}
+                        </option>
+                    {% empty %}
+                        <option value="">No Sessions Configured</option>
+                    {% endfor %}
+                </select>
+            </form>
         </div>
-
-        <!-- Tab Content Panels -->
-        <div class="space-y-6">
-            {% if active_tab == 'years' %}
-                {% include "academics/partials/tab_years.html" %}
-            {% elif active_tab == 'classes' %}
-                {% include "academics/partials/tab_standards.html" %}
-            {% elif active_tab == 'subjects' %}
-                {% include "academics/partials/tab_subjects.html" %}
-            {% elif active_tab == 'allocations' %}
-                {% include "academics/partials/tab_allocations.html" %}
-            {% endif %}
-        </div>
-
     </div>
+
+    <!-- Academic Overview Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <!-- 1. Active Session -->
+        <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
+            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Active Session</div>
+            <div class="text-lg font-bold text-[#1D1D1F] my-1 truncate">
+                {% if selected_year %}{{ selected_year.name }}{% else %}—{% endif %}
+            </div>
+            <div class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>{% if selected_year and selected_year.is_current %}Current Session{% else %}Browsing{% endif %}</span>
+            </div>
+        </div>
+
+        <!-- 2. Classes Count -->
+        <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
+            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Classes</div>
+            <div class="text-lg font-bold text-[#1D1D1F] my-1">
+                {{ standards|length }}
+            </div>
+            <div class="text-[11px] text-gray-500 font-medium">Grade Standards</div>
+        </div>
+
+        <!-- 3. Subjects Count -->
+        <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
+            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Subjects</div>
+            <div class="text-lg font-bold text-[#1D1D1F] my-1">
+                {{ subjects|length }}
+            </div>
+            <div class="text-[11px] text-gray-500 font-medium">Curriculum Courses</div>
+        </div>
+
+        <!-- 4. Total Sessions Count -->
+        <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
+            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">All Sessions</div>
+            <div class="text-lg font-bold text-[#1D1D1F] my-1">
+                {{ academic_years|length }}
+            </div>
+            <div class="text-[11px] text-gray-500 font-medium">Configured Years</div>
+        </div>
+    </div>
+
+    <!-- Academic Setup Section -->
+    <div class="space-y-3 pt-2">
+        <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider px-1">Academic Setup & Operations</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <!-- 1. Academic Years Shortcut -->
+            <a href="{% url 'academics:hub' %}?tab=years{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
+               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#5A2132]/40 hover:shadow-sm transition-all group flex items-center justify-between">
+                <div class="flex items-center gap-3.5 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-[#5A2132]/8 border border-[#5A2132]/15 flex items-center justify-center text-[#5A2132] flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#5A2132] transition-colors">Academic Years</h3>
+                        <p class="text-xs text-gray-500 truncate">Manage academic sessions and active school years</p>
+                    </div>
+                </div>
+                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#5A2132] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m9 18 6-6-6-6"/>
+                </svg>
+            </a>
+
+            <!-- 2. Classes & Divisions Shortcut -->
+            <a href="{% url 'academics:hub' %}?tab=classes{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
+               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#5A2132]/40 hover:shadow-sm transition-all group flex items-center justify-between">
+                <div class="flex items-center gap-3.5 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-[#5A2132]/8 border border-[#5A2132]/15 flex items-center justify-center text-[#5A2132] flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.084a1 1 0 0 0 0 1.838l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16c0 1.657 2.686 3 6 3s6-1.343 6-3v-3.5"/>
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#5A2132] transition-colors">Classes & Divisions</h3>
+                        <p class="text-xs text-gray-500 truncate">Configure grade standards and section divisions</p>
+                    </div>
+                </div>
+                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#5A2132] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m9 18 6-6-6-6"/>
+                </svg>
+            </a>
+
+            <!-- 3. Subjects Shortcut -->
+            <a href="{% url 'academics:hub' %}?tab=subjects{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
+               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#5A2132]/40 hover:shadow-sm transition-all group flex items-center justify-between">
+                <div class="flex items-center gap-3.5 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-[#5A2132]/8 border border-[#5A2132]/15 flex items-center justify-center text-[#5A2132] flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+                            <path d="M6 6h10"></path><path d="M6 10h10"></path>
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#5A2132] transition-colors">Subjects</h3>
+                        <p class="text-xs text-gray-500 truncate">Manage curriculum subjects and course codes</p>
+                    </div>
+                </div>
+                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#5A2132] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m9 18 6-6-6-6"/>
+                </svg>
+            </a>
+
+            <!-- 4. Teaching Assignments Shortcut -->
+            <a href="{% url 'academics:hub' %}?tab=allocations{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
+               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#5A2132]/40 hover:shadow-sm transition-all group flex items-center justify-between">
+                <div class="flex items-center gap-3.5 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-[#5A2132]/8 border border-[#5A2132]/15 flex items-center justify-center text-[#5A2132] flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#5A2132] transition-colors">Teaching Assignments</h3>
+                        <p class="text-xs text-gray-500 truncate">Assign class teachers, subject teachers and co-teachers</p>
+                    </div>
+                </div>
+                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#5A2132] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m9 18 6-6-6-6"/>
+                </svg>
+            </a>
+
+        </div>
+    </div>
+
+    {% else %}
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPERATIONAL SUB-PAGES -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- Session Switcher Header for Operational Sub-pages -->
+    <div class="flex items-center justify-between gap-4 mb-2">
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Session:</span>
+            <span class="text-xs font-bold text-[#1D1D1F]">{% if selected_year %}{{ selected_year.name }}{% else %}—{% endif %}</span>
+        </div>
+
+        <form method="GET" action="{% url 'academics:hub' %}" class="inline-flex items-center bg-white px-3 py-1.5 rounded-xl border border-gray-200/80 shadow-xs">
+            <input type="hidden" name="tab" value="{{ active_tab }}">
+            <span class="text-xs font-semibold text-gray-500 mr-2">Change Session:</span>
+            <select name="year" onchange="this.form.submit()" class="text-xs font-bold text-[#5A2132] bg-transparent border-0 focus:ring-0 cursor-pointer pr-6 py-0 focus:outline-none">
+                {% for y in academic_years %}
+                    <option value="{{ y.id }}" {% if selected_year and selected_year.id == y.id %}selected{% endif %}>
+                        {{ y.name }}{% if y.is_current %} (Active){% endif %}
+                    </option>
+                {% empty %}
+                    <option value="">No Sessions Configured</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <!-- Sub-page Content Partial -->
+    {% if active_tab == 'years' %}
+        {% include "academics/partials/tab_years.html" %}
+    {% elif active_tab == 'classes' %}
+        {% include "academics/partials/tab_standards.html" %}
+    {% elif active_tab == 'subjects' %}
+        {% include "academics/partials/tab_subjects.html" %}
+    {% elif active_tab == 'allocations' %}
+        {% include "academics/partials/tab_allocations.html" %}
+    {% endif %}
+
+    {% endif %}
+
 </div>
 
 <!-- Modal Dialogs for Create / Edit / Assign -->
@@ -100,7 +261,7 @@
         }
     }
 
-    // Close modal on Escape key or backdrop click
+    // Close modal on Escape key
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             document.querySelectorAll('.modal-dialog').forEach(function(modal) {
@@ -117,6 +278,7 @@
         }
     });
 
+    // Close modal on backdrop click
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('modal-dialog')) {
             e.target.classList.add('hidden');

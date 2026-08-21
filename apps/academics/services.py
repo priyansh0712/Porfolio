@@ -1,16 +1,18 @@
 """
 Academics Business Logic Services.
 
-Provides helpers for session resolution, teacher allocations, and matrix generation.
+Provides helpers for session resolution, curriculum matrices, and teacher allocations.
 """
 from collections import defaultdict
 from django.db import transaction
+from django.core.exceptions import ValidationError
 
 from apps.academics.models import (
     AcademicYear,
     Standard,
     Division,
     Subject,
+    ClassCurriculum,
     ClassTeacherAllocation,
     SubjectTeacherAllocation,
 )
@@ -18,7 +20,7 @@ from apps.academics.models import (
 
 class AcademicService:
     """
-    Service layer for academic structure and teacher allocation operations.
+    Service layer for academic structure, grade-wise curriculum, and teacher allocation operations.
     """
 
     @staticmethod
@@ -31,6 +33,46 @@ class AcademicService:
         if active:
             return active
         return AcademicYear.objects.filter(school=school).order_by('-start_date').first()
+
+    @staticmethod
+    def get_class_curriculum_matrix(school, academic_year):
+        """
+        Returns grade-wise curriculum assignments for the specified academic year.
+        Structured as:
+          [
+            {
+              'standard': Standard,
+              'curriculum_subjects': [ClassCurriculum, ...],
+              'subject_count': int,
+            },
+            ...
+          ]
+        """
+        if not academic_year:
+            return []
+
+        standards = list(Standard.objects.filter(school=school, is_active=True).order_by('order_index', 'name'))
+        curriculums = list(
+            ClassCurriculum.objects.filter(
+                school=school,
+                academic_year=academic_year,
+                is_active=True,
+            ).select_related('subject', 'standard').order_by('subject__name')
+        )
+
+        std_curriculum_map = defaultdict(list)
+        for curr in curriculums:
+            std_curriculum_map[curr.standard_id].append(curr)
+
+        matrix = []
+        for std in standards:
+            curr_list = std_curriculum_map.get(std.id, [])
+            matrix.append({
+                'standard': std,
+                'curriculum_subjects': curr_list,
+                'subject_count': len(curr_list),
+            })
+        return matrix
 
     @staticmethod
     @transaction.atomic
@@ -52,8 +94,25 @@ class AcademicService:
     def assign_subject_teacher(school, academic_year, division, subject, faculty):
         """
         Assigns a Subject Teacher to a Division + Subject for an Academic Year.
+        Validates that the subject is part of the class's curriculum if curriculum is configured.
         Supports multi-teacher allocation (co-teaching).
         """
+        has_curriculum = ClassCurriculum.objects.filter(
+            school=school,
+            academic_year=academic_year,
+            standard=division.standard,
+        ).exists()
+        if has_curriculum and not ClassCurriculum.objects.filter(
+            school=school,
+            academic_year=academic_year,
+            standard=division.standard,
+            subject=subject,
+            is_active=True,
+        ).exists():
+            raise ValidationError(
+                f"'{subject.name}' is not part of the curriculum for {division.standard.name} in {academic_year.name}."
+            )
+
         allocation, created = SubjectTeacherAllocation.objects.get_or_create(
             school=school,
             academic_year=academic_year,
@@ -66,8 +125,9 @@ class AcademicService:
     @staticmethod
     def get_allocation_matrix(school, academic_year):
         """
-        Builds an optimized tree structure of Standards -> Divisions -> Allocations
+        Builds an optimized tree structure of Standards -> Divisions -> Curriculum Subjects -> Allocations
         for rendering the Teacher Allocation Matrix in the School Admin UI.
+        Only shows subjects configured in each grade's curriculum for that academic year.
         """
         if not academic_year:
             return []
@@ -76,7 +136,16 @@ class AcademicService:
             'divisions'
         ).order_by('order_index', 'name')
 
-        subjects = list(Subject.objects.filter(school=school, is_active=True).order_by('name'))
+        # Fetch all curriculum subjects for this academic year grouped by standard_id
+        curriculums = ClassCurriculum.objects.filter(
+            school=school,
+            academic_year=academic_year,
+            is_active=True,
+        ).select_related('subject').order_by('subject__name')
+
+        std_curriculum_subjects = defaultdict(list)
+        for curr in curriculums:
+            std_curriculum_subjects[curr.standard_id].append(curr.subject)
 
         # Fetch all class teacher allocations for this year
         class_allocations = {
@@ -97,10 +166,11 @@ class AcademicService:
 
         matrix = []
         for std in standards:
+            curr_subjects = std_curriculum_subjects.get(std.id, [])
             divisions_data = []
             for div in std.divisions.filter(is_active=True).order_by('name'):
                 div_subjects = []
-                for sub in subjects:
+                for sub in curr_subjects:
                     allocs = subject_allocations.get((div.id, sub.id), [])
                     div_subjects.append({
                         'subject': sub,
@@ -119,6 +189,9 @@ class AcademicService:
             matrix.append({
                 'standard': std,
                 'divisions': divisions_data,
+                'has_curriculum': len(curr_subjects) > 0,
+                'curriculum_subjects_count': len(curr_subjects),
             })
 
         return matrix
+

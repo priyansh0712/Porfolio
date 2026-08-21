@@ -45,19 +45,19 @@
     gap: 6px;
     padding: 9px 20px;
     border-radius: 980px;
-    background: #0066cc;
+    background: #5A2132;
     color: #fff;
     font-size: 0.8rem;
     font-weight: 600;
     border: none;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 1px 4px rgba(0, 102, 204, 0.15);
+    box-shadow: 0 1px 4px rgba(90, 33, 50, 0.15);
   }
   .btn-add-faculty:hover {
-    background: #0071e3;
+    background: #481A28;
     transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25);
+    box-shadow: 0 4px 12px rgba(90, 33, 50, 0.25);
   }
 
   /* Search & Filter Toolbar */
@@ -97,9 +97,9 @@
     transition: all 0.2s;
   }
   .search-input:focus {
-    border-color: #0066cc;
+    border-color: #5A2132;
     background: #fff;
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    box-shadow: 0 0 0 3px rgba(90, 33, 50, 0.1);
   }
   .search-input::placeholder { color: #86868b; }
 
@@ -119,9 +119,9 @@
     transition: all 0.2s;
   }
   .filter-select:focus {
-    border-color: #0066cc;
+    border-color: #5A2132;
     background-color: #fff;
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    box-shadow: 0 0 0 3px rgba(90, 33, 50, 0.1);
   }
 
   /* Status Pills */
@@ -383,14 +383,14 @@
     padding: 10px;
     border-radius: 12px;
     border: none;
-    background: #0066cc;
+    background: #5A2132;
     color: #fff;
     font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .btn-submit:hover { background: #0071e3; }
+  .btn-submit:hover { background: #481A28; }
   .btn-submit:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -506,7 +506,7 @@
       <div>
         <div class="flex items-start justify-between gap-3 mb-4">
           <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-2xl bg-[#0066cc]/10 text-[#0066cc] font-bold text-lg flex items-center justify-center border border-[#0066cc]/20">
+            <div class="w-12 h-12 rounded-2xl bg-[#5A2132]/10 text-[#5A2132] font-bold text-lg flex items-center justify-center border border-[#5A2132]/20">
               {{ faculty.first_name.0 }}{{ faculty.last_name.0 }}
             </div>
             <div>
@@ -576,12 +576,12 @@
           <!-- Faculty Info -->
           <td data-label="Faculty" class="td-faculty-info">
             <div style="display: flex; align-items: center; gap: 12px;">
-              <div class="avatar-circle"
-                   style="background: {% cycle '#e3f2fd' '#fce4ec' '#e8f5e9' '#f3e5f5' '#fff3e0' '#e0f2f1' %}; color: {% cycle '#1565c0' '#c62828' '#2e7d32' '#6a1b9a' '#e65100' '#00695c' %};">
+              <div class="faculty-avatar-circle"
+                   style="background: rgba(90, 33, 50, 0.08); color: #5A2132; border: 1px solid rgba(90, 33, 50, 0.15);">
                 {{ faculty.first_name.0 }}{{ faculty.last_name.0 }}
               </div>
               <div>
-                <div style="font-weight: 600; font-size: 0.85rem; color: #1d1d1f; transition: color 0.15s;" class="hover:text-[#0066cc]">{{ faculty.full_name }}</div>
+                <div style="font-weight: 600; font-size: 0.85rem; color: #1D1D1F; transition: color 0.15s;" class="hover:text-[#5A2132]">{{ faculty.full_name }}</div>
                 <div style="font-size: 0.72rem; color: #86868b; margin-top: 1px;">{{ faculty.email }}</div>
               </div>
             </div>
@@ -760,8 +760,8 @@
       </div>
 
       <!-- File Drop Area -->
-      <div style="border: 2px dashed #0066cc/40; border-radius: 16px; padding: 32px 20px; text-align: center; background: #f5f5f7/50; cursor: pointer; transition: all 0.2s;" id="csv-drop-area" onclick="document.getElementById('csv-file-input').click()">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" style="margin: 0 auto 12px;">
+      <div style="border: 2px dashed rgba(90, 33, 50, 0.35); border-radius: 16px; padding: 32px 20px; text-align: center; background: #f5f5f7/50; cursor: pointer; transition: all 0.2s;" id="csv-drop-area" onclick="document.getElementById('csv-file-input').click()">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#5A2132" stroke-width="1.5" stroke-linecap="round" style="margin: 0 auto 12px;">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="17 8 12 3 7 8"></polyline>
           <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -849,7 +849,7 @@
     </div>
     <!-- Face ID Action Button (dynamic: Enroll / Re-enroll + Reset) -->
     <div id="prof-face-actions" style="display: flex; gap: 8px; width: 100%;">
-      <button type="button" class="btn-cancel" id="btn-prof-enroll-face" style="flex: 1; font-weight: 600; color: #0066cc; border-color: #b3d4fc; background: #e8f0fe;">
+      <button type="button" class="btn-cancel" id="btn-prof-enroll-face" style="flex: 1; font-weight: 600; color: #5A2132; border-color: rgba(90, 33, 50, 0.2); background: rgba(90, 33, 50, 0.06);">
         📷 Enroll Face ID
       </button>
       <button type="button" class="btn-cancel" id="btn-prof-reset-face" style="flex: 0; display: none; font-weight: 600; color: #dc2626; border-color: #fecaca; background: #fef2f2; white-space: nowrap; padding: 9px 14px;">
@@ -1166,7 +1166,7 @@ function onCSVFileSelected(input) {
       submitBtn.disabled = true;
     } else {
       display.textContent = 'Selected: ' + file.name;
-      display.style.color = '#0066cc';
+      display.style.color = '#5A2132';
       submitBtn.disabled = false;
     }
   } else {
