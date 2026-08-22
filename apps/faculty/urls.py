@@ -16,4 +16,9 @@ urlpatterns = [
     path('<int:pk>/detail/', views.FacultyDetailAPIView.as_view(), name='detail_api'),
     path('my-class/', views.MyClassView.as_view(), name='my_class'),
     path('my-subjects/', views.MySubjectsView.as_view(), name='my_subjects'),
+    path('custom-fields/add/', views.FacultyCustomFieldCreateView.as_view(), name='custom_field_create'),
+    path('custom-fields/<int:pk>/edit/', views.FacultyCustomFieldUpdateView.as_view(), name='custom_field_update'),
+    path('custom-fields/<int:pk>/toggle/', views.FacultyCustomFieldToggleView.as_view(), name='custom_field_toggle'),
+    path('custom-fields/<int:pk>/delete/', views.FacultyCustomFieldDeleteView.as_view(), name='custom_field_delete'),
+    path('form-config/', views.FacultyFormFieldConfigUpdateView.as_view(), name='form_config_update'),
 ]

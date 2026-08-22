@@ -101,3 +101,51 @@ class FacultyDashboardViewsTest(TestCase):
         self.assertTemplateUsed(response, 'faculty/my_subjects.html')
         self.assertEqual(len(response.context['subject_rosters']), 1)
         self.assertEqual(response.context['subject_rosters'][0]['allocation'].subject.name, 'Physics')
+
+
+class FacultyFormFieldConfigTest(TestCase):
+    """Tests for FacultyFormFieldConfig model and update endpoint."""
+
+    def setUp(self):
+        self.school = School.objects.create(
+            name='Xavier School',
+            subdomain='xavier',
+            contact_email='admin@xavier.edu'
+        )
+        self.admin_user = User.objects.create_user(
+            username='admin@xavier.edu',
+            email='admin@xavier.edu',
+            password='TestPassword123!',
+            role=User.Role.SCHOOL_ADMIN,
+            school=self.school
+        )
+
+    def test_default_config_creation(self):
+        """Default FacultyFormFieldConfig should be created with standard defaults."""
+        from apps.faculty.models import FacultyFormFieldConfig
+        config = FacultyFormFieldConfig.get_for_school(self.school)
+        self.assertTrue(config.show_department)
+        self.assertTrue(config.require_department)
+
+    def test_update_form_config_endpoint(self):
+        """School Admin should be able to update FacultyFormFieldConfig."""
+        self.client.force_login(self.admin_user)
+        response = self.client.post(
+            reverse('faculty:form_config_update'),
+            {
+                'show_phone_number': 'on',
+                'require_phone_number': 'on',
+                'show_employee_code': 'on',
+                'require_employee_code': '',
+                'show_department': 'on',
+                'require_department': 'on',
+                'show_designation': '',
+                'require_designation': '',
+            },
+            HTTP_HOST='xavier.localhost:8000'
+        )
+        self.assertRedirects(response, '/faculty/?tab=custom_fields')
+        from apps.faculty.models import FacultyFormFieldConfig
+        config = FacultyFormFieldConfig.get_for_school(self.school)
+        self.assertTrue(config.require_phone_number)
+        self.assertFalse(config.show_designation)

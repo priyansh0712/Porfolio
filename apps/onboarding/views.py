@@ -43,10 +43,10 @@ class SampleTemplateDownloadView(SchoolAdminRequiredMixin, View):
         filename = f"step_{step}_sample_template.{fmt}"
 
         if fmt == 'csv':
-            content = SampleTemplateService.generate_csv(step)
+            content = SampleTemplateService.generate_csv(step, school=request.tenant)
             response = HttpResponse(content, content_type='text/csv')
         else:
-            content = SampleTemplateService.generate_xlsx(step)
+            content = SampleTemplateService.generate_xlsx(step, school=request.tenant)
             response = HttpResponse(
                 content,
                 content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

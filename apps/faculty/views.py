@@ -135,6 +135,18 @@ class FacultyListView(SchoolAdminRequiredMixin, ListView):
         ctx['active_count'] = qs.filter(is_active=True).count()
         ctx['inactive_count'] = qs.filter(is_active=False).count()
         ctx['form'] = FacultyForm(tenant=self.request.tenant)
+
+        # Custom Fields Context
+        from apps.faculty.models import FacultyCustomField, FacultyFormFieldConfig
+        from apps.faculty.forms import FacultyCustomFieldForm, FacultyFormFieldConfigForm
+        form_config = FacultyFormFieldConfig.get_for_school(self.request.tenant)
+        custom_fields_qs = FacultyCustomField.objects.filter(school=self.request.tenant).order_by('order_index', 'created_at')
+        ctx['form_config'] = form_config
+        ctx['form_config_form'] = FacultyFormFieldConfigForm(instance=form_config)
+        ctx['custom_fields'] = custom_fields_qs
+        ctx['custom_field_form'] = FacultyCustomFieldForm()
+        ctx['active_custom_fields'] = [cf for cf in custom_fields_qs if cf.is_active]
+        ctx['active_tab'] = self.request.GET.get('tab', 'faculty')
         return ctx
 
 
@@ -284,6 +296,7 @@ class FacultyDetailAPIView(SchoolAdminRequiredMixin, View):
             'is_active': faculty.is_active,
             'is_face_enrolled': faculty.is_face_enrolled,
             'date_joined': faculty.date_joined.strftime('%B %d, %Y') if faculty.date_joined else '—',
+            'custom_fields': faculty.custom_fields or {},
         })
 
 
@@ -388,13 +401,103 @@ class FacultySampleCSVView(SchoolAdminRequiredMixin, View):
 
     def get(self, request):
         from django.http import HttpResponse
+        import csv
+        from apps.faculty.models import FacultyCustomField
+
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="sample_faculty_import.csv"'
 
-        import csv
         writer = csv.writer(response)
-        writer.writerow(['first_name', 'last_name', 'email', 'department', 'designation', 'phone_number', 'employee_code'])
-        writer.writerow(['Rajesh', 'Sharma', 'rajesh.sharma@school.edu', 'Science', 'Senior Teacher', '+919876543210', ''])
-        writer.writerow(['Priya', 'Patel', 'priya.patel@school.edu', 'Mathematics', '', '+919876543211', ''])
+        headers = ['first_name', 'last_name', 'email', 'department', 'designation', 'phone_number', 'employee_code']
+        sample_row1 = ['Rajesh', 'Sharma', 'rajesh.sharma@school.edu', 'Science', 'Senior Teacher', '+919876543210', '']
+        sample_row2 = ['Priya', 'Patel', 'priya.patel@school.edu', 'Mathematics', '', '+919876543211', '']
+
+        custom_fields = list(FacultyCustomField.objects.filter(school=request.tenant, is_active=True).order_by('order_index', 'created_at'))
+        for cf in custom_fields:
+            headers.append(cf.label)
+            sample_row1.append(f"Sample {cf.label}")
+            sample_row2.append(f"Sample {cf.label}")
+
+        writer.writerow(headers)
+        writer.writerow(sample_row1)
+        writer.writerow(sample_row2)
         return response
+
+
+class FacultyCustomFieldCreateView(SchoolAdminRequiredMixin, View):
+    """POST: Create a new dynamic custom field definition for Faculty."""
+    def post(self, request):
+        from apps.faculty.forms import FacultyCustomFieldForm
+        form = FacultyCustomFieldForm(request.POST)
+        if form.is_valid():
+            FacultyService.create_custom_field(
+                school=request.tenant,
+                label=form.cleaned_data['label'],
+                field_type=form.cleaned_data['field_type'],
+                options=form.cleaned_data.get('options', ''),
+                is_required=form.cleaned_data.get('is_required', False)
+            )
+            messages.success(request, 'Faculty custom field created successfully.')
+        else:
+            messages.error(request, 'Failed to create custom field. Please check errors.')
+        return redirect('/faculty/?tab=custom_fields')
+
+
+class FacultyCustomFieldUpdateView(SchoolAdminRequiredMixin, View):
+    """POST: Update an existing Faculty custom field definition."""
+    def post(self, request, pk):
+        from apps.faculty.models import FacultyCustomField
+        from apps.faculty.forms import FacultyCustomFieldForm
+        cf = get_object_or_404(FacultyCustomField, pk=pk, school=request.tenant)
+        form = FacultyCustomFieldForm(request.POST, instance=cf)
+        if form.is_valid():
+            FacultyService.update_custom_field(
+                custom_field=cf,
+                label=form.cleaned_data['label'],
+                field_type=form.cleaned_data['field_type'],
+                options=form.cleaned_data.get('options', ''),
+                is_required=form.cleaned_data.get('is_required', False)
+            )
+            messages.success(request, f'Custom field "{cf.label}" updated.')
+        else:
+            messages.error(request, 'Failed to update custom field.')
+        return redirect('/faculty/?tab=custom_fields')
+
+
+class FacultyCustomFieldToggleView(SchoolAdminRequiredMixin, View):
+    """POST: Toggle active status of a Faculty custom field."""
+    def post(self, request, pk):
+        from apps.faculty.models import FacultyCustomField
+        cf = get_object_or_404(FacultyCustomField, pk=pk, school=request.tenant)
+        FacultyService.toggle_custom_field(cf)
+        status_str = 'activated' if cf.is_active else 'deactivated'
+        messages.success(request, f'Custom field "{cf.label}" {status_str}.')
+        return redirect('/faculty/?tab=custom_fields')
+
+
+class FacultyCustomFieldDeleteView(SchoolAdminRequiredMixin, View):
+    """POST: Delete a Faculty custom field definition."""
+    def post(self, request, pk):
+        from apps.faculty.models import FacultyCustomField
+        cf = get_object_or_404(FacultyCustomField, pk=pk, school=request.tenant)
+        name = cf.label
+        FacultyService.delete_custom_field(cf)
+        messages.success(request, f'Custom field "{name}" deleted.')
+        return redirect('/faculty/?tab=custom_fields')
+
+
+class FacultyFormFieldConfigUpdateView(SchoolAdminRequiredMixin, View):
+    """POST: Updates standard form field configuration (visibility & requirement)."""
+
+    def post(self, request):
+        from apps.faculty.models import FacultyFormFieldConfig
+        from apps.faculty.forms import FacultyFormFieldConfigForm
+        config = FacultyFormFieldConfig.get_for_school(request.tenant)
+        form = FacultyFormFieldConfigForm(request.POST, instance=config)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Faculty form field settings updated successfully.')
+        else:
+            messages.error(request, 'Failed to update form field settings.')
+        return redirect('/faculty/?tab=custom_fields')
 

@@ -45,5 +45,14 @@ class RegistrationSuccessView(TemplateView):
         context = super().get_context_data(**kwargs)
         subdomain = self.request.session.get('registered_subdomain') or self.request.GET.get('subdomain')
         if subdomain:
-            context['school'] = School.objects.filter(subdomain=subdomain).first()
+            school = School.objects.filter(subdomain=subdomain).first()
+            context['school'] = school
+            if school:
+                host = self.request.get_host().lower()
+                scheme = self.request.scheme
+                if 'localhost' in host:
+                    port = f":{host.split(':')[1]}" if ':' in host else ''
+                    context['school_login_url'] = f"{scheme}://{school.subdomain}.localhost{port}/login/"
+                else:
+                    context['school_login_url'] = f"{scheme}://{school.full_domain}/login/"
         return context
