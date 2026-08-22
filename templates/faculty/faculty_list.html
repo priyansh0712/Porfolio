@@ -396,40 +396,29 @@
   <!-- Page Header -->
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight flex items-center gap-2">
-        Faculty Directory 
-        <span class="inline-flex items-center justify-center min-w-[28px] h-6 px-2 rounded-full bg-gray-100 border border-gray-200 text-[11px] font-semibold text-gray-500" id="total-badge">{{ total_count }}</span>
+      <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight">
+        Faculty Directory
       </h1>
       <p class="text-xs sm:text-sm text-[#86868b] mt-1">
-        Manage faculty members for {% if tenant %}{{ tenant.name }}{% else %}your school{% endif %}
+        Manage {{ total_count }} faculty member{{ total_count|pluralize }} for {% if tenant %}{{ tenant.name }}{% else %}your school{% endif %}
       </p>
     </div>
-    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
-      <button class="apple-btn-primary px-5 py-2.5 inline-flex items-center justify-center gap-2 text-sm font-semibold min-h-[44px] sm:min-h-0 shadow-xs rounded-full bg-[#5A2132] text-white hover:bg-[#481A28] transition-all" onclick="openFacultyModal('create')" id="btn-add-faculty">
+    <div class="flex items-center gap-2 sm:gap-2.5 self-start sm:self-auto">
+      <button class="apple-btn-primary px-4 py-2 sm:px-5 sm:py-2.5 inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold shadow-xs" onclick="openFacultyModal('create')" id="btn-add-faculty">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        Add Faculty
+        <span>Add Faculty</span>
       </button>
-      <div class="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-2.5">
-        <a href="{% url 'faculty:export_csv' %}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-[#1D1D1F] hover:bg-gray-50 transition-all shadow-xs w-full sm:w-auto">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Export CSV
-        </a>
-        <button class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-[#1D1D1F] hover:bg-gray-50 transition-all shadow-xs w-full sm:w-auto" onclick="openCSVModal()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-          Import CSV
-        </button>
-      </div>
+      <a href="{% url 'faculty:export_csv' %}" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-white border border-gray-200 text-xs sm:text-sm font-semibold text-[#1D1D1F] hover:bg-gray-50 transition-all shadow-xs">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Export CSV</span>
+      </a>
     </div>
   </div>
 
