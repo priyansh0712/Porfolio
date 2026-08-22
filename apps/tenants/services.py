@@ -18,7 +18,9 @@ class SchoolRegistrationService:
         school = School.objects.create(
             name=data['school_name'],
             subdomain=data['subdomain'],
-            contact_email=data['contact_email']
+            contact_email=data['contact_email'],
+            school_image=data.get('school_image'),
+            school_logo=data.get('school_logo'),
         )
 
         # Split full name into first and last name if available

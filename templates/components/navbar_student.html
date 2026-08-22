@@ -3,9 +3,13 @@
         <div class="flex justify-between h-14 items-center">
             <!-- Brand -->
             <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 rounded-xl theme-bg-accent flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-                    S
-                </div>
+                {% if request.tenant and request.tenant.school_logo %}
+                    <img src="{{ request.tenant.school_logo.url }}" alt="{{ request.tenant.name }}" class="w-8 h-8 rounded-xl object-cover shadow-sm border border-[var(--apple-hairline)]">
+                {% else %}
+                    <div class="w-8 h-8 rounded-xl theme-bg-accent flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+                        {% if request.tenant %}{{ request.tenant.name|first }}{% else %}S{% endif %}
+                    </div>
+                {% endif %}
                 <a href="{% url 'students:portal' %}" class="text-sm font-bold text-[var(--apple-ink)] tracking-tight hover:opacity-80 transition-opacity">
                     {% if request.tenant %}{{ request.tenant.name }}{% else %}StudentERP{% endif %}
                 </a>

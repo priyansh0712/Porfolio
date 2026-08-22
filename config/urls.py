@@ -3,6 +3,9 @@ from django.urls import path, include
 
 from django.http import HttpResponse
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 urlpatterns = [
     path('favicon.ico', lambda request: HttpResponse(status=204)),
     path('admin/', admin.site.urls),
@@ -19,3 +22,6 @@ urlpatterns = [
     path('students/', include('apps.students.urls', namespace='students')),
     path('onboarding/', include('apps.onboarding.urls', namespace='onboarding')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

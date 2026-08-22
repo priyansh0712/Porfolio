@@ -2,6 +2,7 @@ from django.db import models
 
 from apps.core.models import TimeStampedModel
 from apps.tenants.managers import TenantManager
+from apps.tenants.validators import validate_image_file_size, validate_image_extension
 
 
 class School(models.Model):
@@ -16,6 +17,20 @@ class School(models.Model):
         help_text="Unique subdomain slug (e.g. greenwood for greenwood.ourapp.com)"
     )
     contact_email = models.EmailField(help_text="Primary administrative contact email")
+    school_image = models.ImageField(
+        upload_to='school_branding/images/',
+        blank=True,
+        null=True,
+        help_text="School cover image displayed on login page",
+        validators=[validate_image_file_size, validate_image_extension]
+    )
+    school_logo = models.ImageField(
+        upload_to='school_branding/logos/',
+        blank=True,
+        null=True,
+        help_text="School logo displayed in portal navigation header",
+        validators=[validate_image_file_size, validate_image_extension]
+    )
     is_active = models.BooleanField(default=True, help_text="Whether this school account is active")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

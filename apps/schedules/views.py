@@ -41,10 +41,13 @@ class ScheduleSettingsView(SchoolAdminRequiredMixin, TemplateView):
 
         holidays = HolidayException.objects.filter(school=school).order_by('-date')
 
+        from apps.tenants.forms import SchoolBrandingForm
+
         context.update({
             'schedules': schedules,
             'holidays': holidays,
             'days': WorkingSchedule.DAY_CHOICES,
+            'branding_form': SchoolBrandingForm(instance=school),
         })
         return context
 
@@ -52,7 +55,19 @@ class ScheduleSettingsView(SchoolAdminRequiredMixin, TemplateView):
         school = request.tenant
         action = request.POST.get('action')
 
-        if action == 'update_schedule':
+        if action == 'update_branding':
+            from apps.tenants.forms import SchoolBrandingForm
+            form = SchoolBrandingForm(request.POST, request.FILES, instance=school)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "School branding (image & logo) updated successfully.")
+                logger.info("Updated branding for school %s", school.subdomain)
+            else:
+                for field, error_list in form.errors.items():
+                    for err in error_list:
+                        messages.error(request, f"Branding update failed ({field}): {err}")
+
+        elif action == 'update_schedule':
             # ── Update day-of-week working schedule ──
             day_of_week = request.POST.get('day_of_week')
             is_working_day = request.POST.get('is_working_day') == 'on'

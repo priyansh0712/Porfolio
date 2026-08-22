@@ -20,9 +20,13 @@
         <!-- Brand Header -->
         <div class="px-5 py-4 border-b border-[var(--apple-hairline)] flex items-center justify-between">
             <a href="{{ nav_brand }}" class="flex items-center gap-3 group min-w-0">
-                <div class="w-8 h-8 rounded-xl bg-[#5A2132] flex items-center justify-center text-white font-bold text-sm shadow-xs flex-shrink-0">
-                    S
-                </div>
+                {% if request.tenant and request.tenant.school_logo %}
+                    <img src="{{ request.tenant.school_logo.url }}" alt="{{ request.tenant.name }}" class="w-8 h-8 rounded-xl object-cover shadow-xs flex-shrink-0 border border-[#e0e0e0]">
+                {% else %}
+                    <div class="w-8 h-8 rounded-xl bg-[#5A2132] flex items-center justify-center text-white font-bold text-sm shadow-xs flex-shrink-0">
+                        {% if request.tenant %}{{ request.tenant.name|first }}{% else %}S{% endif %}
+                    </div>
+                {% endif %}
                 <div class="sidebar-brand-text min-w-0">
                     <div class="text-sm font-bold text-[#1D1D1F] tracking-tight truncate group-hover:text-[#5A2132] transition-colors">
                         {% if request.tenant %}{{ request.tenant.name }}{% else %}StudentERP{% endif %}

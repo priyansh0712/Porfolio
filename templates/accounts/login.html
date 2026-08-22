@@ -47,100 +47,161 @@
 
 {% block content %}
 <div class="min-h-[calc(100vh-180px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-  <div class="w-full max-w-md">
+  <div class="w-full {% if tenant and tenant.school_image %}max-w-4xl{% else %}max-w-md{% endif %}">
 
-    <!-- School branding or Platform badge -->
-    <div class="text-center mb-8">
-      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#5A2132] shadow-sm mb-4">
-        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
+    {% if tenant and tenant.school_image %}
+      <!-- 2-Column Layout for School with School Image -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <!-- School Hero Image Column -->
+        <div class="relative h-64 md:h-[480px] rounded-3xl overflow-hidden shadow-lg border border-[#e0e0e0] bg-[#FAF8F8] flex items-center justify-center group">
+          <img src="{{ tenant.school_image.url }}" alt="{{ tenant.name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+            {% if tenant.school_logo %}
+              <img src="{{ tenant.school_logo.url }}" alt="{{ tenant.name }} Logo" class="w-12 h-12 rounded-xl object-cover mb-3 border border-white/20 shadow-md">
+            {% endif %}
+            <h2 class="text-xl font-bold tracking-tight text-white">{{ tenant.name }}</h2>
+            <p class="text-xs text-white/80 mt-1">Faculty Attendance &amp; Management Portal</p>
+            <div class="inline-flex items-center mt-3 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs w-max text-white font-medium">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2"></span>
+              {{ tenant.subdomain }}.ourapp.com
+            </div>
+          </div>
+        </div>
+
+        <!-- Login Form Column -->
+        <div>
+          <div class="text-left mb-6">
+            <h1 class="text-2xl font-semibold text-[#1D1D1F] tracking-tight">{{ tenant.name }}</h1>
+            <p class="text-xs text-[#86868b] mt-1">Sign in to access your school portal</p>
+          </div>
+
+          <!-- Login Card -->
+          <div class="apple-card-login rounded-3xl overflow-hidden">
+            <div class="p-8">
+              {% if form.non_field_errors %}
+                <div id="form-errors-data" style="display:none;" aria-hidden="true">
+                  {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}|||{% endif %}{% endfor %}
+                </div>
+              {% endif %}
+
+              <form method="post" id="login-form" novalidate>
+                {% csrf_token %}
+                <div class="mb-5">
+                  <label for="id_email" class="block text-xs font-medium text-[#1d1d1f] mb-1.5">Email Address</label>
+                  {{ form.username }}
+                  {% if form.username.errors %}
+                    <p class="mt-1 text-xs text-rose-600">{{ form.username.errors.as_text }}</p>
+                  {% endif %}
+                </div>
+
+                <div class="mb-6">
+                  <label for="id_password" class="block text-xs font-medium text-[#1d1d1f] mb-1.5">Password</label>
+                  <div style="position:relative;">
+                    {{ form.password }}
+                    <button type="button" class="pwd-toggle-btn" id="pwd-eye-btn" aria-label="Toggle password visibility" onclick="togglePassword()">
+                      <svg id="icon-eye" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                      <svg id="icon-eye-off" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" style="display:none;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.978 9.978 0 012.52-4.025M6.343 6.343A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.97 9.97 0 01-4.046 5.187M15 12a3 3 0 00-3-3M3 3l18 18"/>
+                      </svg>
+                    </button>
+                  </div>
+                  {% if form.password.errors %}
+                    <p class="mt-1 text-xs text-rose-600">{{ form.password.errors.as_text }}</p>
+                  {% endif %}
+                </div>
+
+                <button type="submit" id="submit-login" class="btn-action-blue w-full py-3 px-6 rounded-full text-white font-medium text-sm tracking-tight shadow-sm">
+                  Sign In
+                </button>
+              </form>
+            </div>
+            <div class="px-8 py-3.5 bg-[#fafafc] border-t border-[#e0e0e0]">
+              <p class="text-center text-[11px] text-[#86868b]">Argon2id encryption &bull; Multi-Tenant Security</p>
+            </div>
+          </div>
+        </div>
       </div>
-      {% if tenant %}
-        <h1 class="text-2xl font-semibold text-[#1D1D1F] tracking-tight">{{ tenant.name }}</h1>
-        <p class="text-xs text-[#86868b] mt-1">School Portal Login</p>
-        <div class="inline-flex items-center mt-2.5 px-3 py-1 rounded-full bg-[#FAF8F8] border border-[#e0e0e0]">
-          <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></div>
-          <span class="text-xs font-medium text-[#5A2132]">{{ tenant.subdomain }}.ourapp.com</span>
-        </div>
-      {% else %}
-        <h1 class="text-2xl font-semibold text-[#1d1d1f] tracking-tight">Platform Login</h1>
-        <p class="text-xs text-[#86868b] mt-1">Super Admin Access</p>
-        <div class="inline-flex items-center mt-2.5 px-3 py-1 rounded-full bg-[#fafafc] border border-[#e0e0e0]">
-          <span class="text-xs font-medium text-[#1d1d1f]">Platform Administrator Only</span>
-        </div>
-      {% endif %}
-    </div>
 
-    <!-- Login Card -->
-    <div class="apple-card-login rounded-3xl overflow-hidden">
-      <div class="p-8">
-
-        <!-- Form errors rendered as floating toasts via JS -->
-        {% if form.non_field_errors %}
-          <div id="form-errors-data" style="display:none;" aria-hidden="true">
-            {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}|||{% endif %}{% endfor %}
+    {% else %}
+      <!-- Standard Layout (Fallback when no image uploaded or Platform Login) -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#5A2132] shadow-sm mb-4">
+          {% if tenant and tenant.school_logo %}
+            <img src="{{ tenant.school_logo.url }}" alt="{{ tenant.name }}" class="w-full h-full rounded-2xl object-cover">
+          {% else %}
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          {% endif %}
+        </div>
+        {% if tenant %}
+          <h1 class="text-2xl font-semibold text-[#1D1D1F] tracking-tight">{{ tenant.name }}</h1>
+          <p class="text-xs text-[#86868b] mt-1">School Portal Login</p>
+          <div class="inline-flex items-center mt-2.5 px-3 py-1 rounded-full bg-[#FAF8F8] border border-[#e0e0e0]">
+            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></div>
+            <span class="text-xs font-medium text-[#5A2132]">{{ tenant.subdomain }}.ourapp.com</span>
+          </div>
+        {% else %}
+          <h1 class="text-2xl font-semibold text-[#1d1d1f] tracking-tight">Platform Login</h1>
+          <p class="text-xs text-[#86868b] mt-1">Super Admin Access</p>
+          <div class="inline-flex items-center mt-2.5 px-3 py-1 rounded-full bg-[#fafafc] border border-[#e0e0e0]">
+            <span class="text-xs font-medium text-[#1d1d1f]">Platform Administrator Only</span>
           </div>
         {% endif %}
+      </div>
 
-        <!-- Django messages are shown as floating toasts (alerts.html via base.html) -->
-
-        <!-- Login Form -->
-        <form method="post" id="login-form" novalidate>
-          {% csrf_token %}
-
-          <!-- Email Field -->
-          <div class="mb-5">
-            <label for="id_email" class="block text-xs font-medium text-[#1d1d1f] mb-1.5">
-              Email Address
-            </label>
-            {{ form.username }}
-            {% if form.username.errors %}
-              <p class="mt-1 text-xs text-rose-600">{{ form.username.errors.as_text }}</p>
-            {% endif %}
-          </div>
-
-          <!-- Password Field -->
-          <div class="mb-6">
-            <label for="id_password" class="block text-xs font-medium text-[#1d1d1f] mb-1.5">
-              Password
-            </label>
-            <div style="position:relative;">
-              {{ form.password }}
-              <button type="button" class="pwd-toggle-btn" id="pwd-eye-btn" aria-label="Toggle password visibility"
-                onclick="togglePassword()">
-                <!-- Eye icon (show) -->
-                <svg id="icon-eye" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
-                <!-- Eye-off icon (hide) — shown when password is visible -->
-                <svg id="icon-eye-off" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" style="display:none;">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.978 9.978 0 012.52-4.025M6.343 6.343A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.97 9.97 0 01-4.046 5.187M15 12a3 3 0 00-3-3M3 3l18 18"/>
-                </svg>
-              </button>
+      <!-- Login Card -->
+      <div class="apple-card-login rounded-3xl overflow-hidden">
+        <div class="p-8">
+          {% if form.non_field_errors %}
+            <div id="form-errors-data" style="display:none;" aria-hidden="true">
+              {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}|||{% endif %}{% endfor %}
             </div>
-            {% if form.password.errors %}
-              <p class="mt-1 text-xs text-rose-600">{{ form.password.errors.as_text }}</p>
-            {% endif %}
-          </div>
+          {% endif %}
 
-          <!-- Submit Button -->
-          <button type="submit" id="submit-login"
-            class="btn-action-blue w-full py-3 px-6 rounded-full text-white font-medium text-sm tracking-tight shadow-sm">
-            Sign In
-          </button>
-        </form>
-      </div>
+          <form method="post" id="login-form" novalidate>
+            {% csrf_token %}
+            <div class="mb-5">
+              <label for="id_email" class="block text-xs font-medium text-[#1d1d1f] mb-1.5">Email Address</label>
+              {{ form.username }}
+              {% if form.username.errors %}
+                <p class="mt-1 text-xs text-rose-600">{{ form.username.errors.as_text }}</p>
+              {% endif %}
+            </div>
 
-      <!-- Card Footer -->
-      <div class="px-8 py-3.5 bg-[#fafafc] border-t border-[#e0e0e0]">
-        <p class="text-center text-[11px] text-[#86868b]">
-          Argon2id encryption &bull; Multi-Tenant Security
-        </p>
+            <div class="mb-6">
+              <label for="id_password" class="block text-xs font-medium text-[#1d1d1f] mb-1.5">Password</label>
+              <div style="position:relative;">
+                {{ form.password }}
+                <button type="button" class="pwd-toggle-btn" id="pwd-eye-btn" aria-label="Toggle password visibility" onclick="togglePassword()">
+                  <svg id="icon-eye" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                  <svg id="icon-eye-off" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" style="display:none;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.978 9.978 0 012.52-4.025M6.343 6.343A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.97 9.97 0 01-4.046 5.187M15 12a3 3 0 00-3-3M3 3l18 18"/>
+                  </svg>
+                </button>
+              </div>
+              {% if form.password.errors %}
+                <p class="mt-1 text-xs text-rose-600">{{ form.password.errors.as_text }}</p>
+              {% endif %}
+            </div>
+
+            <button type="submit" id="submit-login" class="btn-action-blue w-full py-3 px-6 rounded-full text-white font-medium text-sm tracking-tight shadow-sm">
+              Sign In
+            </button>
+          </form>
+        </div>
+
+        <div class="px-8 py-3.5 bg-[#fafafc] border-t border-[#e0e0e0]">
+          <p class="text-center text-[11px] text-[#86868b]">Argon2id encryption &bull; Multi-Tenant Security</p>
+        </div>
       </div>
-    </div>
+    {% endif %}
 
     <!-- Footer note -->
     <p class="text-center text-xs text-[#86868b] mt-6">

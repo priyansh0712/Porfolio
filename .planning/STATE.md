@@ -17,7 +17,7 @@ progress:
 
 ## Project Reference
 
-See: [.planning/PROJECT.md](file:///c:/Users/ansh/OneDrive/Desktop/Ansh/New%20folder/StudentERP1/.planning/PROJECT.md) (updated 2026-08-20)
+See: [.planning/PROJECT.md](file:///c:/Users/ansh/OneDrive/Desktop/Ansh/New%20folder/StudentERP1/.planning/PROJECT.md) (updated 2026-08-21)
 
 **Core value:** Allow schools to effortlessly onboard and manage academic structures, teachers, subject allocations, and student records via intuitive Excel/CSV bulk import wizards with strict validation, while providing isolated tenant environments, secure role-based access for Principals, Teachers, and Students, and biometric face attendance for faculty.
 **Current status:** Milestone v3.0 SHIPPED.
