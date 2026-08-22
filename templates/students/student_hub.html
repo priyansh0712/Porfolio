@@ -3,8 +3,7 @@
 {% block title %}Students — {% if request.tenant %}{{ request.tenant.name }}{% else %}StudentERP{% endif %}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="space-y-6">
 
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
@@ -12,7 +11,7 @@
                 <h1 class="text-2xl sm:text-3xl font-bold text-[#1d1d1f] tracking-tight">
                     {% if is_admin %}Student Management{% elif ct_division %}My Class — {{ ct_division.standard.name }} {{ ct_division.name }}{% else %}Assigned Students{% endif %}
                 </h1>
-                <p class="text-sm text-gray-500 mt-1">
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">
                     {% if academic_year %}{{ academic_year.name }}{% else %}No active academic year configured{% endif %}
                     {% if not is_admin and ct_division %} · {{ ct_division.standard.name }} {{ ct_division.name }}{% elif not is_admin and is_subject_teacher %} · Subject Teacher Roster{% endif %}
                 </p>
@@ -65,25 +64,23 @@
         {% endif %}
 
         <!-- Segmented Tabs -->
-        <div class="max-w-full overflow-x-auto pb-1 mb-6 -mx-1 px-1">
-            <div class="bg-gray-200/70 p-1 rounded-2xl inline-flex space-x-1 shadow-inner flex-nowrap">
+        <div class="mb-6 flex justify-start">
+            <div class="bg-gray-200/70 p-1 rounded-xl flex w-full sm:w-auto sm:inline-flex shadow-inner">
                 <a href="?tab=students"
-                    class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {% if active_tab == 'students' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
-                    👩‍🎓 Students
+                    class="flex-1 px-2 sm:px-4 py-2 text-[11px] sm:text-sm font-semibold rounded-lg transition-all whitespace-nowrap text-center flex items-center justify-center gap-1 {% if active_tab == 'students' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
+                    <span class="hidden sm:inline">👩‍🎓</span> Students
                 </a>
                 <a href="?tab=transfers"
-                    class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {% if active_tab == 'transfers' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
-                    🔄 Transfers
+                    class="flex-1 px-2 sm:px-4 py-2 text-[11px] sm:text-sm font-semibold rounded-lg transition-all whitespace-nowrap text-center flex items-center justify-center gap-1 {% if active_tab == 'transfers' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
+                    <span class="hidden sm:inline">🔄</span> Transfers
                     {% if pending_transfer_count > 0 %}
-                    <span
-                        class="ml-1 inline-flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white bg-red-500 rounded-full">{{
-                        pending_transfer_count }}</span>
+                    <span class="inline-flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white bg-red-500 rounded-full">{{ pending_transfer_count }}</span>
                     {% endif %}
                 </a>
                 {% if is_admin %}
                 <a href="?tab=custom_fields"
-                    class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {% if active_tab == 'custom_fields' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
-                    ⚙️ Custom Fields
+                    class="flex-1 px-2 sm:px-4 py-2 text-[11px] sm:text-sm font-semibold rounded-lg transition-all whitespace-nowrap text-center flex items-center justify-center gap-1 {% if active_tab == 'custom_fields' %}bg-white text-[#1d1d1f] shadow-xs{% else %}text-gray-600 hover:text-[#1d1d1f]{% endif %}">
+                    <span class="hidden sm:inline">⚙️</span> Custom Fields
                 </a>
                 {% endif %}
             </div>
@@ -100,7 +97,6 @@
 
         {% endif %}
     </div>
-</div>
 
 {% include "students/partials/modals.html" %}
 

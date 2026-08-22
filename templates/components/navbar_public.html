@@ -32,9 +32,12 @@
     </div>
 
     <!-- Mobile Navigation Drawer -->
-    <div id="mobile-menu" class="hidden md:hidden border-b border-[var(--apple-hairline)] bg-white px-4 pt-3 pb-5 space-y-3 shadow-lg">
-        <a href="{% url 'public:landing' %}#features" class="block px-3 py-2 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)]">Features</a>
-        <a href="{% url 'public:landing' %}#pricing" class="block px-3 py-2 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)]">Pricing</a>
-        <a href="{% url 'public:register' %}" class="block text-center px-4 py-2.5 text-sm font-medium text-white apple-btn-primary shadow-sm">Register School</a>
+    <div id="mobile-menu" class="hidden md:hidden border-b border-[var(--apple-hairline)] bg-white px-4 pt-3 pb-5 space-y-2 shadow-lg">
+        <a href="{% url 'public:landing' %}#features" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">Features</a>
+        <a href="{% url 'public:landing' %}#pricing" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">Pricing</a>
+        <button type="button" onclick="toggleCmdPalette()" class="w-full text-left flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">
+            <span>🔍 Search / Commands</span>
+        </button>
+        <a href="{% url 'public:register' %}" class="flex items-center justify-center text-center px-4 py-2.5 text-sm font-medium text-white apple-btn-primary shadow-sm min-h-[44px]">Register School</a>
     </div>
 </header>

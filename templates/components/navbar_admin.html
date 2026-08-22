@@ -35,7 +35,7 @@
                 </div>
             </a>
             <!-- Mobile Close Button -->
-            <button type="button" onclick="closeSidebar()" class="md:hidden text-gray-400 hover:text-gray-600 p-1.5 rounded-lg focus:outline-none" aria-label="Close Sidebar">
+            <button type="button" onclick="closeSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none" aria-label="Close Sidebar">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -51,7 +51,7 @@
                 <div class="space-y-0.5">
                     <!-- Dashboard -->
                     <a href="{{ nav_dashboard }}" title="Dashboard"
-                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150
+                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[44px]
                               {% if request.path == nav_dashboard %}erp-nav-active{% else %}erp-nav-default{% endif %}">
                         <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>
@@ -67,7 +67,7 @@
                 <div class="space-y-0.5">
                     <!-- Faculty -->
                     <a href="{{ nav_faculty }}" title="Faculty Directory"
-                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150
+                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[44px]
                               {% if '/faculty/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
                         <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
@@ -77,7 +77,7 @@
 
                     <!-- Students -->
                     <a href="{{ nav_students }}" title="Students Hub"
-                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150
+                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[44px]
                               {% if '/students/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
                         <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>
@@ -93,7 +93,7 @@
                 <div class="space-y-0.5">
                     <!-- Academics (Main Hub Link) -->
                     <a href="{{ nav_academics }}" title="Academic Management"
-                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150
+                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[44px]
                               {% if '/academics/' in request.path %}text-[#5A2132] font-semibold bg-[#5A2132]/8 border border-[#5A2132]/15{% else %}erp-nav-default{% endif %}">
                         <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.084a1 1 0 0 0 0 1.838l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16c0 1.657 2.686 3 6 3s6-1.343 6-3v-3.5"/>
@@ -113,10 +113,10 @@
 
                     <!-- Contextual Sub-Navigation for Academics (Visible when inside /academics/) -->
                     {% if '/academics/' in request.path %}
-                    <div class="sidebar-subnav pl-6 pr-1 pt-1 pb-1 space-y-0.5 border-l-2 border-gray-200/70 ml-5 my-1">
+                    <div class="sidebar-subnav pl-6 pr-1 pt-1 pb-1 space-y-1 border-l-2 border-gray-200/70 ml-5 my-1">
                         <!-- 1. Overview -->
                         <a href="{{ nav_academics }}?tab=overview{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
-                           class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors
+                           class="flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors min-h-[38px]
                                   {% if active_tab == 'overview' or not active_tab %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
                             <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
                             <span>Overview</span>
@@ -124,7 +124,7 @@
 
                         <!-- 2. Academic Years -->
                         <a href="{{ nav_academics }}?tab=years{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
-                           class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors
+                           class="flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors min-h-[38px]
                                   {% if active_tab == 'years' %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
                             <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
                             <span>Academic Years</span>
@@ -132,7 +132,7 @@
 
                         <!-- 3. Classes & Divisions -->
                         <a href="{{ nav_academics }}?tab=classes{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
-                           class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors
+                           class="flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors min-h-[38px]
                                   {% if active_tab == 'classes' %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
                             <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
                             <span>Classes & Divisions</span>
@@ -140,7 +140,7 @@
 
                         <!-- 4. Subjects -->
                         <a href="{{ nav_academics }}?tab=subjects{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
-                           class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors
+                           class="flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors min-h-[38px]
                                   {% if active_tab == 'subjects' %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
                             <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
                             <span>Subjects</span>
@@ -148,7 +148,7 @@
 
                         <!-- 5. Teaching Assignments -->
                         <a href="{{ nav_academics }}?tab=allocations{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
-                           class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors
+                           class="flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors min-h-[38px]
                                   {% if active_tab == 'allocations' %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
                             <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
                             <span>Teaching Assignments</span>
@@ -164,7 +164,7 @@
                 <div class="space-y-0.5">
                     <!-- Leaves -->
                     <a href="{{ nav_leaves }}" title="Leave Approvals"
-                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150
+                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[44px]
                               {% if '/leaves/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
                         <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="m14 14-4 4"/><path d="m10 14 4 4"/>
@@ -174,7 +174,7 @@
 
                     <!-- Reports -->
                     <a href="{{ nav_reports }}" title="Attendance Reports"
-                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150
+                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[44px]
                               {% if '/reports/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
                         <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
@@ -184,7 +184,7 @@
 
                     <!-- Schedules -->
                     <a href="{{ nav_schedules }}" title="Schedule Settings"
-                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150
+                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[44px]
                               {% if '/settings/schedule/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
                         <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>
@@ -197,10 +197,19 @@
         </nav>
 
         <!-- BOTTOM UTILITIES -->
-        <div class="border-t border-[var(--apple-hairline)] px-3 py-3 space-y-0.5">
+        <div class="border-t border-[var(--apple-hairline)] px-3 py-3 space-y-0.5" style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom));">
+            <!-- Search Command Palette Trigger -->
+            <button type="button" onclick="closeSidebar(); toggleCmdPalette();" title="Search (Ctrl+K)"
+               class="sidebar-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold erp-nav-default hover:text-[#5A2132] transition-all duration-150 text-left min-h-[44px]">
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span class="sidebar-label">Search / Command Palette</span>
+            </button>
+
             <!-- Notifications -->
             <a href="{{ nav_notifications }}" title="Notifications"
-               class="sidebar-nav-item flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150
+               class="sidebar-nav-item flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[44px]
                       {% if '/notifications/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
                 <div class="flex items-center gap-3 min-w-0">
                     <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -217,7 +226,7 @@
 
             <!-- Kiosk Scanner -->
             <a href="{{ nav_kiosk }}" target="_blank" title="Attendance Kiosk"
-               class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 erp-nav-default hover:text-[#5A2132]">
+               class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 erp-nav-default hover:text-[#5A2132] min-h-[44px]">
                 <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/>
                 </svg>
@@ -226,7 +235,7 @@
 
             <!-- Sign Out -->
             <a href="{{ nav_logout }}" title="Sign Out"
-               class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-500 hover:text-rose-600 hover:bg-rose-50/70 transition-all duration-150">
+               class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-gray-500 hover:text-rose-600 hover:bg-rose-50/70 transition-all duration-150 min-h-[44px]">
                 <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
                 </svg>

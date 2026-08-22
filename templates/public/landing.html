@@ -77,8 +77,32 @@
     </div>
 </div>
 
-<!-- Option C: Pure JS Pinned Sticky Horizontal Scroll Showcase & Interactive Step Selector -->
-<section id="features" class="relative w-full" style="height: 300vh; min-height: 2400px;">
+<style>
+@media (max-width: 767px) {
+    #features {
+        height: auto !important;
+        min-height: auto !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 2.5rem !important;
+    }
+    #features-inner {
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform: none !important;
+        max-width: 100% !important;
+    }
+}
+@media (min-width: 768px) {
+    #features {
+        height: 300vh;
+        min-height: 2400px;
+    }
+}
+</style>
+
+<!-- Option C: Pure JS Pinned Sticky Horizontal Scroll Showcase (Desktop) & Native Card Showcase (Mobile) -->
+<section id="features" class="relative w-full">
     <div id="features-inner" class="w-full flex flex-col justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 overflow-hidden">
         <div class="text-center max-w-2xl mx-auto mb-6">
             <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--apple-ink)]">Everything your school needs</h2>
@@ -478,6 +502,7 @@
         const navbarHeight = 70;
 
         function calculateOffsets() {
+            if (window.innerWidth < 768) return;
             const rect = featuresSec.getBoundingClientRect();
             const currentScrollY = window.lenisInstance ? window.lenisInstance.scroll : (window.scrollY || window.pageYOffset);
             sectionTop = rect.top + currentScrollY;
@@ -492,6 +517,20 @@
         window.addEventListener('resize', calculateOffsets);
 
         function updatePinPosition(scrollY) {
+            if (window.innerWidth < 768) {
+                // Mobile: Fluid, natural scrolling with interactive tab selection
+                featuresInner.style.position = 'relative';
+                featuresInner.style.top = '0px';
+                featuresInner.style.left = '0px';
+                featuresInner.style.transform = 'none';
+                featuresInner.style.width = '100%';
+                featuresInner.style.maxWidth = '100%';
+                featuresInner.style.zIndex = 'auto';
+                featuresInner.style.opacity = '1';
+                featuresInner.style.visibility = 'visible';
+                return;
+            }
+
             if (pinEnd <= pinStart) calculateOffsets();
 
             if (scrollY < pinStart) {

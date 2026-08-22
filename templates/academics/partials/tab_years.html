@@ -15,8 +15,8 @@
         </button>
     </div>
 
-    <!-- Table -->
-    <div class="overflow-x-auto">
+    <!-- Desktop Table (>= 768px) -->
+    <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="border-b border-gray-100 bg-gray-50/50 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
@@ -89,5 +89,58 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <!-- Mobile Card List (< 768px) -->
+    <div class="block md:hidden divide-y divide-gray-100">
+        {% for year in academic_years %}
+        <div class="p-4 space-y-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-sm text-[#1D1D1F]">{{ year.name }}</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ year.start_date|date:"M d, Y" }} – {{ year.end_date|date:"M d, Y" }}</p>
+                </div>
+                {% if year.is_current %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                        Active
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        Inactive
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Action Buttons -->
+            <div class="flex items-center gap-2 pt-1">
+                {% if not year.is_current %}
+                    <form method="POST" action="{% url 'academics:year_set_current' year.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="px-3 py-1.5 bg-[#5A2132]/8 text-[#5A2132] border border-[#5A2132]/20 rounded-xl text-xs font-semibold min-h-[36px] flex items-center">
+                            Set Active
+                        </button>
+                    </form>
+                {% endif %}
+                <button type="button"
+                        onclick="openEditYearModal('{{ year.id }}', '{{ year.name|escapejs }}', '{{ year.start_date|date:'Y-m-d' }}', '{{ year.end_date|date:'Y-m-d' }}', {{ year.is_current|yesno:'true,false' }})"
+                        class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold min-h-[36px] flex items-center">
+                    Edit
+                </button>
+                <button type="button"
+                        onclick="openConfirmDeleteModal('{% url 'academics:year_delete' year.id %}', 'Delete Academic Year', 'Are you sure you want to delete session {{ year.name|escapejs }}?')"
+                        class="px-3 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl text-xs font-semibold min-h-[36px] flex items-center">
+                    Delete
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="py-10 px-4 text-center text-gray-400">
+            <h4 class="font-bold text-sm text-[#1D1D1F]">No academic years yet</h4>
+            <p class="text-xs text-[#6B7280] mt-1">Create your first academic session to start configuring your school.</p>
+            <button type="button" onclick="openModal('modal-create-year')" class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-[#5A2132] text-white text-xs font-semibold rounded-full shadow-xs">
+                + Create Academic Year
+            </button>
+        </div>
+        {% endfor %}
     </div>
 </div>
