@@ -13,12 +13,12 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.accounts.models import User
-from apps.faculty.models import Faculty
+from apps.faculty.models import Faculty, FacultyCustomField
 from apps.academics.models import (
     AcademicYear, Standard, Division, Subject,
     ClassTeacherAllocation, SubjectTeacherAllocation
 )
-from apps.students.models import Student
+from apps.students.models import Student, StudentCustomField
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +54,46 @@ class SampleTemplateService:
     """Generates pre-formatted downloadable sample templates (.xlsx & .csv)."""
 
     @classmethod
-    def generate_csv(cls, step):
-        headers = STEP_HEADERS.get(step, [])
-        sample_rows = STEP_SAMPLE_DATA.get(step, [])
+    def get_template_headers_and_data(cls, step, school=None):
+        headers = list(STEP_HEADERS.get(step, []))
+        raw_samples = STEP_SAMPLE_DATA.get(step, [])
+        sample_rows = [list(row) for row in raw_samples]
+
+        if school and step == 1:
+            custom_fields = list(FacultyCustomField.objects.filter(school=school, is_active=True).order_by('order_index', 'created_at'))
+            for cf in custom_fields:
+                headers.append(cf.label)
+                for idx, row in enumerate(sample_rows):
+                    if cf.field_type == FacultyCustomField.FieldType.NUMBER:
+                        val = '100' if idx == 0 else '101'
+                    elif cf.field_type == FacultyCustomField.FieldType.DATE:
+                        val = '2026-01-01'
+                    elif cf.field_type == FacultyCustomField.FieldType.SELECT:
+                        options = [o.strip() for o in cf.options.split(',') if o.strip()]
+                        val = options[0] if options else 'Option1'
+                    else:
+                        val = f"Sample {cf.label}"
+                    row.append(val)
+        elif school and step == 4:
+            custom_fields = list(StudentCustomField.objects.filter(school=school, is_active=True).order_by('order_index', 'created_at'))
+            for cf in custom_fields:
+                headers.append(cf.label)
+                for idx, row in enumerate(sample_rows):
+                    if cf.field_type == StudentCustomField.FieldType.NUMBER:
+                        val = '100' if idx == 0 else '101'
+                    elif cf.field_type == StudentCustomField.FieldType.DATE:
+                        val = '2026-01-01'
+                    elif cf.field_type == StudentCustomField.FieldType.SELECT:
+                        options = [o.strip() for o in cf.options.split(',') if o.strip()]
+                        val = options[0] if options else 'Option1'
+                    else:
+                        val = f"Sample {cf.label}"
+                    row.append(val)
+        return headers, sample_rows
+
+    @classmethod
+    def generate_csv(cls, step, school=None):
+        headers, sample_rows = cls.get_template_headers_and_data(step, school)
 
         output = io.StringIO()
         writer = csv.writer(output)
@@ -66,9 +103,8 @@ class SampleTemplateService:
         return output.getvalue().encode('utf-8')
 
     @classmethod
-    def generate_xlsx(cls, step):
-        headers = STEP_HEADERS.get(step, [])
-        sample_rows = STEP_SAMPLE_DATA.get(step, [])
+    def generate_xlsx(cls, step, school=None):
+        headers, sample_rows = cls.get_template_headers_and_data(step, school)
 
         wb = openpyxl.Workbook()
         ws = wb.active
@@ -172,6 +208,7 @@ class BulkValidationService:
     def _validate_step_1_faculty(cls, school, raw_rows):
         existing_emails = set(Faculty.objects.filter(school=school).values_list('email', flat=True))
         existing_codes = set(Faculty.objects.filter(school=school).values_list('employee_code', flat=True))
+        custom_fields = list(FacultyCustomField.objects.filter(school=school, is_active=True))
 
         seen_emails = set()
         seen_codes = set()
@@ -201,6 +238,12 @@ class BulkValidationService:
                 errors.append(f"Employee Code '{code}' already exists")
             elif code in seen_codes:
                 errors.append(f"Duplicate Employee Code '{code}' in import file")
+
+            # Custom Field Validation for required fields
+            for cf in custom_fields:
+                val = row.get(cf.label)
+                if cf.is_required and (val is None or str(val).strip() == ''):
+                    errors.append(f"Custom Field '{cf.label}' is required")
 
             if email:
                 seen_emails.add(email)
@@ -295,6 +338,7 @@ class BulkValidationService:
             (d.standard.name.upper(), d.name.upper()): d
             for d in Division.objects.filter(school=school).select_related('standard')
         }
+        custom_fields = list(StudentCustomField.objects.filter(school=school, is_active=True))
 
         seen_grs = set()
         seen_rolls = set()
@@ -302,12 +346,12 @@ class BulkValidationService:
 
         for r_idx, row in raw_rows:
             errors = []
-            gr_number = row.get('GR Number', '').upper()
-            first_name = row.get('First Name', '')
-            last_name = row.get('Last Name', '')
-            std_name = row.get('Standard Name', '').upper()
-            div_name = row.get('Division Name', '').upper()
-            roll_number = row.get('Roll Number', '')
+            gr_number = str(row.get('GR Number', '') or '').strip().upper()
+            first_name = str(row.get('First Name', '') or '').strip()
+            last_name = str(row.get('Last Name', '') or '').strip()
+            std_name = str(row.get('Standard Name', '') or '').strip().upper()
+            div_name = str(row.get('Division Name', '') or '').strip().upper()
+            roll_number = str(row.get('Roll Number', '') or '').strip()
 
             if not gr_number:
                 errors.append("GR Number is required")
@@ -331,6 +375,12 @@ class BulkValidationService:
                         errors.append(f"Duplicate Roll Number '{roll_number}' in Class {std_name} {div_name}")
                     seen_rolls.add(roll_key)
 
+            # Custom Field Validation for required fields
+            for cf in custom_fields:
+                val = row.get(cf.label)
+                if cf.is_required and (val is None or str(val).strip() == ''):
+                    errors.append(f"Custom Field '{cf.label}' is required")
+
             if gr_number:
                 seen_grs.add(gr_number)
 
@@ -349,20 +399,30 @@ class BulkCommitService:
     @classmethod
     @transaction.atomic
     def commit_step_1_faculty(cls, school, valid_rows, default_password='Admin@123'):
+        custom_fields = list(FacultyCustomField.objects.filter(school=school, is_active=True))
+
         count = 0
         for item in valid_rows:
             row = item['data']
-            email = row['Email'].lower()
-            code = row['Employee Code'].upper()
+            email = str(row['Email']).strip().lower()
+            code = str(row['Employee Code']).strip().upper()
+
+            # Extract Custom Field Values
+            custom_data = {}
+            for cf in custom_fields:
+                val = row.get(cf.label)
+                if val is not None and str(val).strip() != '':
+                    custom_data[cf.field_name] = str(val).strip()
 
             faculty = Faculty.objects.create(
                 school=school,
-                first_name=row['First Name'],
-                last_name=row['Last Name'],
+                first_name=str(row['First Name']).strip(),
+                last_name=str(row['Last Name']).strip(),
                 email=email,
                 employee_code=code,
-                department=row.get('Department', ''),
-                designation=row.get('Designation', ''),
+                department=str(row.get('Department', '')).strip(),
+                designation=str(row.get('Designation', '')).strip(),
+                custom_fields=custom_data,
                 is_active=True,
             )
 
@@ -371,8 +431,8 @@ class BulkCommitService:
                 username=email,
                 email=email,
                 password=default_password,
-                first_name=row['First Name'],
-                last_name=row['Last Name'],
+                first_name=str(row['First Name']).strip(),
+                last_name=str(row['Last Name']).strip(),
                 role=User.Role.FACULTY,
                 school=school,
             )
@@ -469,13 +529,14 @@ class BulkCommitService:
             (d.standard.name.upper(), d.name.upper()): d
             for d in Division.objects.filter(school=school).select_related('standard')
         }
+        custom_fields = list(StudentCustomField.objects.filter(school=school, is_active=True))
 
         count = 0
         for item in valid_rows:
             row = item['data']
-            gr_number = row['GR Number'].upper()
-            std_name = row['Standard Name'].upper()
-            div_name = row['Division Name'].upper()
+            gr_number = str(row.get('GR Number', '') or '').strip().upper()
+            std_name = str(row.get('Standard Name', '') or '').strip().upper()
+            div_name = str(row.get('Division Name', '') or '').strip().upper()
 
             div_obj = divisions.get((std_name, div_name))
             if not div_obj:
@@ -484,32 +545,41 @@ class BulkCommitService:
             dob = None
             if row.get('Date of Birth'):
                 try:
-                    dob = datetime.strptime(row['Date of Birth'], '%Y-%m-%d').date()
+                    dob = datetime.strptime(str(row['Date of Birth']).strip(), '%Y-%m-%d').date()
                 except ValueError:
                     pass
 
             roll_num = int(row['Roll Number']) if row.get('Roll Number') and str(row['Roll Number']).isdigit() else None
+
+            # Extract Custom Field Values
+            custom_data = {}
+            for cf in custom_fields:
+                val = row.get(cf.label)
+                if val is not None and str(val).strip() != '':
+                    custom_data[cf.field_name] = str(val).strip()
+
             student = Student.objects.create(
                 school=school,
                 academic_year=curr_ay,
                 standard=div_obj.standard,
                 division=div_obj,
                 gr_number=gr_number,
-                full_name=f"{row['First Name']} {row['Last Name']}".strip(),
+                full_name=f"{row.get('First Name', '')} {row.get('Last Name', '')}".strip(),
                 roll_number=roll_num,
-                gender=row.get('Gender', 'MALE').upper(),
+                gender=str(row.get('Gender', 'MALE')).strip().upper(),
                 dob=dob,
-                guardian_phone=row.get('Parent Phone', ''),
+                guardian_phone=str(row.get('Parent Phone', '')).strip(),
+                custom_fields=custom_data,
                 is_active=True,
             )
 
             # Auto-create Student User login
             user = User.objects.create_user(
                 username=gr_number,
-                email=row.get('Parent Email') or f"{gr_number.lower()}@student.school",
+                email=str(row.get('Parent Email') or f"{gr_number.lower()}@student.school").strip(),
                 password=default_password,
-                first_name=row['First Name'],
-                last_name=row['Last Name'],
+                first_name=str(row.get('First Name', '')).strip(),
+                last_name=str(row.get('Last Name', '')).strip(),
                 role=User.Role.STUDENT,
                 school=school,
             )

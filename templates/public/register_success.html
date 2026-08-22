@@ -60,8 +60,16 @@
             </div>
         </div>
 
-        <div class="pt-6">
-            <a href="{% url 'public:landing' %}" class="inline-flex items-center justify-center px-6 py-3 font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">
+        <div class="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+            {% if school_login_url %}
+                <a href="{{ school_login_url }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 text-base font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5 gap-2">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    Go to {{ school.name }} Login Portal &rarr;
+                </a>
+            {% endif %}
+            <a href="{% url 'public:landing' %}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">
                 Return to Public Homepage
             </a>
         </div>

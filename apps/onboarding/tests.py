@@ -176,3 +176,43 @@ class OnboardingViewsTest(OnboardingTestBase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'text/csv')
+
+    def test_custom_fields_sample_download_and_commit(self):
+        """Step 4 sample template should dynamically include active StudentCustomField headers."""
+        from apps.students.models import StudentCustomField
+        StudentCustomField.objects.create(
+            school=self.school,
+            label='Aadhar Number',
+            field_name='aadhar_number',
+            field_type=StudentCustomField.FieldType.TEXT,
+            is_active=True
+        )
+
+        self.client.force_login(self.admin_user)
+        response = self.client.get(
+            reverse('onboarding:sample-download', kwargs={'step': 4, 'fmt': 'csv'}),
+            HTTP_HOST='xavier.localhost:8000'
+        )
+        self.assertEqual(response.status_code, 200)
+        csv_content = response.content.decode('utf-8')
+        self.assertIn('Aadhar Number', csv_content)
+
+    def test_faculty_custom_fields_sample_download(self):
+        """Step 1 sample template should dynamically include active FacultyCustomField headers."""
+        from apps.faculty.models import FacultyCustomField
+        FacultyCustomField.objects.create(
+            school=self.school,
+            label='Qualification',
+            field_name='qualification',
+            field_type=FacultyCustomField.FieldType.TEXT,
+            is_active=True
+        )
+
+        self.client.force_login(self.admin_user)
+        response = self.client.get(
+            reverse('onboarding:sample-download', kwargs={'step': 1, 'fmt': 'csv'}),
+            HTTP_HOST='xavier.localhost:8000'
+        )
+        self.assertEqual(response.status_code, 200)
+        csv_content = response.content.decode('utf-8')
+        self.assertIn('Qualification', csv_content)

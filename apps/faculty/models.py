@@ -96,6 +96,13 @@ class Faculty(TenantModel):
         help_text='Phase 6 architecture hook — face vector enrollment status',
     )
 
+    custom_fields = models.JSONField(
+        'Custom Fields',
+        default=dict,
+        blank=True,
+        help_text='Dynamic custom field values stored as JSON dict',
+    )
+
     class Meta:
         ordering = ['first_name', 'last_name']
         verbose_name = 'Faculty Member'
@@ -113,3 +120,82 @@ class Faculty(TenantModel):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class FacultyCustomField(models.Model):
+    """
+    Custom field definition dynamically configured by School Admin for Faculty records.
+    (e.g. Qualification, Aadhar Number, Experience, etc.)
+    """
+    class FieldType(models.TextChoices):
+        TEXT = 'TEXT', 'Text'
+        NUMBER = 'NUMBER', 'Number'
+        DATE = 'DATE', 'Date'
+        SELECT = 'SELECT', 'Dropdown Select'
+
+    school = models.ForeignKey(
+        'tenants.School',
+        on_delete=models.CASCADE,
+        related_name='faculty_custom_fields',
+    )
+    label = models.CharField('Field Label', max_length=100)
+    field_name = models.SlugField('Field Key', max_length=100)
+    field_type = models.CharField('Field Type', max_length=10, choices=FieldType.choices, default=FieldType.TEXT)
+    options = models.CharField('Dropdown Options', max_length=500, blank=True, help_text='Comma-separated options for Dropdown Select type')
+    is_required = models.BooleanField('Required', default=False)
+    is_active = models.BooleanField('Active', default=True)
+    order_index = models.PositiveIntegerField('Order', default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Faculty Custom Field'
+        verbose_name_plural = 'Faculty Custom Fields'
+        ordering = ['order_index', 'created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['school', 'field_name'],
+                name='unique_school_faculty_custom_field',
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.school.name} - {self.label} ({self.field_type})"
+
+
+class FacultyFormFieldConfig(models.Model):
+    """
+    Per-school configuration for which standard faculty fields are enabled/visible
+    and whether they are required on faculty forms.
+    """
+    school = models.OneToOneField(
+        'tenants.School',
+        on_delete=models.CASCADE,
+        related_name='faculty_form_config',
+    )
+
+    # Field Visibility Toggles (True = shown on form, False = hidden)
+    show_phone_number = models.BooleanField('Show Phone Number', default=True)
+    show_employee_code = models.BooleanField('Show Employee Code', default=True)
+    show_department = models.BooleanField('Show Department', default=True)
+    show_designation = models.BooleanField('Show Designation', default=True)
+
+    # Field Required Toggles (True = mandatory, False = optional)
+    require_phone_number = models.BooleanField('Require Phone Number', default=False)
+    require_employee_code = models.BooleanField('Require Employee Code', default=False)
+    require_department = models.BooleanField('Require Department', default=True)
+    require_designation = models.BooleanField('Require Designation', default=False)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Faculty Form Field Configuration'
+        verbose_name_plural = 'Faculty Form Field Configurations'
+
+    def __str__(self):
+        return f'Faculty Form Config — {self.school.name}'
+
+    @classmethod
+    def get_for_school(cls, school):
+        """Retrieve or create default form field configuration for a school."""
+        config, _ = cls.objects.get_or_create(school=school)
+        return config

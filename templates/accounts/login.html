@@ -51,25 +51,44 @@
 
     {% if tenant and tenant.school_image %}
       <!-- 2-Column Layout for School with School Image -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
         <!-- School Hero Image Column -->
-        <div class="relative h-64 md:h-[480px] rounded-3xl overflow-hidden shadow-lg border border-[#e0e0e0] bg-[#FAF8F8] flex items-center justify-center group">
-          <img src="{{ tenant.school_image.url }}" alt="{{ tenant.name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+        <div class="relative w-full min-h-[440px] h-full rounded-3xl overflow-hidden shadow-sm border border-[#e0e0e0] bg-[#FAF8F8] flex flex-col justify-between p-4 group">
+          <!-- Full Cover Background Image -->
+          <img src="{{ tenant.school_image.url }}" alt="{{ tenant.name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-102">
+          
+          <!-- Subtle Top Gradient for contrast -->
+          <div class="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/30 to-transparent pointer-events-none"></div>
+
+          <!-- Top Left Glass Pill: Logo & School Name -->
+          <div class="relative z-10 self-start inline-flex items-center gap-3 bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-black/10 shadow-sm max-w-full">
             {% if tenant.school_logo %}
-              <img src="{{ tenant.school_logo.url }}" alt="{{ tenant.name }} Logo" class="w-12 h-12 rounded-xl object-cover mb-3 border border-white/20 shadow-md">
+              <div class="w-8 h-8 rounded-xl bg-white p-0.5 border border-gray-200/80 flex items-center justify-center flex-shrink-0">
+                <img src="{{ tenant.school_logo.url }}" alt="{{ tenant.name }} Logo" class="w-full h-full object-contain rounded-lg">
+              </div>
+            {% else %}
+              <div class="w-8 h-8 rounded-xl bg-[#5A2132] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                {{ tenant.name|first }}
+              </div>
             {% endif %}
-            <h2 class="text-xl font-bold tracking-tight text-white">{{ tenant.name }}</h2>
-            <p class="text-xs text-white/80 mt-1">Faculty Attendance &amp; Management Portal</p>
-            <div class="inline-flex items-center mt-3 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs w-max text-white font-medium">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2"></span>
-              {{ tenant.subdomain }}.ourapp.com
+            <div class="min-w-0 pr-1">
+              <div class="text-xs font-bold text-[#1D1D1F] tracking-tight truncate">{{ tenant.name }}</div>
+              <div class="text-[10px] text-[#86868b] font-medium">School Portal</div>
             </div>
+          </div>
+
+          <!-- Subtle Bottom Gradient for contrast -->
+          <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
+
+          <!-- Bottom Glass Pill: Domain Badge -->
+          <div class="relative z-10 self-start inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-black/10 text-xs text-[#1D1D1F] font-medium shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span class="font-mono text-[11px]">{{ tenant.subdomain }}.ourapp.com</span>
           </div>
         </div>
 
         <!-- Login Form Column -->
-        <div>
+        <div class="flex flex-col justify-center">
           <div class="text-left mb-6">
             <h1 class="text-2xl font-semibold text-[#1D1D1F] tracking-tight">{{ tenant.name }}</h1>
             <p class="text-xs text-[#86868b] mt-1">Sign in to access your school portal</p>
@@ -128,15 +147,17 @@
     {% else %}
       <!-- Standard Layout (Fallback when no image uploaded or Platform Login) -->
       <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#5A2132] shadow-sm mb-4">
-          {% if tenant and tenant.school_logo %}
-            <img src="{{ tenant.school_logo.url }}" alt="{{ tenant.name }}" class="w-full h-full rounded-2xl object-cover">
-          {% else %}
+        {% if tenant and tenant.school_logo %}
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white shadow-md border border-[#e0e0e0] p-2 mb-4">
+            <img src="{{ tenant.school_logo.url }}" alt="{{ tenant.name }}" class="w-full h-full rounded-xl object-contain">
+          </div>
+        {% else %}
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#5A2132] shadow-sm mb-4">
             <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-          {% endif %}
-        </div>
+          </div>
+        {% endif %}
         {% if tenant %}
           <h1 class="text-2xl font-semibold text-[#1D1D1F] tracking-tight">{{ tenant.name }}</h1>
           <p class="text-xs text-[#86868b] mt-1">School Portal Login</p>

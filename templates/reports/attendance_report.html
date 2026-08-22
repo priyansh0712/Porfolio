@@ -21,11 +21,11 @@
 
     <!-- Filter Card -->
     <div class="apple-card p-4 sm:p-6">
-        <form method="get" action="{% url 'reports:report-list' %}" class="space-y-3">
-            <!-- Filter Fields Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
-                <!-- Search Input (Primary on both mobile & desktop) -->
-                <div class="sm:col-span-2 lg:col-span-2">
+        <form method="get" action="{% url 'reports:report-list' %}" class="space-y-4">
+            <!-- Filter Fields Grid: 5 equal columns on desktop -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3.5 items-end">
+                <!-- Search Input -->
+                <div>
                     <label class="block text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1.5">Search</label>
                     <div class="relative">
                         <input type="text" name="search" value="{{ search_query }}" placeholder="Name or Code..." class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#e0e0e0] focus:ring-2 focus:ring-[#5A2132] text-xs bg-white text-[#1D1D1F]">
@@ -35,36 +35,20 @@
                     </div>
                 </div>
 
-                <!-- Mobile Filter Toggle Buttons (< 640px only) -->
-                <div class="flex items-center gap-2 sm:hidden">
-                    <button type="button" onclick="toggleReportFilters()" class="flex-1 py-2 px-3 rounded-xl border {% if selected_start_date or selected_end_date or selected_department or selected_status %}bg-[#5A2132]/8 border-[#5A2132]/30 text-[#5A2132]{% else %}border-gray-200 bg-gray-50 text-gray-700{% endif %} text-xs font-semibold flex items-center justify-center gap-1.5 min-h-[40px]">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                        </svg>
-                        <span id="filter-btn-text">{% if selected_start_date or selected_end_date or selected_department or selected_status %}Filters (Active){% else %}Filter Options{% endif %}</span>
-                        {% if selected_start_date or selected_end_date or selected_department or selected_status %}
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#5A2132]"></span>
-                        {% endif %}
-                    </button>
-                    <button type="submit" class="flex-1 apple-btn-primary py-2 px-4 text-xs font-semibold min-h-[40px] flex items-center justify-center">
-                        Apply
-                    </button>
-                </div>
-
                 <!-- Start Date -->
-                <div class="filter-field-mobile {% if not selected_start_date and not selected_end_date and not selected_department and not selected_status %}hidden sm:block{% else %}block{% endif %}">
+                <div>
                     <label class="block text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1.5">Start Date</label>
                     <input type="text" name="start_date" value="{{ selected_start_date }}" placeholder="Select Start Date" autocomplete="off" class="apple-datepicker w-full px-3 py-2 rounded-xl border border-[#e0e0e0] focus:ring-2 focus:ring-[#5A2132] text-xs bg-white text-[#1D1D1F]">
                 </div>
 
                 <!-- End Date -->
-                <div class="filter-field-mobile {% if not selected_start_date and not selected_end_date and not selected_department and not selected_status %}hidden sm:block{% else %}block{% endif %}">
+                <div>
                     <label class="block text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1.5">End Date</label>
                     <input type="text" name="end_date" value="{{ selected_end_date }}" placeholder="Select End Date" autocomplete="off" class="apple-datepicker w-full px-3 py-2 rounded-xl border border-[#e0e0e0] focus:ring-2 focus:ring-[#5A2132] text-xs bg-white text-[#1D1D1F]">
                 </div>
 
                 <!-- Department -->
-                <div class="filter-field-mobile {% if not selected_start_date and not selected_end_date and not selected_department and not selected_status %}hidden sm:block{% else %}block{% endif %}">
+                <div>
                     <label class="block text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1.5">Department</label>
                     <select name="department" class="w-full px-3 py-2 rounded-xl border border-[#e0e0e0] focus:ring-2 focus:ring-[#5A2132] text-xs bg-white text-[#1D1D1F]">
                         <option value="">All Departments</option>
@@ -75,7 +59,7 @@
                 </div>
 
                 <!-- Status -->
-                <div class="filter-field-mobile {% if not selected_start_date and not selected_end_date and not selected_department and not selected_status %}hidden sm:block{% else %}block{% endif %}">
+                <div>
                     <label class="block text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1.5">Status</label>
                     <select name="status" class="w-full px-3 py-2 rounded-xl border border-[#e0e0e0] focus:ring-2 focus:ring-[#5A2132] text-xs bg-white text-[#1D1D1F]">
                         <option value="">All Statuses</option>
@@ -84,24 +68,22 @@
                         {% endfor %}
                     </select>
                 </div>
+            </div>
 
-                <!-- Desktop Action Buttons (>= 640px) -->
-                <div class="hidden sm:flex items-end gap-2 col-span-1 sm:col-span-2 lg:col-span-6 lg:justify-end pt-1">
-                    <a href="{% url 'reports:report-list' %}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] rounded-xl text-xs font-semibold transition-all min-h-[38px] flex items-center justify-center">
-                        Reset
+            <!-- Action Buttons Bar (Clean Right Alignment) -->
+            <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-gray-100">
+                {% if selected_start_date or selected_end_date or selected_department or selected_status or search_query %}
+                    <a href="{% url 'reports:report-list' %}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] rounded-xl text-xs font-semibold transition-all inline-flex items-center justify-center">
+                        Reset Filters
                     </a>
-                    <button type="submit" class="apple-btn-primary py-2 px-6 text-xs font-semibold min-h-[38px] flex items-center justify-center">
-                        Filter
-                    </button>
-                </div>
+                {% endif %}
+                <button type="submit" class="px-6 py-2 bg-[#5A2132] hover:bg-[#481A28] text-white rounded-xl text-xs font-semibold shadow-xs transition-all inline-flex items-center justify-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                    Apply Filters
+                </button>
             </div>
-
-            <!-- Mobile Reset link when filters are active -->
-            {% if selected_start_date or selected_end_date or selected_department or selected_status or search_query %}
-            <div class="sm:hidden text-center pt-1">
-                <a href="{% url 'reports:report-list' %}" class="text-xs text-rose-600 font-semibold hover:underline">Reset All Filters</a>
-            </div>
-            {% endif %}
         </form>
     </div>
 

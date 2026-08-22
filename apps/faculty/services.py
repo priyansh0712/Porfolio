@@ -102,6 +102,7 @@ class FacultyService:
             employee_code=employee_code,
             department=data['department'].strip(),
             designation=data.get('designation', '').strip(),
+            custom_fields=data.get('custom_fields', {}),
         )
         return faculty
 
@@ -116,6 +117,11 @@ class FacultyService:
         faculty.phone_number = data.get('phone_number', faculty.phone_number).strip()
         faculty.department = data.get('department', faculty.department).strip()
         faculty.designation = data.get('designation', faculty.designation).strip()
+
+        if 'custom_fields' in data and data['custom_fields']:
+            existing = faculty.custom_fields or {}
+            existing.update(data['custom_fields'])
+            faculty.custom_fields = existing
 
         # Email change requires User sync
         new_email = data.get('email', '').strip().lower()
@@ -137,6 +143,60 @@ class FacultyService:
             faculty.user.save()
 
         return faculty
+
+    @staticmethod
+    @transaction.atomic
+    def create_custom_field(school, label, field_type, options='', is_required=False):
+        """
+        Create a new dynamic custom field definition for Faculty.
+        """
+        from django.utils.text import slugify
+        from apps.faculty.models import FacultyCustomField
+
+        base_slug = slugify(label).replace('-', '_')
+        field_name = base_slug
+        counter = 1
+        while FacultyCustomField.objects.filter(school=school, field_name=field_name).exists():
+            field_name = f'{base_slug}_{counter}'
+            counter += 1
+
+        order = FacultyCustomField.objects.filter(school=school).count()
+        return FacultyCustomField.objects.create(
+            school=school,
+            label=label,
+            field_name=field_name,
+            field_type=field_type,
+            options=options,
+            is_required=is_required,
+            is_active=True,
+            order_index=order,
+        )
+
+    @staticmethod
+    @transaction.atomic
+    def update_custom_field(custom_field, label, field_type=None, options='', is_required=False):
+        """Update an existing Faculty custom field definition."""
+        custom_field.label = label.strip()
+        if field_type:
+            custom_field.field_type = field_type
+        custom_field.options = options.strip()
+        custom_field.is_required = is_required
+        custom_field.save(update_fields=['label', 'field_type', 'options', 'is_required'])
+        return custom_field
+
+    @staticmethod
+    @transaction.atomic
+    def toggle_custom_field(custom_field):
+        """Toggle active/inactive status of a Faculty custom field."""
+        custom_field.is_active = not custom_field.is_active
+        custom_field.save(update_fields=['is_active'])
+        return custom_field
+
+    @staticmethod
+    @transaction.atomic
+    def delete_custom_field(custom_field):
+        """Delete a Faculty custom field definition."""
+        custom_field.delete()
 
     @staticmethod
     @transaction.atomic
