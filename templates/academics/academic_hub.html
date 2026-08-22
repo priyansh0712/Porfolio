@@ -63,8 +63,8 @@
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <!-- 1. Active Session -->
         <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
-            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Active Session</div>
-            <div class="text-lg font-bold text-[#1D1D1F] my-1 truncate">
+            <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Active Session</div>
+            <div class="text-[20px] sm:text-3xl font-bold text-[#1D1D1F] tracking-tight my-1">
                 {% if selected_year %}{{ selected_year.name }}{% else %}—{% endif %}
             </div>
             <div class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
@@ -75,8 +75,8 @@
 
         <!-- 2. Classes Count -->
         <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
-            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Classes</div>
-            <div class="text-lg font-bold text-[#1D1D1F] my-1">
+            <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Classes</div>
+            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] my-1">
                 {{ standards|length }}
             </div>
             <div class="text-[11px] text-gray-500 font-medium">Grade Standards</div>
@@ -84,8 +84,8 @@
 
         <!-- 3. Subjects Count -->
         <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
-            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Subjects</div>
-            <div class="text-lg font-bold text-[#1D1D1F] my-1">
+            <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Subjects</div>
+            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] my-1">
                 {{ subjects|length }}
             </div>
             <div class="text-[11px] text-gray-500 font-medium">Curriculum Courses</div>
@@ -93,8 +93,8 @@
 
         <!-- 4. Total Sessions Count -->
         <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
-            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">All Sessions</div>
-            <div class="text-lg font-bold text-[#1D1D1F] my-1">
+            <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">All Sessions</div>
+            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] my-1">
                 {{ academic_years|length }}
             </div>
             <div class="text-[11px] text-gray-500 font-medium">Configured Years</div>

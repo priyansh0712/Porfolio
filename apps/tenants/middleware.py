@@ -8,6 +8,7 @@ Routing rules:
   - Invalid subdomain (not in DB) → redirect to root domain with flash error.
   - Reserved subdomains (www, api, admin, etc.) → treated as root domain.
 """
+import ipaddress
 from django.shortcuts import redirect
 from django.contrib import messages
 
@@ -80,6 +81,13 @@ class TenantMiddleware:
         if host in ROOT_HOSTS:
             return None
 
+        # Ignore raw IP addresses (e.g. 192.168.x.x, 127.0.0.1)
+        try:
+            ipaddress.ip_address(host)
+            return None
+        except ValueError:
+            pass
+
         parts = host.split('.')
 
         # Handle .localhost domains (local dev: schoola.localhost)
@@ -108,9 +116,13 @@ class TenantMiddleware:
         if 'localhost' in host_without_port:
             root_domain = 'localhost'
         else:
-            # Production: strip subdomain, keep domain + TLD
-            parts = host_without_port.split('.')
-            root_domain = '.'.join(parts[-2:]) if len(parts) >= 2 else host_without_port
+            try:
+                ipaddress.ip_address(host_without_port)
+                root_domain = host_without_port
+            except ValueError:
+                # Production: strip subdomain, keep domain + TLD
+                parts = host_without_port.split('.')
+                root_domain = '.'.join(parts[-2:]) if len(parts) >= 2 else host_without_port
 
         # Preserve port if present
         if ':' in full_host:

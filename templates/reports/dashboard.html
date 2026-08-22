@@ -8,17 +8,17 @@
     <!-- Header Title & Quick Actions -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight">School Attendance Dashboard</h1>
-            <p class="text-sm text-[#86868b] mt-1">Real-time daily metrics, live attendance feed, and quick actions for {{ school.name }}.</p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight">School Attendance Dashboard</h1>
+            <p class="text-xs sm:text-sm text-[#86868b] mt-1">Real-time daily metrics, live attendance feed, and quick actions for {{ school.name }}.</p>
         </div>
-        <div class="flex items-center gap-3">
-            <a href="{% url 'attendance:kiosk' %}" target="_blank" class="apple-btn-primary px-5 py-2.5 inline-flex items-center gap-2 text-sm font-medium">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+            <a href="{% url 'attendance:kiosk' %}" target="_blank" class="apple-btn-primary px-5 py-2.5 inline-flex items-center justify-center gap-2 text-sm font-medium min-h-[44px] sm:min-h-0 shadow-xs">
                 <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
                 </svg>
                 <span>Open Attendance Kiosk</span>
             </a>
-            <a href="{% url 'schedules:settings' %}" class="bg-gray-100 hover:bg-gray-200 text-[#1D1D1F] px-4 py-2.5 rounded-full text-sm font-medium transition-all inline-flex items-center gap-2">
+            <a href="{% url 'schedules:settings' %}" class="bg-gray-100 hover:bg-gray-200 text-[#1D1D1F] px-4 py-2.5 rounded-full text-sm font-medium transition-all inline-flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 border border-gray-200/60">
                 <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                 </svg>
@@ -27,71 +27,71 @@
         </div>
     </div>
 
-    <!-- 6 KPI Summary Cards -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <!-- 6 KPI Summary Cards (2-cols on mobile, 3 on tablet, 6 on desktop) -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         <!-- Total Faculty -->
-        <div class="apple-card p-5">
-            <div class="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-1">Total Faculty</div>
-            <div class="text-3xl font-bold text-[#1D1D1F]">{{ total_faculty }}</div>
-            <div class="text-[11px] text-[#6B7280] mt-1">Active employees</div>
+        <div class="apple-card p-4 sm:p-5 flex flex-col justify-between">
+            <div class="text-[11px] sm:text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-1">Total Faculty</div>
+            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F]">{{ total_faculty }}</div>
+            <div class="text-[11px] text-[#6B7280] mt-1 truncate">Active employees</div>
         </div>
 
         <!-- Present Today -->
-        <div class="apple-card p-5">
-            <div class="text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1 flex items-center justify-between">
+        <div class="apple-card p-4 sm:p-5 flex flex-col justify-between">
+            <div class="text-[11px] sm:text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1 flex items-center justify-between">
                 <span>Present</span>
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">Live</span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] sm:text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">Live</span>
             </div>
-            <div class="text-3xl font-bold text-[#1D1D1F]">{{ present_count }}</div>
-            <div class="text-[11px] text-[#6B7280] mt-1">On-time check-ins</div>
+            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F]">{{ present_count }}</div>
+            <div class="text-[11px] text-[#6B7280] mt-1 truncate">On-time check-ins</div>
         </div>
 
         <!-- Late Today -->
-        <div class="apple-card p-5">
-            <div class="text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1 flex items-center justify-between">
+        <div class="apple-card p-4 sm:p-5 flex flex-col justify-between">
+            <div class="text-[11px] sm:text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1 flex items-center justify-between">
                 <span>Late</span>
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/60">Grace</span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] sm:text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/60">Grace</span>
             </div>
-            <div class="text-3xl font-bold text-[#1D1D1F]">{{ late_count }}</div>
-            <div class="text-[11px] text-[#6B7280] mt-1">After grace period</div>
+            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F]">{{ late_count }}</div>
+            <div class="text-[11px] text-[#6B7280] mt-1 truncate">After grace period</div>
         </div>
 
         <!-- Half-Day Today -->
-        <div class="apple-card p-5">
-            <div class="text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1 flex items-center justify-between">
+        <div class="apple-card p-4 sm:p-5 flex flex-col justify-between">
+            <div class="text-[11px] sm:text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1 flex items-center justify-between">
                 <span>Half-Day</span>
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700 border border-gray-200/60">&lt;4h</span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] sm:text-[10px] font-semibold bg-gray-100 text-gray-700 border border-gray-200/60">&lt;4h</span>
             </div>
-            <div class="text-3xl font-bold text-[#1D1D1F]">{{ half_day_count }}</div>
-            <div class="text-[11px] text-[#6B7280] mt-1">Late or &lt;4h shift</div>
+            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F]">{{ half_day_count }}</div>
+            <div class="text-[11px] text-[#6B7280] mt-1 truncate">Late or &lt;4h shift</div>
         </div>
 
         <!-- On Leave Today -->
-        <div class="apple-card p-5">
-            <div class="text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1 flex items-center justify-between">
+        <div class="apple-card p-4 sm:p-5 flex flex-col justify-between">
+            <div class="text-[11px] sm:text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1 flex items-center justify-between">
                 <span>On Leave</span>
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#5A2132]/8 text-[#5A2132] border border-[#5A2132]/20">Leave</span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] sm:text-[10px] font-semibold bg-[#5A2132]/8 text-[#5A2132] border border-[#5A2132]/20">Leave</span>
             </div>
-            <div class="text-3xl font-bold text-[#1D1D1F]">{{ leave_count }}</div>
-            <div class="text-[11px] text-[#6B7280] mt-1">Approved leaves</div>
+            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F]">{{ leave_count }}</div>
+            <div class="text-[11px] text-[#6B7280] mt-1 truncate">Approved leaves</div>
         </div>
 
         <!-- Absent Today -->
-        <div class="apple-card p-5">
-            <div class="text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1 flex items-center justify-between">
+        <div class="apple-card p-4 sm:p-5 flex flex-col justify-between">
+            <div class="text-[11px] sm:text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider mb-1 flex items-center justify-between">
                 <span>Absent</span>
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200/60">None</span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] sm:text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200/60">None</span>
             </div>
-            <div class="text-3xl font-bold text-[#1D1D1F]">{{ absent_count }}</div>
-            <div class="text-[11px] text-[#6B7280] mt-1">No scan record</div>
+            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F]">{{ absent_count }}</div>
+            <div class="text-[11px] text-[#6B7280] mt-1 truncate">No scan record</div>
         </div>
     </div>
 
     <!-- Today's Punctuality Breakdown Donut Chart & Export Bar -->
-    <div class="apple-card p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div class="flex items-center gap-6">
+    <div class="apple-card p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6">
+        <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left w-full md:w-auto">
             <!-- SVG Donut Chart -->
-            <div class="relative w-28 h-28 flex items-center justify-center flex-shrink-0">
+            <div class="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center flex-shrink-0">
                 <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                     <path class="text-gray-100" stroke-width="3.8" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     <!-- Present segment (emerald) -->
@@ -108,23 +108,23 @@
             <div>
                 <h3 class="text-base font-semibold text-[var(--apple-ink)]">Today's Punctuality Breakdown</h3>
                 <p class="text-xs text-[var(--apple-muted)] mt-0.5">Visual ratio of present vs late arrivals for {{ today|date:"F j, Y" }}</p>
-                <div class="flex items-center gap-4 mt-3 text-xs">
-                    <span class="flex items-center gap-1.5 font-medium text-emerald-700"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> {{ present_count }} Present</span>
-                    <span class="flex items-center gap-1.5 font-medium text-amber-700"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> {{ late_count }} Late</span>
-                    <span class="flex items-center gap-1.5 font-medium text-[#5A2132]"><span class="w-2.5 h-2.5 rounded-full bg-[#5A2132]"></span> {{ leave_count }} Leave</span>
+                <div class="flex flex-wrap justify-center sm:justify-start items-center gap-3 sm:gap-4 mt-2.5 sm:mt-3 text-xs">
+                    <span class="flex items-center gap-1.5 font-medium text-emerald-700"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span> {{ present_count }} Present</span>
+                    <span class="flex items-center gap-1.5 font-medium text-amber-700"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span> {{ late_count }} Late</span>
+                    <span class="flex items-center gap-1.5 font-medium text-[#5A2132]"><span class="w-2.5 h-2.5 rounded-full bg-[#5A2132] flex-shrink-0"></span> {{ leave_count }} Leave</span>
                 </div>
             </div>
         </div>
 
         <!-- 1-Click Export Actions -->
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-            <a href="{% url 'reports:report-list' %}?export=csv" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full border border-[var(--apple-hairline)] bg-white hover:bg-gray-50 text-xs font-semibold text-[var(--apple-ink)] shadow-sm transition-all">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full md:w-auto">
+            <a href="{% url 'reports:report-list' %}?export=csv" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full border border-[var(--apple-hairline)] bg-white hover:bg-gray-50 text-xs font-semibold text-[var(--apple-ink)] shadow-2xs transition-all min-h-[44px] sm:min-h-0">
                 <svg class="w-3.5 h-3.5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
                 <span>Export CSV</span>
             </a>
-            <a href="{% url 'reports:report-list' %}" class="flex-1 sm:flex-initial apple-btn-primary px-5 py-2 text-xs font-semibold shadow-sm inline-flex items-center justify-center gap-1.5">
+            <a href="{% url 'reports:report-list' %}" class="flex-1 sm:flex-initial apple-btn-primary px-5 py-2.5 text-xs font-semibold shadow-2xs inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0">
                 <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
                 </svg>
@@ -134,13 +134,13 @@
     </div>
 
     <!-- Main Grid: Live Feed + Quick Shortcuts -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         <!-- Left: Today's Live Attendance Feed (2 cols) -->
         <div class="lg:col-span-2 space-y-4">
-            <div class="apple-card p-6 sm:p-8">
-                <div class="flex items-center justify-between mb-6">
+            <div class="apple-card p-5 sm:p-8">
+                <div class="flex items-center justify-between mb-5 sm:mb-6">
                     <div>
-                        <h2 class="text-lg font-semibold text-[#1D1D1F]">Today's Live Activity Feed</h2>
+                        <h2 class="text-base sm:text-lg font-semibold text-[#1D1D1F]">Today's Live Activity Feed</h2>
                         <p class="text-xs text-[#86868b] mt-0.5">{{ today|date:"F j, Y" }} • Most recent check-in/out events</p>
                     </div>
                     <a href="{% url 'reports:report-list' %}" class="text-xs font-semibold text-[#5A2132] hover:underline">
@@ -150,7 +150,7 @@
 
                 {% if live_feed %}
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm border-collapse">
+                        <table class="w-full text-left text-sm border-collapse min-w-[500px]">
                             <thead>
                                 <tr class="border-b border-[#e0e0e0] text-xs font-semibold text-[#86868b] uppercase tracking-wider">
                                     <th class="pb-3 pr-4">Faculty Member</th>
@@ -199,10 +199,19 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="py-12 text-center text-[#86868b]">
-                        <div class="text-3xl mb-2">📷</div>
-                        <div class="text-sm font-medium text-[#1D1D1F]">No scans recorded today yet</div>
-                        <div class="text-xs mt-1">Open the Attendance Kiosk to start accepting faculty check-ins.</div>
+                    <div class="py-8 px-4 text-center text-[#86868b]">
+                        <div class="w-12 h-12 rounded-2xl bg-[#5A2132]/8 text-[#5A2132] flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
+                            </svg>
+                        </div>
+                        <div class="text-sm font-semibold text-[#1D1D1F]">No scans recorded today yet</div>
+                        <div class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">Open the Attendance Kiosk to start accepting faculty check-ins.</div>
+                        <div class="mt-4">
+                            <a href="{% url 'attendance:kiosk' %}" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#5A2132] text-white text-xs font-semibold rounded-full shadow-xs hover:bg-[#481A28] transition-colors">
+                                Launch Attendance Kiosk &rarr;
+                            </a>
+                        </div>
                     </div>
                 {% endif %}
             </div>

@@ -46,19 +46,22 @@
     </div>
 
     <!-- Mobile Navigation Drawer -->
-    <div id="mobile-menu" class="hidden md:hidden border-b border-[var(--apple-hairline)] bg-white px-4 pt-3 pb-5 space-y-2 shadow-lg">
-        <a href="{% url 'accounts:dashboard' %}" class="block px-3 py-2 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)]">Dashboard</a>
-        <a href="{% url 'leaves:apply_leave' %}" class="block px-3 py-2 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)]">Apply Leave</a>
-        <a href="{% url 'students:hub' %}" class="block px-3 py-2 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)]">My Class</a>
-        <a href="{% url 'leaves:faculty_attendance' %}" class="block px-3 py-2 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)]">My Attendance</a>
-        <a href="{% url 'notifications:notification_list' %}" class="block px-3 py-2 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)]">
-            🔔 Notifications
+    <div id="mobile-menu" class="hidden md:hidden border-b border-[var(--apple-hairline)] bg-white px-4 pt-3 pb-5 space-y-1.5 shadow-lg">
+        <a href="{% url 'accounts:dashboard' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">Dashboard</a>
+        <a href="{% url 'leaves:apply_leave' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">Apply Leave</a>
+        <a href="{% url 'students:hub' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">My Class</a>
+        <a href="{% url 'leaves:faculty_attendance' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">My Attendance</a>
+        <a href="{% url 'notifications:notification_list' %}" class="flex items-center justify-between px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">
+            <span>🔔 Notifications</span>
             {% if unread_notifications_count > 0 %}
-                <span class="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[9px] font-bold leading-none text-white bg-red-600 rounded-full">{{ unread_notifications_count }}</span>
+                <span class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full">{{ unread_notifications_count }}</span>
             {% endif %}
         </a>
+        <button type="button" onclick="toggleCmdPalette()" class="w-full text-left flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">
+            <span>🔍 Search / Commands</span>
+        </button>
         <div class="pt-2 border-t border-[var(--apple-hairline)]">
-            <a href="{% url 'accounts:logout' %}" class="block text-center px-4 py-2.5 text-sm font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-full">Sign Out</a>
+            <a href="{% url 'accounts:logout' %}" class="flex items-center justify-center text-center px-4 py-2.5 text-sm font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-full min-h-[44px]">Sign Out</a>
         </div>
     </div>
 </header>

@@ -98,7 +98,7 @@
         /* ── Scan Overlay Frame ── */
         .scan-frame {
             position: absolute;
-            width: 280px; height: 340px;
+            width: min(280px, 72vw); height: min(340px, 48vh);
             border: 2px solid rgba(255,255,255,0.3);
             border-radius: 24px;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -155,7 +155,7 @@
         /* ── Scan Pulse Animation ── */
         .scan-pulse {
             position: absolute;
-            width: 280px; height: 3px;
+            width: min(280px, 72vw); height: 3px;
             background: linear-gradient(90deg, transparent, var(--apple-blue), transparent);
             border-radius: 2px;
             animation: scanPulse 2s ease-in-out infinite;
@@ -170,11 +170,12 @@
         /* ── Status Badge Overlay ── */
         .status-overlay {
             position: absolute;
-            bottom: 32px;
+            bottom: max(24px, env(safe-area-inset-bottom));
             left: 50%;
             transform: translateX(-50%) translateY(120px);
-            min-width: 360px;
-            padding: 20px 28px;
+            width: calc(100% - 32px);
+            max-width: 380px;
+            padding: 18px 24px;
             border-radius: 20px;
             backdrop-filter: blur(40px);
             -webkit-backdrop-filter: blur(40px);
@@ -302,6 +303,37 @@
         }
         .camera-error .retry-btn:hover {
             background: var(--apple-blue-hover);
+        }
+
+        /* ── Mobile Responsive Overrides ── */
+        @media (max-width: 640px) {
+            .kiosk-container {
+                grid-template-rows: 60px 1fr 64px;
+            }
+            .kiosk-header {
+                padding: 0 16px;
+            }
+            .kiosk-header .school-badge .logo-circle {
+                width: 32px; height: 32px; font-size: 14px;
+            }
+            .kiosk-header .school-badge .school-name {
+                font-size: 14px;
+            }
+            .kiosk-header .school-badge .school-label {
+                display: none;
+            }
+            .kiosk-clock {
+                font-size: 20px;
+            }
+            .kiosk-date {
+                font-size: 11px;
+            }
+            .kiosk-footer {
+                padding: 0 16px;
+            }
+            .kiosk-fullscreen-btn {
+                display: none;
+            }
         }
     </style>
 </head>

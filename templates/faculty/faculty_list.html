@@ -8,57 +8,7 @@
   /* Apple Design System — Faculty Directory   */
   /* ========================================= */
 
-  .faculty-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  .faculty-header h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #1d1d1f;
-    letter-spacing: -0.025em;
-    line-height: 1.2;
-  }
-  .count-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 28px;
-    height: 24px;
-    padding: 0 8px;
-    border-radius: 980px;
-    background: #f5f5f7;
-    border: 1px solid #e0e0e0;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: #86868b;
-    margin-left: 8px;
-    vertical-align: middle;
-  }
-  .btn-add-faculty {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 9px 20px;
-    border-radius: 980px;
-    background: #5A2132;
-    color: #fff;
-    font-size: 0.8rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 1px 4px rgba(90, 33, 50, 0.15);
-  }
-  .btn-add-faculty:hover {
-    background: #481A28;
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(90, 33, 50, 0.25);
-  }
+
 
   /* Search & Filter Toolbar */
   .filter-toolbar {
@@ -279,11 +229,13 @@
     z-index: 9990;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.25s;
+    pointer-events: none;
+    transition: opacity 0.25s, visibility 0.25s;
   }
   .modal-backdrop.active {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
   }
   .modal-drawer {
     position: fixed;
@@ -293,16 +245,21 @@
     max-width: 460px;
     height: 100vh;
     background: #ffffff;
-    box-shadow: -8px 0 40px rgba(0,0,0,0.08);
+    box-shadow: none;
     z-index: 9991;
     transform: translateX(100%);
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s, box-shadow 0.35s;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
   }
   .modal-drawer.active {
     transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+    box-shadow: -8px 0 40px rgba(0,0,0,0.15);
   }
   .modal-header {
     padding: 20px 24px;
@@ -396,33 +353,39 @@
     cursor: not-allowed;
   }
 
-  /* Mobile responsive table */
+  /* Mobile responsive overrides */
   @media (max-width: 768px) {
-    .faculty-table thead { display: none; }
-    .faculty-table tbody tr {
-      display: block;
-      padding: 14px 16px;
-      border-bottom: 1px solid #f0f0f0;
+    .filter-toolbar {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      padding: 14px;
     }
-    .faculty-table td {
+    .search-input-wrapper {
+      width: 100%;
+      min-width: 0;
+    }
+    .search-input {
+      min-height: 42px;
+      font-size: 0.85rem;
+    }
+    .filter-select {
+      width: 100%;
+      min-height: 42px;
+    }
+    .status-pills {
+      width: 100%;
+      display: flex;
+    }
+    .status-pill {
+      flex: 1;
+      text-align: center;
+      min-height: 38px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 4px 0;
-      border: none;
+      justify-content: center;
     }
-    .faculty-table td::before {
-      content: attr(data-label);
-      font-size: 0.68rem;
-      font-weight: 600;
-      color: #86868b;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      flex-shrink: 0;
-      margin-right: 12px;
-    }
-    .td-faculty-info { flex-direction: column !important; align-items: flex-start !important; }
-    .td-faculty-info::before { margin-bottom: 6px; }
   }
 </style>
 {% endblock %}
@@ -431,37 +394,42 @@
 <div class="w-full max-w-6xl mx-auto">
 
   <!-- Page Header -->
-  <div class="faculty-header">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
     <div>
-      <h1>Faculty Directory <span class="count-badge" id="total-badge">{{ total_count }}</span></h1>
-      <p style="font-size: 0.82rem; color: #86868b; margin-top: 4px;">
+      <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight flex items-center gap-2">
+        Faculty Directory 
+        <span class="inline-flex items-center justify-center min-w-[28px] h-6 px-2 rounded-full bg-gray-100 border border-gray-200 text-[11px] font-semibold text-gray-500" id="total-badge">{{ total_count }}</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-[#86868b] mt-1">
         Manage faculty members for {% if tenant %}{{ tenant.name }}{% else %}your school{% endif %}
       </p>
     </div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <a href="{% url 'faculty:export_csv' %}" class="action-btn" style="padding: 9px 16px; border-radius: 980px; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align: -1px; margin-right: 4px;">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        Export CSV
-      </a>
-      <button class="action-btn" onclick="openCSVModal()" style="padding: 9px 16px; border-radius: 980px; font-size: 0.8rem; font-weight: 600;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align: -1px; margin-right: 4px;">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="17 8 12 3 7 8"></polyline>
-          <line x1="12" y1="3" x2="12" y2="15"></line>
-        </svg>
-        Import CSV
-      </button>
-      <button class="btn-add-faculty" onclick="openFacultyModal('create')" id="btn-add-faculty">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+      <button class="apple-btn-primary px-5 py-2.5 inline-flex items-center justify-center gap-2 text-sm font-semibold min-h-[44px] sm:min-h-0 shadow-xs rounded-full bg-[#5A2132] text-white hover:bg-[#481A28] transition-all" onclick="openFacultyModal('create')" id="btn-add-faculty">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
         Add Faculty
       </button>
+      <div class="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-2.5">
+        <a href="{% url 'faculty:export_csv' %}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-[#1D1D1F] hover:bg-gray-50 transition-all shadow-xs w-full sm:w-auto">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export CSV
+        </a>
+        <button class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-[#1D1D1F] hover:bg-gray-50 transition-all shadow-xs w-full sm:w-auto" onclick="openCSVModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Import CSV
+        </button>
+      </div>
     </div>
   </div>
 
@@ -488,8 +456,8 @@
       <button class="status-pill" data-filter="inactive" onclick="filterByStatus('inactive', this)">Inactive <span style="font-size: 0.62rem; opacity: 0.7;">{{ inactive_count }}</span></button>
     </div>
 
-    <!-- View Switcher (Table vs Digital ID Cards) -->
-    <div class="flex items-center gap-1 bg-[var(--apple-canvas)] p-1 rounded-xl border border-[var(--apple-hairline)] ml-auto">
+    <!-- View Switcher (Desktop Only: Table vs Digital ID Cards) -->
+    <div class="view-switcher-wrapper hidden md:flex items-center gap-1 bg-[var(--apple-canvas)] p-1 rounded-xl border border-[var(--apple-hairline)] ml-auto">
       <button onclick="setDirectoryView('table')" id="view-btn-table" title="Table View" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-[var(--apple-ink)] shadow-sm border border-[var(--apple-hairline)] flex items-center gap-1.5 transition-all">
         <span>📑</span> Table
       </button>
@@ -499,56 +467,55 @@
     </div>
   </div>
 
-  <!-- Digital ID Cards View (Grid) -->
-  <div id="faculty-cards-container" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+  <!-- Digital ID Cards / Mobile Cards View (Single Clean List) -->
+  <div id="faculty-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-8">
     {% for faculty in faculty_list %}
-    <div class="apple-card p-6 flex flex-col justify-between hover:shadow-xl transition-all duration-200 cursor-pointer group" onclick="openProfileModal({{ faculty.pk }})">
+    <div class="apple-card faculty-card-item p-4 sm:p-5 flex flex-col justify-between hover:shadow-md transition-all duration-150 cursor-pointer group rounded-2xl border border-[var(--apple-hairline)] bg-white"
+         data-name="{{ faculty.full_name|lower }}"
+         data-email="{{ faculty.email|lower }}"
+         data-code="{{ faculty.employee_code|lower }}"
+         data-dept="{{ faculty.department }}"
+         data-status="{% if faculty.is_active %}active{% else %}inactive{% endif %}"
+         onclick="openProfileModal({{ faculty.pk }})">
       <div>
-        <div class="flex items-start justify-between gap-3 mb-4">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-2xl bg-[#5A2132]/10 text-[#5A2132] font-bold text-lg flex items-center justify-center border border-[#5A2132]/20">
+        <!-- Top Row: [Initial] Faculty Name + email@school.edu ... View → -->
+        <div class="flex items-start justify-between gap-2.5 mb-2.5">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-2xl bg-[#5A2132]/10 text-[#5A2132] font-bold text-xs flex items-center justify-center border border-[#5A2132]/20 flex-shrink-0">
               {{ faculty.first_name.0 }}{{ faculty.last_name.0 }}
             </div>
-            <div>
-              <h3 class="text-base font-bold text-[var(--apple-ink)] group-hover:text-[var(--apple-blue)] transition-colors">{{ faculty.full_name }}</h3>
-              <p class="text-xs text-[var(--apple-muted)]">{{ faculty.department }}</p>
+            <div class="min-w-0">
+              <h3 class="text-sm font-bold text-[#1D1D1F] group-hover:text-[#5A2132] transition-colors truncate">{{ faculty.full_name }}</h3>
+              <p class="text-xs text-[#86868b] truncate mt-0.5">{{ faculty.email }}</p>
             </div>
           </div>
-          <span class="font-mono text-[10px] font-bold px-2 py-1 bg-[var(--apple-canvas)] border border-[var(--apple-hairline)] rounded-lg text-[var(--apple-ink)]">
+          <div class="relative flex items-center justify-center flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#5A2132] bg-[#5A2132]/8 group-hover:bg-[#5A2132]/15 border border-[#5A2132]/20 rounded-full transition-colors">
+              View &rarr;
+            </span>
+            <!-- 44px hit-target expander -->
+            <span class="absolute -inset-2"></span>
+          </div>
+        </div>
+
+        <!-- Middle: Department · Role & Employee Code -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-3 mt-2 border-t border-gray-100 text-xs">
+          <div class="text-[#1D1D1F] font-medium truncate">
+            <span>{{ faculty.department }}</span>
+            <span class="text-gray-300 mx-1">·</span>
+            <span class="text-gray-500">{{ faculty.designation|default:"Faculty Member" }}</span>
+          </div>
+          <span class="font-mono text-[10px] font-bold px-2 py-0.5 bg-[#f5f5f7] border border-gray-200/80 rounded-md text-[#1D1D1F]">
             {{ faculty.employee_code }}
           </span>
         </div>
-
-        <div class="space-y-2 mb-4 text-xs text-[var(--apple-muted)]">
-          <div class="flex items-center justify-between py-1 border-b border-[var(--apple-hairline)]">
-            <span>Designation:</span>
-            <span class="font-semibold text-[var(--apple-ink)]">{{ faculty.designation|default:"Faculty Member" }}</span>
-          </div>
-          <div class="flex items-center justify-between py-1 border-b border-[var(--apple-hairline)]">
-            <span>Email:</span>
-            <span class="font-medium text-[var(--apple-ink)]">{{ faculty.email }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="pt-3 border-t border-[var(--apple-hairline)] flex items-center justify-between">
-        {% if faculty.is_face_enrolled %}
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 512-d Vector Enrolled
-          </span>
-        {% else %}
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-semibold border border-amber-200">
-            <span class="w-2 h-2 rounded-full bg-amber-500"></span> Pending Enrollment
-          </span>
-        {% endif %}
-        <span class="text-xs font-semibold text-[var(--apple-blue)] group-hover:underline">View Profile &rarr;</span>
       </div>
     </div>
     {% endfor %}
   </div>
 
-  <!-- Faculty Data Table -->
-  <div class="faculty-table-container">
+  <!-- Desktop Faculty Data Table (hidden on mobile < 768px) -->
+  <div class="faculty-table-container hidden md:block" id="faculty-table-container">
     {% if faculty_list %}
     <table class="faculty-table" id="faculty-table">
       <thead>
@@ -574,7 +541,7 @@
             title="Click to view details & actions">
 
           <!-- Faculty Info -->
-          <td data-label="Faculty" class="td-faculty-info">
+          <td>
             <div style="display: flex; align-items: center; gap: 12px;">
               <div class="faculty-avatar-circle"
                    style="background: rgba(90, 33, 50, 0.08); color: #5A2132; border: 1px solid rgba(90, 33, 50, 0.15);">
@@ -588,20 +555,20 @@
           </td>
 
           <!-- Employee Code -->
-          <td data-label="Code">
+          <td>
             <span style="font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.78rem; font-weight: 500; color: #1d1d1f; background: #f5f5f7; padding: 3px 10px; border-radius: 6px; border: 1px solid #e0e0e0;">
               {{ faculty.employee_code }}
             </span>
           </td>
 
           <!-- Department & Designation -->
-          <td data-label="Dept">
+          <td>
             <div style="font-weight: 500; font-size: 0.82rem;">{{ faculty.department }}</div>
             <div style="font-size: 0.72rem; color: #86868b; margin-top: 1px;">{{ faculty.designation|default:"—" }}</div>
           </td>
 
           <!-- Active Status -->
-          <td data-label="Status">
+          <td>
             {% if faculty.is_active %}
               <span class="badge badge-active"><span class="badge-dot badge-dot-active"></span> Active</span>
             {% else %}
@@ -610,7 +577,7 @@
           </td>
 
           <!-- Face Enrollment Status -->
-          <td data-label="Face ID">
+          <td>
             {% if faculty.is_face_enrolled %}
               <span class="badge badge-enrolled"><span class="badge-dot badge-dot-enrolled"></span> Enrolled</span>
             {% else %}
@@ -618,8 +585,8 @@
             {% endif %}
           </td>
 
-          <!-- Single Clean Action Indicator -->
-          <td data-label="Actions" style="text-align: right;">
+          <!-- Actions -->
+          <td style="text-align: right;">
             <div style="display: flex; justify-content: flex-end; align-items: center;">
               <span class="action-btn" style="padding: 5px 10px; border-radius: 980px; font-size: 0.72rem; color: #86868b; background: #f5f5f7; border-color: #e0e0e0; display: inline-flex; align-items: center; gap: 4px;">
                 View
@@ -897,19 +864,31 @@
 <script>
 // ── View Switcher (Table vs Digital ID Cards) ──
 function setDirectoryView(mode) {
-    const table = document.getElementById('faculty-table');
+    const tableContainer = document.getElementById('faculty-table-container');
     const cards = document.getElementById('faculty-cards-container');
     const btnTable = document.getElementById('view-btn-table');
     const btnCards = document.getElementById('view-btn-cards');
 
     if (mode === 'cards') {
-        if (table && table.parentElement) table.parentElement.classList.add('hidden');
+        if (tableContainer) {
+            tableContainer.classList.add('hidden');
+            tableContainer.classList.remove('md:block');
+        }
         if (cards) cards.classList.remove('hidden');
         if (btnCards) btnCards.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-[var(--apple-ink)] shadow-sm border border-[var(--apple-hairline)] flex items-center gap-1.5 transition-all";
         if (btnTable) btnTable.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--apple-muted)] hover:text-[var(--apple-ink)] flex items-center gap-1.5 transition-all";
     } else {
-        if (table && table.parentElement) table.parentElement.classList.remove('hidden');
-        if (cards) cards.classList.add('hidden');
+        if (tableContainer) {
+            tableContainer.classList.remove('hidden');
+            tableContainer.classList.add('md:block');
+        }
+        if (cards) {
+            if (window.innerWidth >= 768) {
+                cards.classList.add('hidden');
+            } else {
+                cards.classList.remove('hidden');
+            }
+        }
         if (btnTable) btnTable.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-[var(--apple-ink)] shadow-sm border border-[var(--apple-hairline)] flex items-center gap-1.5 transition-all";
         if (btnCards) btnCards.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--apple-muted)] hover:text-[var(--apple-ink)] flex items-center gap-1.5 transition-all";
     }
@@ -1082,9 +1061,10 @@ function filterByStatus(status, btn) {
 }
 
 function applyFilters() {
-  var query = (searchInput ? searchInput.value.toLowerCase() : '');
+  var query = (searchInput ? searchInput.value.toLowerCase().trim() : '');
   var dept = (deptFilter ? deptFilter.value : '');
   var rows = document.querySelectorAll('#faculty-tbody tr');
+  var cards = document.querySelectorAll('#faculty-cards-container .faculty-card-item');
   var visibleCount = 0;
 
   for (var i = 0; i < rows.length; i++) {
@@ -1104,6 +1084,25 @@ function applyFilters() {
       visibleCount++;
     } else {
       row.style.display = 'none';
+    }
+  }
+
+  for (var j = 0; j < cards.length; j++) {
+    var card = cards[j];
+    var cName = card.getAttribute('data-name') || '';
+    var cEmail = card.getAttribute('data-email') || '';
+    var cCode = card.getAttribute('data-code') || '';
+    var cDept = card.getAttribute('data-dept') || '';
+    var cStatus = card.getAttribute('data-status') || '';
+
+    var cMatchesSearch = !query || cName.indexOf(query) > -1 || cEmail.indexOf(query) > -1 || cCode.indexOf(query) > -1;
+    var cMatchesDept = !dept || cDept === dept;
+    var cMatchesStatus = activeStatusFilter === 'all' || cStatus === activeStatusFilter;
+
+    if (cMatchesSearch && cMatchesDept && cMatchesStatus) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
     }
   }
 

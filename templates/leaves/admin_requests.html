@@ -8,10 +8,10 @@
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold tracking-tight text-[var(--apple-ink)] mb-1">
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--apple-ink)] mb-1">
                 Leave Requests
             </h1>
-            <p class="text-[var(--apple-muted)] text-sm">Review, filter, and approve or reject faculty leave applications.</p>
+            <p class="text-xs sm:text-sm text-[var(--apple-muted)] mt-1">Review, filter, and approve or reject faculty leave applications.</p>
         </div>
         <div class="flex-shrink-0">
             <a href="{% url 'leaves:upload_allocation' %}" class="apple-btn-secondary px-5 py-2.5 inline-flex items-center text-sm font-semibold border border-[var(--apple-hairline)] bg-white text-[var(--apple-ink)] hover:bg-gray-50">
@@ -21,12 +21,12 @@
     </div>
 
     <!-- Filters Section -->
-    <div class="apple-card p-6">
-        <form method="get" action="{% url 'leaves:admin_requests' %}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+    <div class="apple-card p-4 sm:p-6">
+        <form method="get" action="{% url 'leaves:admin_requests' %}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
             <!-- Filter by Status -->
             <div class="space-y-1.5">
                 <label for="status" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">Status</label>
-                <select name="status" id="status" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1D1D1F] text-sm focus:outline-none focus:ring-2 focus:ring-[#5A2132]/30 focus:border-[#5A2132]">
+                <select name="status" id="status" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1D1D1F] text-sm focus:outline-none focus:ring-2 focus:ring-[#5A2132]/30 focus:border-[#5A2132] min-h-[42px] sm:min-h-[38px]">
                     <option value="">All Statuses</option>
                     {% for val, name in status_choices %}
                         <option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ name }}</option>
@@ -37,7 +37,7 @@
             <!-- Filter by Faculty -->
             <div class="space-y-1.5">
                 <label for="faculty" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">Faculty</label>
-                <select name="faculty" id="faculty" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1D1D1F] text-sm focus:outline-none focus:ring-2 focus:ring-[#5A2132]/30 focus:border-[#5A2132]">
+                <select name="faculty" id="faculty" class="w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1D1D1F] text-sm focus:outline-none focus:ring-2 focus:ring-[#5A2132]/30 focus:border-[#5A2132] min-h-[42px] sm:min-h-[38px]">
                     <option value="">All Faculty</option>
                     {% for fac in faculties %}
                         <option value="{{ fac.pk }}" {% if selected_faculty == fac.pk %}selected{% endif %}>{{ fac.full_name }} ({{ fac.employee_code }})</option>
@@ -48,21 +48,21 @@
             <!-- Date Range From -->
             <div class="space-y-1.5">
                 <label for="from_date" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">From Date</label>
-                <input type="text" name="from_date" id="from_date" value="{{ selected_from_date }}" placeholder="Select From Date" autocomplete="off" class="apple-datepicker w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1D1D1F] text-sm focus:outline-none focus:ring-2 focus:ring-[#5A2132]/30 focus:border-[#5A2132]">
+                <input type="text" name="from_date" id="from_date" value="{{ selected_from_date }}" placeholder="Select From Date" autocomplete="off" class="apple-datepicker w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1D1D1F] text-sm focus:outline-none focus:ring-2 focus:ring-[#5A2132]/30 focus:border-[#5A2132] min-h-[42px] sm:min-h-[38px]">
             </div>
 
             <!-- Date Range To -->
             <div class="space-y-1.5">
                 <label for="to_date" class="block text-xs font-semibold text-[var(--apple-muted)] uppercase tracking-wider">To Date</label>
-                <input type="text" name="to_date" id="to_date" value="{{ selected_to_date }}" placeholder="Select To Date" autocomplete="off" class="apple-datepicker w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1D1D1F] text-sm focus:outline-none focus:ring-2 focus:ring-[#5A2132]/30 focus:border-[#5A2132]">
+                <input type="text" name="to_date" id="to_date" value="{{ selected_to_date }}" placeholder="Select To Date" autocomplete="off" class="apple-datepicker w-full px-3 py-2 rounded-xl border border-gray-200/80 bg-white text-[#1D1D1F] text-sm focus:outline-none focus:ring-2 focus:ring-[#5A2132]/30 focus:border-[#5A2132] min-h-[42px] sm:min-h-[38px]">
             </div>
 
-            <!-- Filter Actions (Span 4 to align nicely) -->
-            <div class="md:col-span-4 flex items-center justify-end space-x-3 pt-2">
-                <a href="{% url 'leaves:admin_requests' %}" class="px-5 py-2.5 rounded-full text-xs font-semibold border border-[var(--apple-hairline)] bg-white text-[var(--apple-ink)] hover:bg-gray-50">
+            <!-- Filter Actions (Span full to align nicely) -->
+            <div class="sm:col-span-2 md:col-span-4 flex items-center justify-end gap-3 pt-2">
+                <a href="{% url 'leaves:admin_requests' %}" class="flex-1 sm:flex-initial text-center px-5 py-2.5 rounded-xl text-xs font-semibold border border-[var(--apple-hairline)] bg-white text-[var(--apple-ink)] hover:bg-gray-50 min-h-[42px] flex items-center justify-center">
                     Clear Filters
                 </a>
-                <button type="submit" class="apple-btn-primary px-6 py-2.5 text-xs font-semibold">
+                <button type="submit" class="flex-1 sm:flex-initial apple-btn-primary px-6 py-2.5 text-xs font-semibold min-h-[42px] flex items-center justify-center">
                     Apply Filters
                 </button>
             </div>
@@ -74,7 +74,8 @@
         <h2 class="text-lg font-bold text-[var(--apple-ink)] mb-6">Applications Overview</h2>
 
         {% if leave_requests %}
-        <div class="overflow-x-auto">
+        <!-- Desktop Table View (>= 768px) -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left border-collapse text-sm">
                 <thead>
                     <tr class="border-b border-[var(--apple-hairline)] text-[var(--apple-muted)] font-medium">
@@ -145,6 +146,80 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile Card List View (< 768px) -->
+        <div class="block md:hidden divide-y divide-gray-100 -mx-2">
+            {% for req in leave_requests %}
+            <div class="p-4 space-y-3">
+                <!-- Top Row: Faculty Name + Status Badge -->
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <h4 class="font-bold text-[#1D1D1F] text-sm">{{ req.faculty.full_name }}</h4>
+                        <p class="text-[11px] text-gray-500 mt-0.5">{{ req.faculty.employee_code }} • {{ req.faculty.department }}</p>
+                    </div>
+                    <div>
+                        {% if req.status == 'PENDING' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                {{ req.get_status_display }}
+                            </span>
+                        {% elif req.status == 'APPROVED' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                {{ req.get_status_display }}
+                            </span>
+                        {% elif req.status == 'REJECTED' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                {{ req.get_status_display }}
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                                {{ req.get_status_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Date Range & Leave Type -->
+                <div class="flex flex-wrap items-center gap-2 text-xs">
+                    <span class="font-semibold text-[#1D1D1F] bg-gray-100 px-2.5 py-1 rounded-xl border border-gray-200/70">
+                        📅 {{ req.from_date|date:"d M, Y" }} → {{ req.to_date|date:"d M, Y" }}
+                    </span>
+                    <span class="text-[#5A2132] font-semibold bg-[#5A2132]/8 px-2.5 py-1 rounded-xl border border-[#5A2132]/20">
+                        {{ req.get_leave_type_display }}
+                    </span>
+                </div>
+
+                <!-- Reason Section -->
+                {% if req.reason %}
+                <div class="bg-gray-50/80 rounded-xl p-2.5 border border-gray-100">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">Reason</span>
+                    <p class="text-xs text-[#1D1D1F] leading-relaxed">{{ req.reason }}</p>
+                </div>
+                {% endif %}
+
+                {% if req.status == 'REJECTED' and req.rejection_reason %}
+                <div class="bg-rose-50/80 rounded-xl p-2.5 border border-rose-200/60 text-xs text-rose-700">
+                    <span class="text-[10px] font-bold uppercase tracking-wider block mb-0.5">Rejection Reason</span>
+                    <p class="leading-relaxed">{{ req.rejection_reason }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Mobile Action Buttons -->
+                {% if req.status == 'PENDING' %}
+                <div class="flex items-center gap-2 pt-1">
+                    <form action="{% url 'leaves:approve_request' req.pk %}" method="post" class="flex-1">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full flex items-center justify-center text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-4 py-2.5 rounded-xl border border-emerald-200 min-h-[42px] transition-colors">
+                            ✓ Approve
+                        </button>
+                    </form>
+                    <button type="button" onclick="openRejectModal('{% url 'leaves:reject_request' req.pk %}', '{{ req.faculty.full_name }}')" class="flex-1 flex items-center justify-center text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 px-4 py-2.5 rounded-xl border border-rose-200 min-h-[42px] transition-colors">
+                        ✕ Reject
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
         </div>
         {% else %}
         <div class="flex flex-col items-center justify-center py-16 text-[var(--apple-muted)] bg-gray-50/30 rounded-2xl border border-dashed border-[var(--apple-hairline)]">
