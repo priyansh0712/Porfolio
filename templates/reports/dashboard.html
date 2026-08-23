@@ -12,12 +12,14 @@
             <p class="text-xs sm:text-sm text-[#86868b] mt-1">Real-time daily metrics, live attendance feed, and quick actions for {{ school.name }}.</p>
         </div>
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+            {% if school_features.faculty_attendance %}
             <a href="{% url 'attendance:kiosk' %}" target="_blank" class="apple-btn-primary px-5 py-2.5 inline-flex items-center justify-center gap-2 text-sm font-medium min-h-[44px] sm:min-h-0 shadow-xs">
                 <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
                 </svg>
                 <span>Open Attendance Kiosk</span>
             </a>
+            {% endif %}
             <a href="{% url 'schedules:settings' %}" class="bg-gray-100 hover:bg-gray-200 text-[#1D1D1F] px-4 py-2.5 rounded-full text-sm font-medium transition-all inline-flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 border border-gray-200/60">
                 <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -207,11 +209,13 @@
                         </div>
                         <div class="text-sm font-semibold text-[#1D1D1F]">No scans recorded today yet</div>
                         <div class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">Open the Attendance Kiosk to start accepting faculty check-ins.</div>
+                        {% if school_features.faculty_attendance %}
                         <div class="mt-4">
                             <a href="{% url 'attendance:kiosk' %}" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#5A2132] text-white text-xs font-semibold rounded-full shadow-xs hover:bg-[#481A28] transition-colors">
                                 Launch Attendance Kiosk &rarr;
                             </a>
                         </div>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>

@@ -16,7 +16,7 @@ from django.http import JsonResponse
 from django.views import View
 from django.views.generic import TemplateView
 
-from apps.accounts.permissions import SchoolAdminRequiredMixin
+from apps.accounts.permissions import SchoolAdminRequiredMixin, FeatureRequiredMixin
 from apps.attendance.services import FaceVectorMatcher, AttendanceStateMachine
 
 from django.utils.decorators import method_decorator
@@ -25,7 +25,7 @@ from apps.core.ratelimit import rate_limit
 logger = logging.getLogger(__name__)
 
 
-class AttendanceKioskView(SchoolAdminRequiredMixin, TemplateView):
+class AttendanceKioskView(FeatureRequiredMixin, SchoolAdminRequiredMixin, TemplateView):
     """
     Renders the fullscreen attendance scanning kiosk interface.
 
@@ -38,6 +38,7 @@ class AttendanceKioskView(SchoolAdminRequiredMixin, TemplateView):
 
     Requires School Admin authentication on a valid tenant subdomain.
     """
+    feature_key = 'faculty_attendance'
     template_name = 'attendance/kiosk.html'
 
     def get_context_data(self, **kwargs):
@@ -46,7 +47,7 @@ class AttendanceKioskView(SchoolAdminRequiredMixin, TemplateView):
         return context
 
 
-class AttendanceScanAPIView(SchoolAdminRequiredMixin, View):
+class AttendanceScanAPIView(FeatureRequiredMixin, SchoolAdminRequiredMixin, View):
     """
     POST-only AJAX endpoint for processing a face scan vector.
 

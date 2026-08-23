@@ -4,14 +4,16 @@ from django.shortcuts import get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.contrib import messages
 
+from apps.accounts.permissions import FeatureRequiredMixin
 from apps.notifications.models import InAppNotification
 
 
-class NotificationListView(LoginRequiredMixin, TemplateView):
+class NotificationListView(FeatureRequiredMixin, LoginRequiredMixin, TemplateView):
     """
     Renders a paginated list of all in-app notifications for the logged-in user,
     scoped strictly to the school tenant context.
     """
+    feature_key = 'notifications'
     template_name = 'notifications/notification_list.html'
 
     def get_context_data(self, **kwargs):
@@ -49,10 +51,12 @@ class MarkNotificationReadView(LoginRequiredMixin, View):
         return redirect(request.GET.get('next', 'notifications:notification_list'))
 
 
-class MarkAllNotificationsReadView(LoginRequiredMixin, View):
+class MarkAllNotificationsReadView(FeatureRequiredMixin, LoginRequiredMixin, View):
     """
     POST-only endpoint to mark all notifications as read for the user.
     """
+    feature_key = 'notifications'
+
     def post(self, request, *args, **kwargs):
         InAppNotification.objects.filter(
             school=request.tenant,

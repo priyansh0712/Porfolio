@@ -21,15 +21,21 @@
                 <a href="{% url 'accounts:dashboard' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1">Dashboard</a>
                 <a href="{% url 'faculty:my_class' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1">My Class</a>
                 <a href="{% url 'faculty:my_subjects' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1">My Subjects</a>
+                {% if school_features.faculty_leave %}
                 <a href="{% url 'leaves:apply_leave' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1">Apply Leave</a>
+                {% endif %}
+                {% if school_features.faculty_attendance %}
                 <a href="{% url 'leaves:faculty_attendance' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1">My Attendance</a>
+                {% endif %}
                 <a href="{% url 'accounts:password_change' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1" title="Security & Password">🔒 Password</a>
+                {% if school_features.notifications %}
                 <a href="{% url 'notifications:notification_list' %}" class="relative inline-flex items-center px-2 py-1 text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors" title="Notifications">
                     <span class="text-base">🔔</span>
                     {% if unread_notifications_count > 0 %}
                         <span class="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full shadow-sm">{{ unread_notifications_count }}</span>
                     {% endif %}
                 </a>
+                {% endif %}
 
                 <!-- Sign Out -->
                 <a href="{% url 'accounts:logout' %}" class="inline-flex items-center text-xs font-semibold text-[var(--apple-ink)]/70 hover:text-rose-600 bg-[var(--apple-canvas)] hover:bg-rose-50 border border-[var(--apple-hairline)] hover:border-rose-200 rounded-full px-3.5 py-2 transition-all ml-2">
@@ -54,15 +60,21 @@
     <!-- Mobile Navigation Drawer -->
     <div id="mobile-menu" class="hidden md:hidden border-b border-[var(--apple-hairline)] bg-white px-4 pt-3 pb-5 space-y-1.5 shadow-lg">
         <a href="{% url 'accounts:dashboard' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">Dashboard</a>
+        {% if school_features.faculty_leave %}
         <a href="{% url 'leaves:apply_leave' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">Apply Leave</a>
+        {% endif %}
         <a href="{% url 'students:hub' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">My Class</a>
+        {% if school_features.faculty_attendance %}
         <a href="{% url 'leaves:faculty_attendance' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">My Attendance</a>
+        {% endif %}
+        {% if school_features.notifications %}
         <a href="{% url 'notifications:notification_list' %}" class="flex items-center justify-between px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">
             <span>🔔 Notifications</span>
             {% if unread_notifications_count > 0 %}
                 <span class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full">{{ unread_notifications_count }}</span>
             {% endif %}
         </a>
+        {% endif %}
         <button type="button" onclick="toggleCmdPalette()" class="w-full text-left flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">
             <span>🔍 Search / Commands</span>
         </button>

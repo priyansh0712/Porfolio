@@ -101,14 +101,22 @@ class SchoolRegistrationServiceTest(TestCase):
 class PublicViewsTest(TestCase):
     def setUp(self):
         self.client = Client()
+        from apps.accounts.models import User
+        self.super_admin = User.objects.create_user(
+            username='super@studenterp.com',
+            email='super@studenterp.com',
+            password='SuperPassword123!',
+            role=User.Role.SUPER_ADMIN,
+        )
 
     def test_landing_page_renders_cleanly(self):
         response = self.client.get(reverse('public:landing'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "StudentERP")
-        self.assertContains(response, "Register Your School")
+        self.assertContains(response, "Sign In to Portal")
 
     def test_registration_flow(self):
+        self.client.force_login(self.super_admin)
         response = self.client.post(reverse('public:register'), {
             'school_name': 'Oxford High',
             'subdomain': 'oxford-high',

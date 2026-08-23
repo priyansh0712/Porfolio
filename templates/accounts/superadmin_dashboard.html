@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tenant_tags %}
 
 {% block title %}Platform Super Admin — School Management{% endblock %}
 
@@ -31,6 +32,44 @@
   .table-row-apple:hover {
     background: #fafafc;
   }
+  .ios-switch-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 48px;
+    height: 28px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+    user-select: none;
+    flex-shrink: 0;
+    outline: none;
+  }
+  .ios-switch-btn.is-active {
+    background-color: #34c759 !important; /* Official Apple iOS Green */
+    border: 1px solid #34c759 !important;
+  }
+  .ios-switch-btn.is-disabled {
+    background-color: #e5e5ea !important; /* Official Apple Track Gray */
+    border: 1px solid #d1d1d6 !important;
+  }
+  .ios-switch-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .ios-switch-btn.is-active .ios-switch-knob {
+    transform: translateX(20px);
+  }
+  .ios-switch-btn.is-disabled .ios-switch-knob {
+    transform: translateX(0px);
+  }
 </style>
 {% endblock %}
 
@@ -49,6 +88,13 @@
       </p>
     </div>
     <div class="flex flex-wrap items-center gap-2.5">
+      <!-- Register School CTA -->
+      <a href="{% url 'public:register' %}"
+        style="background-color: #5A2132 !important; color: #ffffff !important;"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold shadow-sm hover:opacity-90 transition-all">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        Register New School
+      </a>
       <!-- Privacy boundary badge -->
       <div class="bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-medium px-3 py-1 rounded-full stat-chip uppercase">
         🔒 No Faculty Data Access
@@ -106,9 +152,17 @@
 
   <!-- School Tenant Table (Horizontally scrollable on mobile) -->
   <div class="apple-card-sa overflow-hidden">
-    <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-[#e0e0e0] flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-      <h2 class="text-sm font-semibold text-[#1d1d1f]">Registered School Tenants</h2>
-      <span class="text-[11px] text-[#86868b]">School metadata only &bull; No faculty data</span>
+    <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-[#e0e0e0] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div>
+        <h2 class="text-sm font-semibold text-[#1d1d1f]">Registered School Tenants</h2>
+        <p class="text-[11px] text-[#86868b]">School metadata only &bull; No faculty data</p>
+      </div>
+      <a href="{% url 'public:register' %}"
+        style="background-color: #5A2132 !important; color: #ffffff !important;"
+        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-sm hover:opacity-90 transition-all self-start sm:self-auto">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        Register School
+      </a>
     </div>
 
     {% if schools %}
@@ -122,6 +176,7 @@
             <th class="text-left px-4 sm:px-6 py-3 font-semibold text-[#86868b] uppercase tracking-wider">Contact Email</th>
             <th class="text-left px-4 sm:px-6 py-3 font-semibold text-[#86868b] uppercase tracking-wider">Status</th>
             <th class="text-left px-4 sm:px-6 py-3 font-semibold text-[#86868b] uppercase tracking-wider">Created</th>
+            <th class="text-right px-4 sm:px-6 py-3 font-semibold text-[#86868b] uppercase tracking-wider">Feature Controls</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#e0e0e0]">
@@ -149,11 +204,102 @@
             <td class="px-4 sm:px-6 py-3.5 text-[#86868b]">
               {{ school.created_at|date:"M d, Y" }}
             </td>
+            <td class="px-4 sm:px-6 py-3.5 text-right">
+              <button onclick="openModal('modal-features-{{ school.pk }}')"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-[#0066cc] bg-[#0066cc]/8 hover:bg-[#0066cc]/15 border border-[#0066cc]/20 transition-all shadow-2xs">
+                <svg class="w-3.5 h-3.5 text-[#0066cc]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                Manage Features
+              </button>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+
+    <!-- Feature Management Modals (Placed Outside Table Context) -->
+    {% for school in schools %}
+    <div id="modal-features-{{ school.pk }}" 
+      class="modal-dialog fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 hidden text-left"
+      style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); background: rgba(0, 0, 0, 0.45);"
+      data-lenis-prevent
+      onclick="if(event.target === this) closeModal('modal-features-{{ school.pk }}')">
+      
+      <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xl max-w-lg w-full flex flex-col overflow-hidden my-auto animate-scale-in"
+        style="max-height: 80vh;"
+        data-lenis-prevent>
+        
+        <!-- Header (Fixed top) -->
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0 bg-white">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#5A2132]/10 text-[#5A2132] font-bold text-base flex items-center justify-center border border-[#5A2132]/20 shadow-2xs">
+              {{ school.name|first }}
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-[#1d1d1f] tracking-tight">Feature Management</h3>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="text-xs font-semibold text-gray-700">{{ school.name }}</span>
+                <span class="font-mono text-[11px] bg-gray-100 text-[#5A2132] px-2 py-0.5 rounded-md border border-gray-200">
+                  {{ school.subdomain }}.ourapp.com
+                </span>
+              </div>
+            </div>
+          </div>
+          <button onclick="closeModal('modal-features-{{ school.pk }}')" 
+            class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center text-sm font-bold transition-colors">
+            ✕
+          </button>
+        </div>
+
+        <!-- Feature List Container (Scrollable middle with min-h-0) -->
+        <div class="flex-1 overflow-y-auto px-6 py-4 space-y-2.5 min-h-0" data-lenis-prevent style="overscroll-behavior: contain;">
+          {% for key, info in feature_catalog.items %}
+          {% with school_features=school_feature_map|get_item:school.pk %}
+          {% with is_on=school_features|get_item:key %}
+          
+          <div class="p-3.5 rounded-2xl border border-gray-200/80 bg-[#f9f9fb] hover:bg-white hover:shadow-xs transition-all flex items-center justify-between gap-4" id="feature-card-{{ school.pk }}-{{ key }}">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <p class="text-xs font-bold text-[#1d1d1f] tracking-tight">{{ info.label }}</p>
+                <span id="badge-{{ school.pk }}-{{ key }}" 
+                  class="px-2 py-0.5 text-[10px] font-bold rounded-full transition-colors {% if is_on %}text-emerald-700 bg-emerald-100 border border-emerald-200{% else %}text-gray-500 bg-gray-200 border border-gray-300/60{% endif %}">
+                  {% if is_on %}ACTIVE{% else %}DISABLED{% endif %}
+                </span>
+              </div>
+              <p class="text-[11px] text-gray-500 mt-1 leading-normal">{{ info.description }}</p>
+            </div>
+
+            <!-- Apple-Style Pure CSS iOS Switch -->
+            <button type="button"
+              id="btn-toggle-{{ school.pk }}-{{ key }}"
+              data-school-id="{{ school.pk }}"
+              data-feature-key="{{ key }}"
+              data-enabled="{% if is_on %}true{% else %}false{% endif %}"
+              onclick="handleToggleClick(this)"
+              class="ios-switch-btn {% if is_on %}is-active{% else %}is-disabled{% endif %}"
+              role="switch"
+              aria-checked="{% if is_on %}true{% else %}false{% endif %}">
+              <span class="ios-switch-knob"></span>
+            </button>
+          </div>
+
+          {% endwith %}
+          {% endwith %}
+          {% endfor %}
+        </div>
+
+        <!-- Footer (Fixed bottom) -->
+        <div class="px-6 py-3.5 border-t border-gray-100 flex items-center justify-between flex-shrink-0 bg-gray-50/50">
+          <span class="text-[11px] text-gray-400 font-medium">Changes apply immediately to tenant portal.</span>
+          <button type="button" onclick="closeModal('modal-features-{{ school.pk }}')" 
+            class="px-5 py-2 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 bg-white hover:bg-gray-100 shadow-2xs transition-colors">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
     {% else %}
     <div class="px-6 py-12 text-center">
       <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -166,4 +312,119 @@
   </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      if (window.lenisInstance) {
+        window.lenisInstance.stop();
+      }
+    }
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+      modal.classList.add('hidden');
+      const openModals = document.querySelectorAll('[id^="modal-features-"]:not(.hidden)');
+      if (openModals.length === 0) {
+        document.body.style.overflow = '';
+        if (window.lenisInstance) {
+          window.lenisInstance.start();
+        }
+      }
+    }
+  }
+
+  async function handleToggleClick(btn) {
+    if (!btn) return;
+    const schoolId = btn.dataset.schoolId;
+    const featureKey = btn.dataset.featureKey;
+    const currentlyEnabled = btn.dataset.enabled === 'true';
+    const targetState = !currentlyEnabled;
+
+    const badge = document.getElementById(`badge-${schoolId}-${featureKey}`);
+
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+
+    try {
+      const response = await fetch(`/superadmin/school/${schoolId}/toggle-feature/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          feature_key: featureKey,
+          is_enabled: targetState
+        })
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.success) {
+        const nowEnabled = resData.is_enabled;
+        
+        // Update Dataset State
+        btn.dataset.enabled = nowEnabled ? 'true' : 'false';
+
+        // Update Badge
+        if (badge) {
+          badge.textContent = nowEnabled ? 'ACTIVE' : 'DISABLED';
+          badge.className = `px-2 py-0.5 text-[10px] font-bold rounded-full transition-colors ${nowEnabled ? 'text-emerald-700 bg-emerald-100 border border-emerald-200' : 'text-gray-500 bg-gray-200 border border-gray-300/60'}`;
+        }
+
+        // Update Switch Track & Knob Animation via CSS Classes
+        if (nowEnabled) {
+          btn.classList.remove('is-disabled');
+          btn.classList.add('is-active');
+        } else {
+          btn.classList.remove('is-active');
+          btn.classList.add('is-disabled');
+        }
+        btn.setAttribute('aria-checked', nowEnabled ? 'true' : 'false');
+      } else {
+        alert(resData.error || 'Failed to toggle feature.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error while toggling feature.');
+    } finally {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const openModals = document.querySelectorAll('[id^="modal-features-"]:not(.hidden)');
+      openModals.forEach(m => {
+        m.classList.add('hidden');
+      });
+      document.body.style.overflow = '';
+    }
+  });
+</script>
 {% endblock %}

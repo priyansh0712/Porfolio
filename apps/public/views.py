@@ -6,6 +6,8 @@ from apps.tenants.forms import SchoolRegistrationForm
 from apps.tenants.services import SchoolRegistrationService
 from apps.tenants.models import School
 
+from apps.accounts.permissions import SuperAdminRequiredMixin
+
 class LandingPageView(TemplateView):
     """
     Renders the main public marketing landing page for StudentERP.
@@ -13,9 +15,9 @@ class LandingPageView(TemplateView):
     template_name = 'public/landing.html'
 
 
-class SchoolRegistrationView(FormView):
+class SchoolRegistrationView(SuperAdminRequiredMixin, FormView):
     """
-    Handles school self-registration onboarding.
+    Handles school tenant registration (Super Admin restricted).
     """
     template_name = 'public/register.html'
     form_class = SchoolRegistrationForm

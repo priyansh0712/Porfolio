@@ -4,14 +4,16 @@ from django.views import View
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 
-from apps.accounts.permissions import SchoolAdminRequiredMixin
+from apps.accounts.permissions import SchoolAdminRequiredMixin, FeatureRequiredMixin
 from apps.leaves.services import LeaveAllocationService
 
 
-class DownloadLeaveTemplateView(SchoolAdminRequiredMixin, View):
+class DownloadLeaveTemplateView(FeatureRequiredMixin, SchoolAdminRequiredMixin, View):
     """
     School Admin dynamic download of the pre-populated leave allocation template.
     """
+    feature_key = 'faculty_leave'
+
     def get(self, request, *args, **kwargs):
         excel_data = LeaveAllocationService.generate_excel_template(request.tenant)
         response = HttpResponse(
@@ -22,10 +24,11 @@ class DownloadLeaveTemplateView(SchoolAdminRequiredMixin, View):
         return response
 
 
-class LeaveAllocationUploadView(SchoolAdminRequiredMixin, View):
+class LeaveAllocationUploadView(FeatureRequiredMixin, SchoolAdminRequiredMixin, View):
     """
     School Admin view to upload and preview leave allocations with row-level validation.
     """
+    feature_key = 'faculty_leave'
     template_name = 'leaves/upload.html'
 
     def get(self, request, *args, **kwargs):
@@ -83,11 +86,12 @@ from apps.leaves.models import LeaveAllocation, LeaveRequest, LeaveType
 from apps.leaves.forms import LeaveRequestForm
 
 
-class FacultyDashboardView(FacultyRequiredMixin, TemplateView):
+class FacultyDashboardView(FeatureRequiredMixin, FacultyRequiredMixin, TemplateView):
     """
     Renders the personal Faculty Dashboard showing attendance, leave balances,
     recent leave requests, and in-app notifications.
     """
+    feature_key = 'faculty_leave'
     template_name = 'leaves/faculty_dashboard.html'
 
     def get_context_data(self, **kwargs):
@@ -229,10 +233,11 @@ class FacultyDashboardView(FacultyRequiredMixin, TemplateView):
         return context
 
 
-class ApplyLeaveView(FacultyRequiredMixin, View):
+class ApplyLeaveView(FeatureRequiredMixin, FacultyRequiredMixin, View):
     """
     Handles Faculty leave requests submission and validations.
     """
+    feature_key = 'faculty_leave'
     template_name = 'leaves/apply_leave.html'
 
     def get(self, request, *args, **kwargs):
@@ -267,11 +272,12 @@ from apps.notifications.models import InAppNotification
 from apps.faculty.models import Faculty
 
 
-class AdminLeaveRequestsView(SchoolAdminRequiredMixin, TemplateView):
+class AdminLeaveRequestsView(FeatureRequiredMixin, SchoolAdminRequiredMixin, TemplateView):
     """
     Renders the leave request review dashboard for School Admins.
     Supports filtering by status, faculty member, and date range.
     """
+    feature_key = 'faculty_leave'
     template_name = 'leaves/admin_requests.html'
 
     def get_context_data(self, **kwargs):
@@ -317,10 +323,11 @@ class AdminLeaveRequestsView(SchoolAdminRequiredMixin, TemplateView):
         return context
 
 
-class ApproveLeaveRequestView(SchoolAdminRequiredMixin, View):
+class ApproveLeaveRequestView(FeatureRequiredMixin, SchoolAdminRequiredMixin, View):
     """
     POST-only view to approve a pending leave request.
     """
+    feature_key = 'faculty_leave'
     def post(self, request, pk, *args, **kwargs):
         req = get_object_or_404(LeaveRequest, pk=pk, school=request.tenant)
         if req.status != LeaveRequest.Status.PENDING:
@@ -342,10 +349,11 @@ class ApproveLeaveRequestView(SchoolAdminRequiredMixin, View):
         return redirect('leaves:admin_requests')
 
 
-class RejectLeaveRequestView(SchoolAdminRequiredMixin, View):
+class RejectLeaveRequestView(FeatureRequiredMixin, SchoolAdminRequiredMixin, View):
     """
     POST-only view to reject a pending leave request with a mandatory explanation.
     """
+    feature_key = 'faculty_leave'
     def post(self, request, pk, *args, **kwargs):
         req = get_object_or_404(LeaveRequest, pk=pk, school=request.tenant)
         if req.status != LeaveRequest.Status.PENDING:

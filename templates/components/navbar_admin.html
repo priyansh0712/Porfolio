@@ -153,6 +153,7 @@
                 <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Operations</div>
                 <div class="space-y-0.5">
                     <!-- Leaves -->
+                    {% if school_features.faculty_leave %}
                     <a href="{{ nav_leaves }}" title="Leave Approvals"
                        class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[44px]
                               {% if '/leaves/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
@@ -161,8 +162,10 @@
                         </svg>
                         <span class="sidebar-label">Leaves</span>
                     </a>
+                    {% endif %}
 
                     <!-- Reports -->
+                    {% if school_features.reports %}
                     <a href="{{ nav_reports }}" title="Attendance Reports"
                        class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[44px]
                               {% if '/reports/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
@@ -171,6 +174,7 @@
                         </svg>
                         <span class="sidebar-label">Reports</span>
                     </a>
+                    {% endif %}
 
                     <!-- Schedules -->
                     <a href="{{ nav_schedules }}" title="Schedule Settings"
@@ -208,6 +212,7 @@
             </button>
 
             <!-- Notifications -->
+            {% if school_features.notifications %}
             <a href="{{ nav_notifications }}" title="Notifications"
                class="sidebar-nav-item flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[44px]
                       {% if '/notifications/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
@@ -223,8 +228,10 @@
                 </span>
                 {% endif %}
             </a>
+            {% endif %}
 
             <!-- Kiosk Scanner -->
+            {% if school_features.faculty_attendance %}
             <a href="{{ nav_kiosk }}" target="_blank" title="Attendance Kiosk"
                class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 erp-nav-default hover:text-[#5A2132] min-h-[44px]">
                 <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -232,6 +239,7 @@
                 </svg>
                 <span class="sidebar-label">Kiosk</span>
             </a>
+            {% endif %}
 
             <!-- Sign Out -->
             <a href="{{ nav_logout }}" title="Sign Out"

@@ -69,3 +69,44 @@ class TenantModel(TimeStampedModel):
     class Meta:
         abstract = True
 
+
+class SchoolFeature(models.Model):
+    """
+    Tenant-specific feature flags configuration.
+    Determines whether a module (e.g. Faculty Leave, Attendance Reports) is enabled for a school.
+    """
+    school = models.ForeignKey(
+        'tenants.School',
+        on_delete=models.CASCADE,
+        related_name='features',
+        verbose_name='School Tenant',
+    )
+    feature_key = models.CharField(
+        'Feature Key',
+        max_length=50,
+        db_index=True,
+        help_text='Feature identifier key (e.g. faculty_leave, reports)'
+    )
+    is_enabled = models.BooleanField(
+        'Is Enabled',
+        default=True,
+        help_text='Whether this feature is active for this school'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'School Feature Configuration'
+        verbose_name_plural = 'School Feature Configurations'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['school', 'feature_key'],
+                name='unique_school_feature_key'
+            )
+        ]
+
+    def __str__(self):
+        status = 'ON' if self.is_enabled else 'OFF'
+        return f"{self.school.name} — {self.feature_key}: {status}"
+
+
