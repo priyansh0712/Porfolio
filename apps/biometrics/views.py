@@ -14,7 +14,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views import View
 
-from apps.accounts.permissions import SchoolAdminRequiredMixin
+from apps.accounts.permissions import SchoolAdminRequiredMixin, FeatureRequiredMixin
 from apps.biometrics.services import BiometricService, MAX_PAYLOAD_SIZE_BYTES
 from apps.core.ratelimit import rate_limit
 from apps.faculty.models import Faculty
@@ -24,13 +24,11 @@ logger = logging.getLogger(__name__)
 
 
 @method_decorator(rate_limit(key_prefix='enroll', limit=10, period_seconds=60), name='dispatch')
-class FacultyFaceEnrollView(SchoolAdminRequiredMixin, View):
+class FacultyFaceEnrollView(FeatureRequiredMixin, SchoolAdminRequiredMixin, View):
     """
     POST-only AJAX endpoint for face enrollment.
-
-    Expects JSON body: { "frames": ["data:image/jpeg;base64,...", ...] }
-    Enforces Content-Type: application/json and strict 3-frame validation.
     """
+    feature_key = 'faculty_attendance'
 
     def post(self, request, pk):
         # ── Layer 3: Tenant-scoped faculty lookup ──
@@ -95,12 +93,11 @@ class FacultyFaceEnrollView(SchoolAdminRequiredMixin, View):
             )
 
 
-class FacultyFaceResetView(SchoolAdminRequiredMixin, View):
+class FacultyFaceResetView(FeatureRequiredMixin, SchoolAdminRequiredMixin, View):
     """
     POST-only AJAX endpoint for resetting face biometrics.
-
-    Deletes FacultyBiometric record and sets faculty.is_face_enrolled = False.
     """
+    feature_key = 'faculty_attendance'
 
     def post(self, request, pk):
         # ── Layer 3: Tenant-scoped faculty lookup ──

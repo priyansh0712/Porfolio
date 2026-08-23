@@ -15,9 +15,15 @@
             <nav class="hidden md:flex items-center space-x-6">
                 <a href="{% url 'public:landing' %}#features" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors">Features</a>
                 <a href="{% url 'public:landing' %}#pricing" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors">Pricing</a>
+                {% if request.user.is_authenticated and request.user.role == 'SUPER_ADMIN' %}
                 <a href="{% url 'public:register' %}" class="inline-flex items-center text-xs font-semibold text-white apple-btn-primary px-5 py-2 transition-all shadow-sm">
-                    Register School
+                    + Register School
                 </a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="inline-flex items-center text-xs font-semibold text-white apple-btn-primary px-5 py-2 transition-all shadow-sm">
+                    Portal Login
+                </a>
+                {% endif %}
             </nav>
 
             <!-- Mobile menu button -->
@@ -38,6 +44,10 @@
         <button type="button" onclick="toggleCmdPalette()" class="w-full text-left flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">
             <span>🔍 Search / Commands</span>
         </button>
-        <a href="{% url 'public:register' %}" class="flex items-center justify-center text-center px-4 py-2.5 text-sm font-medium text-white apple-btn-primary shadow-sm min-h-[44px]">Register School</a>
+        {% if request.user.is_authenticated and request.user.role == 'SUPER_ADMIN' %}
+        <a href="{% url 'public:register' %}" class="flex items-center justify-center text-center px-4 py-2.5 text-sm font-medium text-white apple-btn-primary shadow-sm min-h-[44px]">+ Register School</a>
+        {% else %}
+        <a href="{% url 'accounts:login' %}" class="flex items-center justify-center text-center px-4 py-2.5 text-sm font-medium text-white apple-btn-primary shadow-sm min-h-[44px]">Portal Login</a>
+        {% endif %}
     </div>
 </header>

@@ -23,6 +23,14 @@ def create_test_image(filename="test.png", size=(100, 100), color="blue"):
 class SchoolBrandingTests(TestCase):
 
     def setUp(self):
+        from apps.accounts.models import User
+        self.super_admin = User.objects.create_user(
+            username='super@studenterp.com',
+            email='super@studenterp.com',
+            password='SuperPassword123!',
+            role=User.Role.SUPER_ADMIN,
+        )
+
         # Create School A
         self.school_a, self.admin_a = SchoolRegistrationService.register_school({
             'school_name': 'Alpha Academy',
@@ -54,6 +62,7 @@ class SchoolBrandingTests(TestCase):
 
     def test_school_registration_with_image_and_logo(self):
         """Registering a new school with image and logo stores them properly."""
+        self.client.force_login(self.super_admin)
         img = create_test_image("hero.png")
         logo = create_test_image("logo.png")
 
@@ -78,6 +87,7 @@ class SchoolBrandingTests(TestCase):
 
     def test_invalid_image_extension_rejected(self):
         """Non-image file uploads should fail form validation."""
+        self.client.force_login(self.super_admin)
         fake_txt = SimpleUploadedFile("malicious.txt", b"not an image", content_type="text/plain")
 
         post_data = {
@@ -96,6 +106,7 @@ class SchoolBrandingTests(TestCase):
 
     def test_file_size_limit_validation(self):
         """Files exceeding 5MB should fail validation."""
+        self.client.force_login(self.super_admin)
         large_content = b'0' * (6 * 1024 * 1024)  # 6MB
         large_file = SimpleUploadedFile("huge.jpg", large_content, content_type="image/jpeg")
 

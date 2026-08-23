@@ -214,3 +214,51 @@ def faculty_required(view_func):
 
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+
+
+class FeatureRequiredMixin(AccessMixin):
+    """
+    CBV Mixin: Restricts access if a specified feature is disabled for request.tenant.
+    Set `feature_key` on your View class.
+    """
+    feature_key = None
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
+        tenant = getattr(request, 'tenant', None)
+        if tenant and self.feature_key:
+            from apps.tenants.features import FeatureService
+            if not FeatureService.is_enabled(tenant, self.feature_key):
+                return HttpResponseForbidden(
+                    f"Access Denied: The '{self.feature_key}' feature is disabled for this institution."
+                )
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+def feature_required(feature_key):
+    """
+    Decorator for FBVs: restricts access if feature_key is disabled for request.tenant.
+    """
+    def decorator(view_func):
+        @functools.wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                from django.conf import settings
+                from django.shortcuts import redirect
+                return redirect(settings.LOGIN_URL)
+
+            tenant = getattr(request, 'tenant', None)
+            if tenant and feature_key:
+                from apps.tenants.features import FeatureService
+                if not FeatureService.is_enabled(tenant, feature_key):
+                    return HttpResponseForbidden(
+                        f"Access Denied: The '{feature_key}' feature is disabled for this institution."
+                    )
+
+            return view_func(request, *args, **kwargs)
+        return _wrapped_view
+    return decorator
+

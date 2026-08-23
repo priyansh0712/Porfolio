@@ -16,7 +16,7 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
 
-from apps.accounts.permissions import SchoolAdminRequiredMixin
+from apps.accounts.permissions import SchoolAdminRequiredMixin, FeatureRequiredMixin
 from apps.attendance.models import AttendanceLog
 from apps.faculty.models import Faculty
 from apps.reports.services import DashboardService, ReportService
@@ -45,7 +45,7 @@ class AdminDashboardView(SchoolAdminRequiredMixin, TemplateView):
         return context
 
 
-class AttendanceReportView(SchoolAdminRequiredMixin, TemplateView):
+class AttendanceReportView(FeatureRequiredMixin, SchoolAdminRequiredMixin, TemplateView):
     """
     Renders the Date-wise & Faculty-wise Attendance Reports page (`/reports/`).
 
@@ -56,6 +56,7 @@ class AttendanceReportView(SchoolAdminRequiredMixin, TemplateView):
       - Search input (Faculty Name or Employee Code).
       - Pagination & CSV export action.
     """
+    feature_key = 'reports'
     template_name = 'reports/attendance_report.html'
 
     def get_context_data(self, **kwargs):
@@ -120,10 +121,11 @@ class AttendanceReportView(SchoolAdminRequiredMixin, TemplateView):
         return context
 
 
-class AttendanceExportCSVView(SchoolAdminRequiredMixin, View):
+class AttendanceExportCSVView(FeatureRequiredMixin, SchoolAdminRequiredMixin, View):
     """
     GET endpoint for downloading attendance report data as a CSV file.
     """
+    feature_key = 'reports'
 
     def get(self, request):
         school = request.tenant
