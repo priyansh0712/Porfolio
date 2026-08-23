@@ -13,17 +13,15 @@
 {% endblock %}
 
 {% block breadcrumb %}
-    <div class="text-xs font-semibold text-gray-500 tracking-tight flex items-center gap-1.5">
-        <a href="{% url 'academics:hub' %}?tab=overview{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}" class="hover:text-[#5A2132] transition-colors">Academics</a>
-        <span class="text-gray-300">/</span>
-        <span class="text-[#1D1D1F] font-bold">
-            {% if active_tab == 'years' %}Academic Years
-            {% elif active_tab == 'classes' %}Classes & Divisions
-            {% elif active_tab == 'subjects' %}Subjects
-            {% elif active_tab == 'allocations' %}Teaching Assignments
-            {% else %}Overview{% endif %}
-        </span>
-    </div>
+    <a href="{% url 'academics:hub' %}?tab=overview{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}" class="hover:text-[#5A2132] transition-colors">Academics</a>
+    <span class="text-gray-300">/</span>
+    <span class="text-[#1D1D1F] font-bold truncate">
+        {% if active_tab == 'years' %}Academic Years
+        {% elif active_tab == 'classes' %}Classes & Divisions
+        {% elif active_tab == 'subjects' %}Subjects
+        {% elif active_tab == 'allocations' %}Teaching Assignments
+        {% else %}Overview{% endif %}
+    </span>
 {% endblock %}
 
 {% block content %}
@@ -64,7 +62,7 @@
         <!-- 1. Active Session -->
         <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
             <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Active Session</div>
-            <div class="text-[20px] sm:text-3xl font-bold text-[#1D1D1F] tracking-tight my-1">
+            <div class="text-2xl font-bold text-[#1D1D1F] tracking-tight my-1 truncate" title="{% if selected_year %}{{ selected_year.name }}{% endif %}">
                 {% if selected_year %}{{ selected_year.name }}{% else %}—{% endif %}
             </div>
             <div class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
@@ -76,7 +74,7 @@
         <!-- 2. Classes Count -->
         <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
             <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Classes</div>
-            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] my-1">
+            <div class="text-2xl font-bold text-[#1D1D1F] tracking-tight my-1">
                 {{ standards|length }}
             </div>
             <div class="text-[11px] text-gray-500 font-medium">Grade Standards</div>
@@ -85,7 +83,7 @@
         <!-- 3. Subjects Count -->
         <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
             <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Subjects</div>
-            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] my-1">
+            <div class="text-2xl font-bold text-[#1D1D1F] tracking-tight my-1">
                 {{ subjects|length }}
             </div>
             <div class="text-[11px] text-gray-500 font-medium">Curriculum Courses</div>
@@ -94,7 +92,7 @@
         <!-- 4. Total Sessions Count -->
         <div class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs flex flex-col justify-between">
             <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">All Sessions</div>
-            <div class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] my-1">
+            <div class="text-2xl font-bold text-[#1D1D1F] tracking-tight my-1">
                 {{ academic_years|length }}
             </div>
             <div class="text-[11px] text-gray-500 font-medium">Configured Years</div>

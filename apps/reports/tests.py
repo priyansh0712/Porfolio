@@ -235,3 +235,172 @@ class ReportsViewsTest(ReportsTestBase):
         log.refresh_from_db()
         self.assertEqual(log.status, 'LATE')
         self.assertTrue(AttendanceCorrection.objects.filter(attendance=log).exists())
+
+
+class PrincipalDashboardModuleAwarenessTest(ReportsTestBase):
+    """
+    Validates that the Principal Dashboard dynamically adapts based on enabled features,
+    executes zero unnecessary DB queries, and reflows seamlessly across scenarios.
+    """
+
+    def setUp(self):
+        super().setUp()
+        from apps.tenants.features import FeatureService
+        from apps.academics.models import AcademicYear, Standard, Division, Subject
+        from apps.students.models import Student
+        from apps.leaves.models import LeaveRequest
+
+        # Set up active academic year, standards, divisions, subjects
+        self.academic_year = AcademicYear.objects.create(
+            school=self.school,
+            name='2026-2027',
+            start_date=date(2026, 6, 1),
+            end_date=date(2027, 4, 30),
+            is_current=True,
+        )
+        self.standard_10 = Standard.objects.create(
+            school=self.school,
+            name='Grade 10',
+            order_index=10,
+        )
+        self.division_a = Division.objects.create(
+            school=self.school,
+            standard=self.standard_10,
+            name='A',
+        )
+        self.subject_math = Subject.objects.create(
+            school=self.school,
+            name='Mathematics',
+            code='MATH10',
+        )
+
+        # Create active student
+        self.student_1 = Student.objects.create(
+            school=self.school,
+            full_name='Rahul Sharma',
+            gr_number='GR-1001',
+            academic_year=self.academic_year,
+            standard=self.standard_10,
+            division=self.division_a,
+            is_active=True,
+        )
+
+    def test_dashboard_identity_and_universal_metrics(self):
+        """Dashboard renders neutral identity and universal metrics."""
+        self.client.force_login(self.admin_user)
+        response = self.client.get(
+            reverse('reports:dashboard'),
+            HTTP_HOST='horizon.localhost:8000',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'School Overview')
+        self.assertContains(response, 'Everything important about your school, in one place.')
+        self.assertContains(response, 'Total Students')
+        self.assertContains(response, 'Total Faculty')
+        self.assertContains(response, 'Active Divisions')
+        self.assertContains(response, '2026-2027')
+
+    def test_scenario_a_attendance_disabled(self):
+        """Scenario A: Faculty Attendance disabled -> Zero attendance cards, zero Kiosk CTA."""
+        from apps.tenants.features import FeatureService
+        FeatureService.set_feature_status(self.school, 'faculty_attendance', False)
+
+        self.client.force_login(self.admin_user)
+        response = self.client.get(
+            reverse('reports:dashboard'),
+            HTTP_HOST='horizon.localhost:8000',
+        )
+        self.assertEqual(response.status_code, 200)
+        # Should NOT contain attendance-specific UI or Kiosk button
+        self.assertNotContains(response, 'Launch Kiosk')
+        self.assertNotContains(response, 'Live Attendance Feed')
+        self.assertNotContains(response, 'Attendance Export')
+
+        # Should still contain neutral overview, leaves, academics
+        self.assertContains(response, 'Total Students')
+        self.assertContains(response, 'Total Faculty')
+        self.assertContains(response, 'Academic Overview')
+
+    def test_scenario_b_faculty_attendance_enabled(self):
+        """Scenario B: Faculty Attendance enabled -> Shows Live Attendance snapshot & Kiosk."""
+        from apps.tenants.features import FeatureService
+        FeatureService.set_feature_status(self.school, 'faculty_attendance', True)
+
+        # Create attendance log for today
+        AttendanceLog.objects.create(
+            school=self.school,
+            faculty=self.faculty_1,
+            date=timezone.localdate(),
+            check_in_time=timezone.now(),
+            last_scan_at=timezone.now(),
+            status=AttendanceLog.Status.PRESENT,
+        )
+
+        self.client.force_login(self.admin_user)
+        response = self.client.get(
+            reverse('reports:dashboard'),
+            HTTP_HOST='horizon.localhost:8000',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Launch Kiosk')
+        self.assertContains(response, 'Faculty Attendance')
+        self.assertContains(response, 'Live Attendance Feed')
+        self.assertContains(response, 'Alice Smith')
+
+    def test_scenario_c_academics_disabled(self):
+        """Scenario C: Academics disabled -> Academic snapshot & Hub links omitted."""
+        from apps.tenants.features import FeatureService
+        FeatureService.set_feature_status(self.school, 'academics', False)
+
+        self.client.force_login(self.admin_user)
+        response = self.client.get(
+            reverse('reports:dashboard'),
+            HTTP_HOST='horizon.localhost:8000',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Academic Overview')
+        self.assertNotContains(response, 'Academics Hub')
+
+    def test_scenario_d_basic_students_and_faculty_only(self):
+        """Scenario D: Only Students & Faculty enabled -> Clean minimal layout."""
+        from apps.tenants.features import FeatureService
+        FeatureService.set_feature_status(self.school, 'faculty_attendance', False)
+        FeatureService.set_feature_status(self.school, 'faculty_leave', False)
+        FeatureService.set_feature_status(self.school, 'academics', False)
+
+        self.client.force_login(self.admin_user)
+        response = self.client.get(
+            reverse('reports:dashboard'),
+            HTTP_HOST='horizon.localhost:8000',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'School Overview')
+        self.assertContains(response, 'Total Students')
+        self.assertContains(response, 'Total Faculty')
+        self.assertNotContains(response, 'Launch Kiosk')
+        self.assertNotContains(response, 'Staff Leaves')
+        self.assertNotContains(response, 'Academic Overview')
+
+    def test_zero_attendance_queries_when_attendance_disabled(self):
+        """Ensures AttendanceLog is NEVER queried when faculty_attendance is disabled."""
+        from apps.tenants.features import FeatureService
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        FeatureService.set_feature_status(self.school, 'faculty_attendance', False)
+
+        with CaptureQueriesContext(connection) as queries:
+            metrics = DashboardService.get_metrics(self.school)
+
+        # Assert no query touched attendance_attendancelog
+        for query in queries.captured_queries:
+            self.assertNotIn(
+                'attendance_attendancelog',
+                query['sql'].lower(),
+                f"Unexpected attendance query was executed: {query['sql']}"
+            )
+
+        self.assertEqual(metrics['present_count'], 0)
+        self.assertEqual(metrics['total_scans'], 0)
+        self.assertEqual(metrics['live_feed'], [])
+

@@ -30,6 +30,16 @@ FEATURE_CATALOG: Dict[str, Dict[str, str | bool]] = {
         'description': 'Custom school logo and login page cover image branding',
         'default': True,
     },
+    'academics': {
+        'label': 'Academic Management',
+        'description': 'Academic years, standards, divisions, subjects, and curriculum allocations',
+        'default': True,
+    },
+    'students': {
+        'label': 'Student Management',
+        'description': 'Student directory, profiles, enrollments, and transfer requests',
+        'default': True,
+    },
     # Future extension feature flags (default OFF)
     'student_attendance': {
         'label': 'Student Attendance',

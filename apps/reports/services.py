@@ -22,31 +22,100 @@ logger = logging.getLogger(__name__)
 
 
 class DashboardService:
-    """Aggregates real-time KPI metrics for the School Admin Dashboard."""
+    """
+    Modular, feature-aware KPI metrics and activity aggregation for School Overview Dashboard.
+    Ensures ZERO unnecessary DB queries for disabled modules.
+    """
 
     @classmethod
     def get_metrics(cls, school):
         """
-        Computes today's attendance summary numbers for a school tenant.
-
-        Returns:
-            dict: {
-                'today': date,
-                'total_faculty': int,
-                'present_count': int,
-                'late_count': int,
-                'half_day_count': int,
-                'absent_count': int,
-                'total_scans': int,
-                'live_feed': QuerySet of AttendanceLog,
-            }
+        Master aggregator method for Principal Dashboard.
+        Inspects enabled features and conditionally calls modular service methods.
         """
+        from apps.tenants.features import FeatureService
+        features = FeatureService.get_school_features(school)
         today = timezone.localdate()
 
-        # ── 1. Total Active Faculty ──
-        total_faculty = Faculty.objects.filter(school=school, is_active=True).count()
+        context = {
+            'today': today,
+            'features': features,
+        }
 
-        # ── 2. Today's Attendance Logs ──
+        # ── 1. Top-Level Neutral Metrics (Always queried) ──
+        top_metrics = cls.get_top_level_metrics(school)
+        context.update(top_metrics)
+
+        # ── 2. Today's Faculty Attendance Snapshot (ONLY if faculty_attendance is enabled) ──
+        if features.get('faculty_attendance', False):
+            context.update(cls.get_faculty_attendance_metrics(school, today, top_metrics.get('total_faculty', 0)))
+        else:
+            context.update({
+                'present_count': 0,
+                'late_count': 0,
+                'half_day_count': 0,
+                'leave_count': 0,
+                'absent_count': 0,
+                'total_scans': 0,
+                'live_feed': [],
+                'punctuality_rate': 0,
+                'donut_present_dash': 0,
+                'donut_late_dash': 0,
+                'donut_late_offset': 0,
+            })
+
+        # ── 3. Today's Leaves Snapshot (ONLY if faculty_leave is enabled) ──
+        if features.get('faculty_leave', False):
+            context.update(cls.get_leaves_metrics(school, today))
+        else:
+            context.update({
+                'pending_leaves_count': 0,
+                'approved_leaves_today': 0,
+            })
+
+        # ── 4. Academic Snapshot Metrics (ONLY if academics is enabled) ──
+        if features.get('academics', True):
+            context.update(cls.get_academic_metrics(school, top_metrics.get('current_academic_year')))
+        else:
+            context.update({
+                'standards_count': 0,
+                'divisions_count': 0,
+                'subjects_count': 0,
+                'allocated_teachers_count': 0,
+            })
+
+        # ── 5. Needs Your Attention Actionable Items (Evaluates enabled features only) ──
+        context['attention_items'] = cls.get_attention_items(school, features, top_metrics.get('current_academic_year'))
+
+        # ── 6. Recent Activity Feed (Multi-source, only from enabled modules) ──
+        context['recent_activities'] = cls.get_recent_activity(school, features)
+
+        return context
+
+    @classmethod
+    def get_top_level_metrics(cls, school):
+        """Universal school-level KPI metrics that do NOT depend on attendance."""
+        from apps.students.models import Student
+        from apps.faculty.models import Faculty
+        from apps.academics.models import Division
+        from apps.academics.services import AcademicService
+
+        total_students = Student.objects.filter(school=school, is_active=True).count()
+        total_faculty = Faculty.objects.filter(school=school, is_active=True).count()
+        total_classes = Division.objects.filter(school=school, is_active=True).count()
+        current_academic_year = AcademicService.get_current_academic_year(school)
+
+        return {
+            'total_students': total_students,
+            'total_faculty': total_faculty,
+            'total_classes': total_classes,
+            'current_academic_year': current_academic_year,
+            'academic_year_name': current_academic_year.name if current_academic_year else 'Not Configured',
+        }
+
+    @classmethod
+    def get_faculty_attendance_metrics(cls, school, today, total_faculty):
+        """Attendance stats and live feed — executed ONLY when faculty_attendance is enabled."""
         today_logs = AttendanceLog.objects.filter(school=school, date=today)
 
         present_count = today_logs.filter(status=AttendanceLog.Status.PRESENT).count()
@@ -58,10 +127,8 @@ class DashboardService:
         absent_count = max(0, total_faculty - len(scanned_faculty_ids))
         total_scans = today_logs.exclude(status=AttendanceLog.Status.LEAVE).count()
 
-        # ── 3. Live Feed (Most recent scans) ──
-        live_feed = today_logs.select_related('faculty').order_by('-last_scan_at')[:25]
+        live_feed = today_logs.select_related('faculty').order_by('-last_scan_at')[:15]
 
-        # ── 4. Live Punctuality & Donut Chart Arc Metrics ──
         total_checked_in = present_count + late_count + half_day_count
         if total_checked_in > 0:
             punctuality_rate = round((present_count / total_checked_in) * 100)
@@ -80,8 +147,6 @@ class DashboardService:
         donut_late_offset = -donut_present_dash
 
         return {
-            'today': today,
-            'total_faculty': total_faculty,
             'present_count': present_count,
             'late_count': late_count,
             'half_day_count': half_day_count,
@@ -94,6 +159,213 @@ class DashboardService:
             'donut_late_dash': donut_late_dash,
             'donut_late_offset': donut_late_offset,
         }
+
+    @classmethod
+    def get_leaves_metrics(cls, school, today):
+        """Staff leave metrics — executed ONLY when faculty_leave is enabled."""
+        from apps.leaves.models import LeaveRequest
+
+        pending_leaves_count = LeaveRequest.objects.filter(
+            school=school, status=LeaveRequest.Status.PENDING
+        ).count()
+        approved_leaves_today = LeaveRequest.objects.filter(
+            school=school,
+            status=LeaveRequest.Status.APPROVED,
+            from_date__lte=today,
+            to_date__gte=today,
+        ).count()
+
+        return {
+            'pending_leaves_count': pending_leaves_count,
+            'approved_leaves_today': approved_leaves_today,
+        }
+
+    @classmethod
+    def get_academic_metrics(cls, school, current_year=None):
+        """Academic structure stats — executed ONLY when academics is enabled."""
+        from apps.academics.models import Standard, Division, Subject, ClassTeacherAllocation
+
+        standards_count = Standard.objects.filter(school=school, is_active=True).count()
+        divisions_count = Division.objects.filter(school=school, is_active=True).count()
+        subjects_count = Subject.objects.filter(school=school, is_active=True).count()
+
+        allocated_teachers_count = 0
+        if current_year:
+            allocated_teachers_count = ClassTeacherAllocation.objects.filter(
+                school=school, academic_year=current_year
+            ).count()
+
+        return {
+            'standards_count': standards_count,
+            'divisions_count': divisions_count,
+            'subjects_count': subjects_count,
+            'allocated_teachers_count': allocated_teachers_count,
+        }
+
+    @classmethod
+    def get_attention_items(cls, school, features, current_year=None):
+        """
+        Builds a prioritized list of actionable items for enabled modules.
+        Returns a list of dicts.
+        """
+        from django.urls import reverse
+        items = []
+
+        # 1. Pending Leave Requests
+        if features.get('faculty_leave', False):
+            from apps.leaves.models import LeaveRequest
+            pending_leaves = LeaveRequest.objects.filter(
+                school=school, status=LeaveRequest.Status.PENDING
+            ).count()
+            if pending_leaves > 0:
+                items.append({
+                    'id': 'leaves',
+                    'title': 'Leave Requests',
+                    'count': pending_leaves,
+                    'description': f"{pending_leaves} staff leave request{'s' if pending_leaves > 1 else ''} awaiting your review",
+                    'url': reverse('leaves:admin_requests'),
+                    'urgency': 'high',
+                    'badge_color': 'amber',
+                })
+
+        # 2. Pending Student Transfer Requests
+        if features.get('students', False):
+            from apps.students.models import StudentTransferRequest
+            pending_transfers = StudentTransferRequest.objects.filter(
+                school=school, status=StudentTransferRequest.Status.PENDING
+            ).count()
+            if pending_transfers > 0:
+                items.append({
+                    'id': 'transfers',
+                    'title': 'Student Transfer Requests',
+                    'count': pending_transfers,
+                    'description': f"{pending_transfers} division transfer request{'s' if pending_transfers > 1 else ''} awaiting approval",
+                    'url': f"{reverse('students:hub')}?tab=transfers",
+                    'urgency': 'medium',
+                    'badge_color': 'blue',
+                })
+
+        # 3. Academics: Unassigned Class Teachers or Missing Year
+        if features.get('academics', False):
+            from apps.academics.models import Division, ClassTeacherAllocation
+            if current_year:
+                total_divs = Division.objects.filter(school=school, is_active=True).count()
+                assigned_divs = ClassTeacherAllocation.objects.filter(
+                    school=school, academic_year=current_year
+                ).values('division').distinct().count()
+                unassigned = max(0, total_divs - assigned_divs)
+                if unassigned > 0:
+                    items.append({
+                        'id': 'class_teachers',
+                        'title': 'Class Teacher Allocation',
+                        'count': unassigned,
+                        'description': f"{unassigned} class section{'s' if unassigned > 1 else ''} need a class teacher assigned",
+                        'url': f"{reverse('academics:hub')}?tab=classes",
+                        'urgency': 'medium',
+                        'badge_color': 'purple',
+                    })
+            else:
+                items.append({
+                    'id': 'missing_year',
+                    'title': 'Academic Setup',
+                    'count': 1,
+                    'description': 'No active academic year configured for this school',
+                    'url': f"{reverse('academics:hub')}?tab=years",
+                    'urgency': 'high',
+                    'badge_color': 'rose',
+                })
+
+        # 4. Biometric Face Enrollment (Only if faculty_attendance is enabled)
+        if features.get('faculty_attendance', False):
+            from apps.faculty.models import Faculty
+            unenrolled = Faculty.objects.filter(
+                school=school, is_active=True, is_face_enrolled=False
+            ).count()
+            if unenrolled > 0:
+                items.append({
+                    'id': 'biometrics',
+                    'title': 'Faculty Biometrics',
+                    'count': unenrolled,
+                    'description': f"{unenrolled} active faculty member{'s' if unenrolled > 1 else ''} pending Face ID registration",
+                    'url': reverse('faculty:list'),
+                    'urgency': 'low',
+                    'badge_color': 'gray',
+                })
+
+        return items
+
+    @classmethod
+    def get_recent_activity(cls, school, features):
+        """
+        Aggregates recent actual activity logs from enabled modules.
+        Returns up to 8 recent items sorted by timestamp desc.
+        """
+        from django.urls import reverse
+        activities = []
+
+        # 1. Recent Leaves
+        if features.get('faculty_leave', False):
+            from apps.leaves.models import LeaveRequest
+            recent_leaves = LeaveRequest.objects.filter(school=school).select_related('faculty').order_by('-created_at')[:4]
+            for lr in recent_leaves:
+                activities.append({
+                    'title': f"{lr.faculty.full_name} submitted a leave request",
+                    'detail': f"{lr.get_leave_type_display()} ({lr.from_date.strftime('%b %d')} - {lr.to_date.strftime('%b %d')})",
+                    'status': lr.get_status_display(),
+                    'timestamp': lr.created_at,
+                    'url': reverse('leaves:admin_requests'),
+                    'module': 'Leaves',
+                    'icon': 'leaves',
+                })
+
+        # 2. Recent Student Transfers
+        if features.get('students', False):
+            from apps.students.models import StudentTransferRequest
+            recent_transfers = StudentTransferRequest.objects.filter(school=school).select_related('student', 'to_standard', 'to_division').order_by('-created_at')[:4]
+            for tr in recent_transfers:
+                activities.append({
+                    'title': f"Transfer requested for {tr.student.full_name}",
+                    'detail': f"To {tr.to_standard.name} - {tr.to_division.name}",
+                    'status': tr.get_status_display(),
+                    'timestamp': tr.created_at,
+                    'url': f"{reverse('students:hub')}?tab=transfers",
+                    'module': 'Students',
+                    'icon': 'students',
+                })
+
+        # 3. Recent Attendance Check-ins (ONLY if faculty_attendance is enabled)
+        if features.get('faculty_attendance', False):
+            recent_scans = AttendanceLog.objects.filter(school=school).select_related('faculty').order_by('-created_at')[:4]
+            for log in recent_scans:
+                time_str = log.check_in_time.strftime('%I:%M %p') if log.check_in_time else ''
+                activities.append({
+                    'title': f"{log.faculty.full_name} recorded attendance",
+                    'detail': f"{log.get_status_display()} at {time_str}" if time_str else log.get_status_display(),
+                    'status': log.get_status_display(),
+                    'timestamp': log.created_at,
+                    'url': reverse('reports:report-list'),
+                    'module': 'Attendance',
+                    'icon': 'attendance',
+                })
+
+        # 4. Recent Student Enrollments
+        if features.get('students', False):
+            from apps.students.models import Student
+            recent_students = Student.objects.filter(school=school, is_active=True).select_related('standard', 'division').order_by('-created_at')[:3]
+            for st in recent_students:
+                activities.append({
+                    'title': f"New student enrolled: {st.full_name}",
+                    'detail': f"GR #{st.gr_number} • {st.standard.name} {st.division.name}",
+                    'status': 'Active',
+                    'timestamp': st.created_at,
+                    'url': reverse('students:hub'),
+                    'module': 'Students',
+                    'icon': 'students',
+                })
+
+        # Sort all aggregated activities by timestamp descending
+        activities.sort(key=lambda x: x['timestamp'], reverse=True)
+        return activities[:8]
 
 
 class ReportService:
