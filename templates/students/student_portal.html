@@ -42,7 +42,6 @@
                             Roll: {{ student.roll_number }}
                         </span>
                         {% endif %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>
                     </div>
                 </div>
 
@@ -54,72 +53,91 @@
             </div>
         </div>
 
-        <!-- Info Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+        <!-- Student Information Card -->
+        <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xs p-6 sm:p-7 mb-5">
+            <h2 class="text-xs font-bold text-[#86868b] uppercase tracking-wider mb-5">Student Information</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-5 gap-x-8">
+                {% if student.dob %}
+                <div class="space-y-1">
+                    <span class="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider">Date of Birth</span>
+                    <p class="text-sm font-bold text-[#1D1D1F]">{{ student.dob|date:"d M Y" }}</p>
+                </div>
+                {% endif %}
 
-            <!-- Personal Information Card -->
-            <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
-                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Personal Information</h2>
-                <dl class="space-y-3">
-                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                        <dt class="text-xs font-medium text-gray-500">Date of Birth</dt>
-                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.dob|date:"d M Y"|default:"—" }}</dd>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                        <dt class="text-xs font-medium text-gray-500">Gender</dt>
-                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.get_gender_display }}</dd>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                        <dt class="text-xs font-medium text-gray-500">Blood Group</dt>
-                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.display_blood_group }}</dd>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                        <dt class="text-xs font-medium text-gray-500">Admission Date</dt>
-                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.admission_date|date:"d M Y" }}</dd>
-                    </div>
-                    {% if student.address %}
-                    <div class="py-2">
-                        <dt class="text-xs font-medium text-gray-500 mb-1">Address</dt>
-                        <dd class="text-xs text-[#1d1d1f]">{{ student.address }}</dd>
-                    </div>
-                    {% endif %}
-                    {% if student.custom_fields %}
-                    <div class="mt-3 pt-3 border-t border-gray-100 space-y-2">
-                        {% for key, val in student.custom_fields.items %}
-                        <div class="flex justify-between items-center py-1">
-                            <dt class="text-xs font-medium text-gray-500 capitalize">{{ key }}</dt>
-                            <dd class="text-xs font-semibold text-[#1d1d1f]">{{ val }}</dd>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </dl>
-            </div>
+                {% if student.gender %}
+                <div class="space-y-1">
+                    <span class="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider">Gender</span>
+                    <p class="text-sm font-bold text-[#1D1D1F]">{{ student.get_gender_display }}</p>
+                </div>
+                {% endif %}
 
-            <!-- Guardian Information Card -->
-            <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
-                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Guardian Information</h2>
-                <dl class="space-y-3">
-                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                        <dt class="text-xs font-medium text-gray-500">Guardian Name</dt>
-                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.guardian_name|default:"—" }}</dd>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                        <dt class="text-xs font-medium text-gray-500">Guardian Phone</dt>
-                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.guardian_phone|default:"—" }}</dd>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                        <dt class="text-xs font-medium text-gray-500">Emergency Contact</dt>
-                        <dd class="text-xs font-semibold text-[#1d1d1f]">{{ student.emergency_contact|default:"—" }}</dd>
-                    </div>
-                </dl>
+                {% if student.blood_group %}
+                <div class="space-y-1">
+                    <span class="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider">Blood Group</span>
+                    <p class="text-sm font-bold text-[#1D1D1F]">{{ student.display_blood_group }}</p>
+                </div>
+                {% endif %}
 
-                <!-- School Info -->
-                <div class="mt-5 pt-4 border-t border-gray-100">
-                    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">School</h2>
-                    <p class="text-sm font-semibold text-[#1d1d1f]">{{ student.school.name }}</p>
+                {% if student.admission_date %}
+                <div class="space-y-1">
+                    <span class="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider">Admission Date</span>
+                    <p class="text-sm font-bold text-[#1D1D1F]">{{ student.admission_date|date:"d M Y" }}</p>
+                </div>
+                {% endif %}
+
+                {% if student.guardian_name %}
+                <div class="space-y-1">
+                    <span class="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider">Guardian Name</span>
+                    <p class="text-sm font-bold text-[#1D1D1F]">{{ student.guardian_name }}</p>
+                </div>
+                {% endif %}
+
+                {% if student.guardian_phone %}
+                <div class="space-y-1">
+                    <span class="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider">Guardian Phone</span>
+                    <p class="text-sm font-bold text-[#5A2132] font-mono">
+                        <a href="tel:{{ student.guardian_phone }}" class="hover:underline">📞 {{ student.guardian_phone }}</a>
+                    </p>
+                </div>
+                {% endif %}
+
+                {% if student.emergency_contact %}
+                <div class="space-y-1">
+                    <span class="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider">Emergency Contact</span>
+                    <p class="text-sm font-bold text-[#5A2132] font-mono">
+                        <a href="tel:{{ student.emergency_contact }}" class="hover:underline">📞 {{ student.emergency_contact }}</a>
+                    </p>
+                </div>
+                {% endif %}
+
+                <div class="space-y-1">
+                    <span class="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider">Enrolled School</span>
+                    <p class="text-sm font-bold text-[#1D1D1F]">{{ student.school.name }}</p>
                 </div>
             </div>
+
+            {% if student.custom_fields %}
+            <div class="mt-6 pt-5 border-t border-gray-100">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-5 gap-x-8">
+                    {% for key, val in student.custom_fields.items %}
+                        {% if val %}
+                        <div class="space-y-1">
+                            <span class="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider">{{ key|cut:"_" }}</span>
+                            <p class="text-sm font-bold text-[#1D1D1F]">{{ val }}</p>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if student.address %}
+            <div class="mt-6 pt-5 border-t border-gray-100">
+                <span class="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider block mb-1">Residential Address</span>
+                <p class="text-xs sm:text-sm font-medium text-[#1D1D1F] leading-relaxed">{{ student.address }}</p>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Class Teacher Card -->

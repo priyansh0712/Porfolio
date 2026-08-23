@@ -6,55 +6,40 @@ from typing import Dict
 
 FEATURE_CATALOG: Dict[str, Dict[str, str | bool]] = {
     'faculty_attendance': {
-        'label': 'Faculty Attendance',
-        'description': 'Webcam biometric face scan, attendance check-in/out, kiosk, and logs',
+        'label': 'Faculty Attendance & Biometrics',
+        'description': 'Webcam face recognition check-in/out, kiosk station, and real-time logs',
+        'icon': '📷',
         'default': True,
     },
     'faculty_leave': {
         'label': 'Faculty Leave Management',
-        'description': 'Leave application submission, leave balance, and administrative approval workflow',
+        'description': 'Leave applications, allowance balances, and administrative approval workflow',
+        'icon': '🌴',
         'default': True,
     },
     'reports': {
-        'label': 'Attendance Reports',
-        'description': 'Detailed attendance summaries, report dashboards, and CSV export functionality',
-        'default': True,
-    },
-    'notifications': {
-        'label': 'Notifications',
-        'description': 'System notifications, check-in alerts, and administrative broadcast messages',
-        'default': True,
-    },
-    'school_branding': {
-        'label': 'School Branding',
-        'description': 'Custom school logo and login page cover image branding',
-        'default': True,
-    },
-    'academics': {
-        'label': 'Academic Management',
-        'description': 'Academic years, standards, divisions, subjects, and curriculum allocations',
+        'label': 'Attendance Reports & Analytics',
+        'description': 'Detailed attendance summaries, report dashboards, and CSV data export',
+        'icon': '📊',
         'default': True,
     },
     'students': {
-        'label': 'Student Management',
-        'description': 'Student directory, profiles, enrollments, and transfer requests',
+        'label': 'Student Hub & Directory',
+        'description': 'Student directory, dynamic profiles, custom fields, and form configurations',
+        'icon': '🎒',
         'default': True,
     },
-    # Future extension feature flags (default OFF)
-    'student_attendance': {
-        'label': 'Student Attendance',
-        'description': 'Student classroom attendance tracking (Future module)',
-        'default': False,
+    'academics': {
+        'label': 'Academic Structure & Allocations',
+        'description': 'Academic sessions, standards, divisions, subjects, and teacher allocations',
+        'icon': '🏫',
+        'default': True,
     },
-    'bus_management': {
-        'label': 'Bus Management',
-        'description': 'School transport and bus route management (Future module)',
-        'default': False,
-    },
-    'parent_portal': {
-        'label': 'Parent Portal',
-        'description': 'Parent login and student progress tracking (Future module)',
-        'default': False,
+    'school_branding': {
+        'label': 'School Branding & Customization',
+        'description': 'Custom school logo, institute title, and login page cover customization',
+        'icon': '🎨',
+        'default': True,
     },
 }
 

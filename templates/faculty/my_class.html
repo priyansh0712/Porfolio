@@ -2,145 +2,343 @@
 {% load static %}
 
 {% block title %}My Class Roster — {{ school.name }}{% endblock %}
+{% block page_title %}Class Teacher Dashboard{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-6 pb-16">
-    <!-- Header Title & Class Summary -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <!-- Page Header Title & Actions -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-[#1d1d1f] tracking-tight">Class Teacher Dashboard</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-[#1d1d1f] tracking-tight">Class Teacher Dashboard</h1>
             {% if allocation %}
-                <p class="text-xs sm:text-sm text-[#86868b] mt-0.5">Assigned Class: <strong class="text-[#5A2132] font-semibold">{{ allocation.division.standard.name }} - {{ allocation.division.name }}</strong> • Session {{ academic_year.name }}</p>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">
+                    Assigned Class: <strong class="text-[#5A2132] font-bold">{{ allocation.division.standard.name }} — {{ allocation.division.name }}</strong> • Session {{ academic_year.name }}
+                </p>
             {% else %}
-                <p class="text-xs sm:text-sm text-amber-600 font-medium mt-0.5">⚠️ No active class teacher assignment for this academic session.</p>
+                <p class="text-xs sm:text-sm text-amber-600 font-medium mt-1">⚠️ No active class teacher assignment for this academic session.</p>
             {% endif %}
         </div>
         {% if allocation %}
-            <div>
-                <button onclick="document.getElementById('add-student-modal').classList.remove('hidden')" class="apple-btn-primary px-4 py-2 text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs">
-                    <span>+ Add Student</span>
+            <div class="flex items-center gap-2.5">
+                <button type="button" onclick="openAddStudentModal()" class="apple-btn-primary px-4 py-2.5 text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Add Student</span>
                 </button>
             </div>
         {% endif %}
     </div>
 
+    <!-- Alerts / Messages -->
+    {% include "components/alerts.html" %}
+
     {% if allocation %}
-        <!-- Stats Summary Card -->
+        <!-- Metric Stats Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div class="apple-card p-4 sm:p-5">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Class Division</div>
                 <div class="text-xl font-bold text-[#1d1d1f] mt-1">{{ allocation.division.standard.name }} {{ allocation.division.name }}</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Assigned Class Teacher</div>
             </div>
             <div class="apple-card p-4 sm:p-5">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Total Students</div>
                 <div class="text-xl font-bold text-[#5A2132] mt-1">{{ total_students }}</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Enrolled Active Students</div>
             </div>
             <div class="apple-card p-4 sm:p-5">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Academic Year</div>
                 <div class="text-xl font-bold text-emerald-700 mt-1">{{ academic_year.name }}</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Current Active Session</div>
             </div>
         </div>
 
         <!-- Student Roster Table Card -->
-        <div class="apple-card p-5 sm:p-7 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-bold text-[#1d1d1f]">Class Student Roster</h3>
-                <span class="text-xs text-[#86868b] font-medium">{{ total_students }} Enrolled</span>
+        <div class="apple-card p-5 sm:p-7 space-y-5">
+            <!-- Table Header -->
+            <div class="flex items-center justify-between pb-1">
+                <div>
+                    <h3 class="text-base font-bold text-[#1d1d1f]">Class Student Roster</h3>
+                    <p class="text-xs text-[#86868b] mt-0.5">Students enrolled in {{ allocation.division.standard.name }} {{ allocation.division.name }}.</p>
+                </div>
+                <div class="text-xs font-semibold text-[#5A2132] bg-[#5A2132]/8 border border-[#5A2132]/20 px-3 py-1 rounded-full">
+                    {{ total_students }} Students
+                </div>
             </div>
             
-            <div class="overflow-x-auto border border-gray-100 rounded-xl">
+            <!-- Table Component (Streamlined 4 Columns: Roll No | Student | GR Number | Action) -->
+            <div class="overflow-x-auto border border-gray-200/80 rounded-2xl shadow-xs">
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-gray-50/90 backdrop-blur-xs border-b border-gray-200">
                         <tr class="text-[#86868b] font-semibold uppercase tracking-wider text-[10px]">
-                            <th class="py-2.5 px-3.5">Roll No</th>
-                            <th class="py-2.5 px-3.5">GR Number</th>
-                            <th class="py-2.5 px-3.5">Student Name</th>
-                            <th class="py-2.5 px-3.5">Gender</th>
-                            <th class="py-2.5 px-3.5">Guardian Phone</th>
-                            <th class="py-2.5 px-3.5">Status</th>
+                            <th class="py-3 px-4 w-20 text-center">Roll No</th>
+                            <th class="py-3 px-4">Student Name</th>
+                            <th class="py-3 px-4 w-36">GR Number</th>
+                            <th class="py-3 px-4 w-28 text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         {% for student in students %}
-                            <tr class="hover:bg-gray-50/60 transition-colors">
-                                <td class="py-3 px-3.5 font-mono font-bold text-[#1d1d1f]">
-                                    {% if student.roll_number %}{{ student.roll_number }}{% else %}—{% endif %}
+                            <tr class="hover:bg-gray-50/70 transition-colors group cursor-pointer"
+                                onclick="openEditStudentModal(
+                                    {{ student.pk }},
+                                    '{{ student.full_name|escapejs }}',
+                                    '{{ student.gr_number|escapejs }}',
+                                    '{{ student.roll_number|default:'' }}',
+                                    '{{ student.gender }}',
+                                    '{{ student.blood_group }}',
+                                    '{{ student.dob|date:'Y-m-d'|default:'' }}',
+                                    '{{ student.standard.pk }}',
+                                    '{{ student.division.pk }}',
+                                    '{{ student.admission_date|date:'Y-m-d'|default:'' }}',
+                                    '{{ student.guardian_name|escapejs }}',
+                                    '{{ student.guardian_phone|escapejs }}',
+                                    '{{ student.emergency_contact|escapejs }}',
+                                    '{{ student.address|escapejs }}',
+                                    '{{ student.custom_fields_json|escapejs }}',
+                                    {{ student.is_active|yesno:'true,false' }}
+                                )">
+                                <!-- Roll No -->
+                                <td class="py-3 px-4 text-center">
+                                    <span class="font-mono text-xs font-bold text-[#5A2132] bg-[#5A2132]/8 border border-[#5A2132]/20 px-2.5 py-1 rounded-lg">
+                                        {{ student.roll_number|default:"—" }}
+                                    </span>
                                 </td>
-                                <td class="py-3 px-3.5 font-mono text-[#5A2132] font-semibold">{{ student.gr_number }}</td>
-                                <td class="py-3 px-3.5 font-semibold text-[#1d1d1f]">{{ student.full_name }}</td>
-                                <td class="py-3 px-3.5 text-[#86868b]">{{ student.get_gender_display }}</td>
-                                <td class="py-3 px-3.5 text-[#1d1d1f]">
-                                    {% if student.guardian_phone %}
-                                        <a href="tel:{{ student.guardian_phone }}" class="text-[#5A2132] hover:underline font-mono">📞 {{ student.guardian_phone }}</a>
-                                    {% else %}
-                                        <span class="text-[#86868b]">Not Provided</span>
-                                    {% endif %}
+
+                                <!-- Avatar, Full Name & Details -->
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-[#5A2132]/8 text-[#5A2132] border border-[#5A2132]/20 flex items-center justify-center text-xs font-bold flex-shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                                            {{ student.initials }}
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="font-semibold text-[#1D1D1F] text-xs group-hover:text-[#5A2132] transition-colors truncate">
+                                                {{ student.full_name }}
+                                            </p>
+                                            <div class="flex flex-wrap items-center gap-1.5 mt-0.5 text-[10px] text-gray-400 font-medium">
+                                                <span>{% if student.dob %}{{ student.dob|date:"d M Y" }}{% else %}DOB not set{% endif %}</span>
+                                                {% if student.gender %}<span>• {{ student.get_gender_display }}</span>{% endif %}
+                                                {% if student.guardian_phone %}
+                                                    <span>• <a href="tel:{{ student.guardian_phone }}" onclick="event.stopPropagation();" class="text-[#5A2132] hover:underline font-mono font-medium">📞 {{ student.guardian_phone }}</a></span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td class="py-3 px-3.5">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Active</span>
+
+                                <!-- GR Number -->
+                                <td class="py-3 px-4">
+                                    <span class="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-lg border border-gray-200/60">
+                                        {{ student.gr_number }}
+                                    </span>
+                                </td>
+
+                                <!-- Action Edit Button -->
+                                <td class="py-3 px-4 text-right" onclick="event.stopPropagation()">
+                                    <button type="button" onclick="openEditStudentModal(
+                                        {{ student.pk }},
+                                        '{{ student.full_name|escapejs }}',
+                                        '{{ student.gr_number|escapejs }}',
+                                        '{{ student.roll_number|default:'' }}',
+                                        '{{ student.gender }}',
+                                        '{{ student.blood_group }}',
+                                        '{{ student.dob|date:'Y-m-d'|default:'' }}',
+                                        '{{ student.standard.pk }}',
+                                        '{{ student.division.pk }}',
+                                        '{{ student.admission_date|date:'Y-m-d'|default:'' }}',
+                                        '{{ student.guardian_name|escapejs }}',
+                                        '{{ student.guardian_phone|escapejs }}',
+                                        '{{ student.emergency_contact|escapejs }}',
+                                        '{{ student.address|escapejs }}',
+                                        '{{ student.custom_fields_json|escapejs }}',
+                                        {{ student.is_active|yesno:'true,false' }}
+                                    )" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#5A2132] bg-[#5A2132]/8 hover:bg-[#5A2132]/15 border border-[#5A2132]/20 transition-all cursor-pointer shadow-2xs">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                        <span>Edit</span>
+                                    </button>
                                 </td>
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="6" class="py-8 text-center text-[#86868b]">No students currently enrolled in {{ allocation.division.standard.name }} {{ allocation.division.name }}.</td>
+                                <td colspan="4" class="py-12 text-center text-gray-400 space-y-1">
+                                    <div class="text-2xl">👩‍🎓</div>
+                                    <div class="text-xs font-semibold text-[#1d1d1f]">No students found</div>
+                                    <div class="text-[11px] text-gray-400">
+                                        {% if search %}No records matched your search "{{ search }}".{% else %}No students currently enrolled in this class.{% endif %}
+                                    </div>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
-
-        <!-- Add Student Modal -->
-        <div id="add-student-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center hidden p-4">
-            <div class="apple-card max-w-md w-full p-6 space-y-4">
-                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-                    <h3 class="text-base font-bold text-[#1d1d1f]">Add Student</h3>
-                    <button onclick="document.getElementById('add-student-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-lg">✕</button>
-                </div>
-                <form action="{% url 'students:create' %}" method="POST" class="space-y-3.5">
-                    {% csrf_token %}
-                    <input type="hidden" name="standard" value="{{ allocation.division.standard.id }}">
-                    <input type="hidden" name="division" value="{{ allocation.division.id }}">
-                    
-                    <div>
-                        <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">GR Number *</label>
-                        <input type="text" name="gr_number" required placeholder="e.g. GR-9088" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-[#5A2132]/20 focus:border-[#5A2132] outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">Full Name *</label>
-                        <input type="text" name="full_name" required placeholder="Student Full Name" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-[#5A2132]/20 focus:border-[#5A2132] outline-none">
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">Roll Number</label>
-                            <input type="number" name="roll_number" placeholder="1" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-[#5A2132]/20 focus:border-[#5A2132] outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">Gender</label>
-                            <select name="gender" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-[#5A2132]/20 focus:border-[#5A2132] outline-none">
-                                <option value="MALE">Male</option>
-                                <option value="FEMALE">Female</option>
-                                <option value="OTHER">Other</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">Guardian Phone</label>
-                        <input type="tel" name="guardian_phone" placeholder="9876543210" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-[#5A2132]/20 focus:border-[#5A2132] outline-none">
-                    </div>
-                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
-                        <button type="button" onclick="document.getElementById('add-student-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 text-[#1d1d1f] rounded-full text-xs font-medium">Cancel</button>
-                        <button type="submit" class="apple-btn-primary px-5 py-2 text-xs font-semibold">Save Student</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    {% else %}
-        <div class="apple-card p-10 text-center space-y-2">
-            <div class="text-3xl">🏫</div>
-            <h3 class="text-base font-bold text-[#1d1d1f]">No Class Assignment</h3>
-            <p class="text-xs text-[#86868b]">You have not been assigned as Class Teacher for the current academic session.</p>
-        </div>
     {% endif %}
 </div>
+
+<!-- Include Shared Apple Modals (Add & Edit Student) -->
+{% include "students/partials/modals.html" %}
+
+<script>
+    function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            if (window.lenisInstance) {
+                window.lenisInstance.stop();
+            }
+            if (typeof initAppleDatePickers === 'function') {
+                initAppleDatePickers(modal);
+            }
+        }
+    }
+
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        const openModals = document.querySelectorAll('.modal-dialog:not(.hidden)');
+        if (openModals.length === 0) {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            if (window.lenisInstance) {
+                window.lenisInstance.start();
+            }
+        }
+    }
+
+    // ── Add Student modal ───────────────────────────────────────────────────────
+    function openAddStudentModal() {
+        const modal = document.getElementById('modal-add-student');
+        const form = document.getElementById('form-add-student');
+        if (form) {
+            form.reset();
+            form.querySelectorAll('input.apple-datepicker, input[name="dob"], input[name="admission_date"]').forEach(input => {
+                if (input._flatpickr) input._flatpickr.clear();
+            });
+        }
+        openModal('modal-add-student');
+        if (typeof initAppleDatePickers === 'function') {
+            initAppleDatePickers(modal);
+        }
+    }
+
+    let currentEditingStudent = null;
+
+    // ── Edit Student modal ──────────────────────────────────────────────────────
+    function openEditStudentModal(pk, fullName, grNumber, rollNumber, gender, bloodGroup,
+        dob, standardId, divisionId, admDate,
+        guardianName, guardianPhone, emergencyContact, address,
+        customFields, isActive) {
+        const isStudentActive = (isActive !== false && isActive !== 'false' && isActive !== '0' && isActive !== 0);
+        currentEditingStudent = { pk: pk, fullName: fullName, isActive: isStudentActive };
+
+        const modal = document.getElementById('modal-edit-student');
+        const form = document.getElementById('form-edit-student');
+        form.action = '/students/' + pk + '/edit/';
+        form.querySelector('[name=full_name]').value = fullName || '';
+        const grInput = form.querySelector('[name=gr_number]');
+        if (grInput) grInput.value = grNumber || '';
+        const rollField = form.querySelector('[name=roll_number]');
+        if (rollField) rollField.value = rollNumber || '';
+        const genderField = form.querySelector('[name=gender]');
+        if (genderField) genderField.value = gender || 'MALE';
+        const bgField = form.querySelector('[name=blood_group]');
+        if (bgField) bgField.value = bloodGroup || '';
+
+        if (typeof initAppleDatePickers === 'function') {
+            initAppleDatePickers(modal);
+        }
+
+        const dobField = form.querySelector('[name=dob]');
+        if (dobField) {
+            if (dobField._flatpickr) {
+                if (dob) {
+                    dobField._flatpickr.setDate(dob, true);
+                } else {
+                    dobField._flatpickr.clear();
+                }
+            } else {
+                dobField.value = dob || '';
+            }
+        }
+
+        const admField = form.querySelector('[name=admission_date]');
+        if (admField) {
+            if (admField._flatpickr) {
+                if (admDate) {
+                    admField._flatpickr.setDate(admDate, true);
+                } else {
+                    admField._flatpickr.clear();
+                }
+            } else {
+                admField.value = admDate || '';
+            }
+        }
+
+        const gnField = form.querySelector('[name=guardian_name]');
+        if (gnField) gnField.value = guardianName || '';
+        const gpField = form.querySelector('[name=guardian_phone]');
+        if (gpField) gpField.value = guardianPhone || '';
+        const ecField = form.querySelector('[name=emergency_contact]');
+        if (ecField) ecField.value = emergencyContact || '';
+        const addrField = form.querySelector('[name=address]');
+        if (addrField) addrField.value = address || '';
+
+        // Reset and Populate Custom Fields
+        let customObj = {};
+        if (typeof customFields === 'string') {
+            try { customObj = JSON.parse(customFields); } catch (e) { }
+        } else if (typeof customFields === 'object' && customFields !== null) {
+            customObj = customFields;
+        }
+
+        form.querySelectorAll('[id^="edit-cf-"]').forEach(input => {
+            if (input.tagName === 'SELECT') {
+                input.value = '';
+            } else if (input._flatpickr) {
+                input._flatpickr.setDate('', true);
+            } else {
+                input.value = '';
+            }
+        });
+
+        for (const [key, val] of Object.entries(customObj)) {
+            const cfInput = document.getElementById('edit-cf-' + key);
+            if (cfInput) {
+                if (cfInput._flatpickr) {
+                    cfInput._flatpickr.setDate(val || '', true);
+                } else {
+                    cfInput.value = val || '';
+                }
+            }
+        }
+
+        openModal('modal-edit-student');
+    }
+
+    // Close modals on Escape key or backdrop click
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-dialog:not(.hidden)').forEach(modal => {
+                closeModal(modal.id);
+            });
+        }
+    });
+
+    document.querySelectorAll('.modal-dialog').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal(this.id);
+            }
+        });
+    });
+</script>
 {% endblock %}

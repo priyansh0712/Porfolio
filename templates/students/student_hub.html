@@ -445,7 +445,7 @@
         // Show/hide Reset button
         const isFiltered = (q !== '' || std !== '' || div !== '' || (status !== 'active' && status !== ''));
         if (resetWrapper) {
-            resetWrapper.style.display = isFiltered ? 'block' : 'none';
+            resetWrapper.style.display = isFiltered ? 'flex' : 'none';
         }
 
         // Build URL query params
@@ -499,6 +499,46 @@
             });
     }
 
+    function updateDivisionFilterOptions(selectedStandardId, keepSelectedValue = false) {
+        const divSelect = document.getElementById('student-filter-division');
+        if (!divSelect) return;
+
+        const currentVal = divSelect.value;
+        const options = divSelect.querySelectorAll('option');
+        let hasValidSelection = false;
+
+        options.forEach(opt => {
+            if (!opt.value) {
+                // "All Divisions" option
+                opt.style.display = '';
+                return;
+            }
+            const optStdId = opt.getAttribute('data-standard');
+            const optName = opt.getAttribute('data-name') || opt.textContent;
+            const optFullName = opt.getAttribute('data-fullname') || opt.textContent;
+
+            if (!selectedStandardId || optStdId === String(selectedStandardId)) {
+                opt.style.display = '';
+                opt.textContent = selectedStandardId ? ('Division ' + optName) : optFullName;
+                if (keepSelectedValue && opt.value === currentVal) {
+                    hasValidSelection = true;
+                }
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+
+        if (!keepSelectedValue || !hasValidSelection) {
+            divSelect.value = '';
+        }
+    }
+
+    function handleStandardFilterChange(stdSelect) {
+        const stdId = stdSelect ? stdSelect.value : '';
+        updateDivisionFilterOptions(stdId, false);
+        triggerLiveStudentFilter();
+    }
+
     function clearStudentSearch() {
         const qInput = document.getElementById('student-search-input');
         if (qInput) {
@@ -521,6 +561,7 @@
         const statusSelect = filterForm.querySelector('[name=status]');
         if (statusSelect) statusSelect.value = 'active';
 
+        updateDivisionFilterOptions('', false);
         triggerLiveStudentFilter();
     }
 
@@ -533,12 +574,8 @@
             searchDebounceTimer = setTimeout(triggerLiveStudentFilter, 200);
         });
 
-        filterForm.querySelectorAll('select[name=standard], select[name=division], select[name=status]').forEach(sel => {
+        filterForm.querySelectorAll('select[name=division], select[name=status]').forEach(sel => {
             sel.addEventListener('change', function () {
-                if (this.name === 'standard') {
-                    const divSelect = filterForm.querySelector('[name=division]');
-                    if (divSelect) divSelect.value = '';
-                }
                 triggerLiveStudentFilter();
             });
         });
@@ -547,6 +584,12 @@
             e.preventDefault();
             triggerLiveStudentFilter();
         });
+    }
+
+    // Initialize division filter options on page load based on active standard
+    const initialStdSelect = document.getElementById('student-filter-standard');
+    if (initialStdSelect && initialStdSelect.value) {
+        updateDivisionFilterOptions(initialStdSelect.value, true);
     }
 
     // Mobile menu toggle

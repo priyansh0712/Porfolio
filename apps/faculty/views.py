@@ -24,7 +24,7 @@ from apps.students.models import Student
 class MyClassView(LoginRequiredMixin, ListView):
     """
     Dedicated dashboard for Class Teachers displaying assigned division details,
-    student roster, and quick-add student modal.
+    student roster, quick-add student modal, live search, and scoped student profile edit.
     """
     model = Student
     template_name = 'faculty/my_class.html'
@@ -36,6 +36,9 @@ class MyClassView(LoginRequiredMixin, ListView):
             return Student.objects.none()
 
         curr_ay = AcademicYear.objects.filter(school=self.request.tenant, is_current=True).first()
+        if not curr_ay:
+            return Student.objects.none()
+
         allocation = ClassTeacherAllocation.objects.filter(
             school=self.request.tenant,
             academic_year=curr_ay,
@@ -45,26 +48,65 @@ class MyClassView(LoginRequiredMixin, ListView):
         if not allocation:
             return Student.objects.none()
 
-        return Student.objects.filter(
+        qs = Student.objects.filter(
             school=self.request.tenant,
             academic_year=curr_ay,
             division=allocation.division,
-            is_active=True
-        ).order_by('roll_number', 'full_name')
+        ).select_related('standard', 'division', 'user').order_by('roll_number', 'full_name')
+
+        status_filter = self.request.GET.get('status', 'active')
+        if status_filter == 'active':
+            qs = qs.filter(is_active=True)
+        elif status_filter == 'inactive':
+            qs = qs.filter(is_active=False)
+
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(full_name__icontains=q) |
+                Q(gr_number__icontains=q) |
+                Q(roll_number__icontains=q) |
+                Q(guardian_phone__icontains=q)
+            )
+
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        tenant = self.request.tenant
         faculty = getattr(self.request.user, 'faculty_profile', None)
-        curr_ay = AcademicYear.objects.filter(school=self.request.tenant, is_current=True).first()
+        curr_ay = AcademicYear.objects.filter(school=tenant, is_current=True).first()
         allocation = ClassTeacherAllocation.objects.filter(
-            school=self.request.tenant,
+            school=tenant,
             academic_year=curr_ay,
             faculty=faculty
-        ).select_related('division', 'division__standard').first() if faculty else None
+        ).select_related('division', 'division__standard').first() if (faculty and curr_ay) else None
+
+        from apps.students.models import StudentCustomField, StudentFormFieldConfig
+        from apps.academics.models import Standard, Division
+        custom_fields_qs = StudentCustomField.objects.filter(school=tenant).order_by('order_index', 'created_at')
+        form_config = StudentFormFieldConfig.get_for_school(tenant)
 
         context['allocation'] = allocation
         context['academic_year'] = curr_ay
-        context['total_students'] = self.get_queryset().count()
+        context['total_students'] = Student.objects.filter(
+            school=tenant,
+            academic_year=curr_ay,
+            division=allocation.division,
+            is_active=True
+        ).count() if allocation else 0
+        context['search'] = self.request.GET.get('q', '')
+        context['status_filter'] = self.request.GET.get('status', 'active')
+        context['can_edit_students'] = True  # Class teacher can edit students in their class
+        context['is_admin'] = False
+        context['ct_division'] = allocation.division if allocation else None
+        context['standards'] = Standard.objects.filter(school=tenant).order_by('order_index', 'name')
+        context['divisions'] = Division.objects.filter(school=tenant).order_by('standard__order_index', 'name')
+        context['custom_fields'] = custom_fields_qs
+        context['active_custom_fields'] = [cf for cf in custom_fields_qs if cf.is_active]
+        context['form_config'] = form_config
+
         return context
 
 

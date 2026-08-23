@@ -28,8 +28,16 @@ class OnboardingWizardView(SchoolAdminRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['school'] = self.request.tenant
+        school = self.request.tenant
+        context['school'] = school
         context['active_step'] = int(self.request.GET.get('step', 1))
+
+        # Dynamic Columns per step based on school tenant config
+        step_columns = {}
+        for step in (1, 2, 3, 4):
+            headers, _ = SampleTemplateService.get_template_headers_and_data(step, school=school)
+            step_columns[step] = headers
+        context['step_columns_json'] = json.dumps(step_columns)
         return context
 
 

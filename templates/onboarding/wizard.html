@@ -83,41 +83,158 @@
 
     <!-- Validation Preview Section (Hidden by default) -->
     <div id="preview-section" class="apple-card p-5 sm:p-7 space-y-5 hidden">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+        <!-- Header & Action Controls Bar -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-100">
             <div>
                 <h3 class="text-base font-bold text-[#1d1d1f]" id="preview-header-title">Data Validation Preview</h3>
-                <p class="text-xs text-[#86868b] mt-0.5">Review validation results before importing into database.</p>
+                <p class="text-xs text-[#86868b] mt-0.5">Spreadsheet view of your file. Review validation status per column before importing.</p>
             </div>
+
+            <!-- Segmented Filter Control & Search -->
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Search Input with embedded SVG icon -->
+                <div class="relative flex items-center">
+                    <svg class="w-3.5 h-3.5 absolute left-3 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" id="preview-search" placeholder="Search rows..." oninput="handlePreviewSearch(this.value)"
+                           class="text-xs py-1.5 pl-8 pr-3 rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc] outline-none transition-all w-36 sm:w-48 text-[#1d1d1f]">
+                </div>
+
+                <!-- Apple Segmented Filter Tabs -->
+                <div class="inline-flex p-1 bg-gray-100/90 rounded-xl text-xs font-medium border border-gray-200/80">
+                    <button type="button" onclick="setPreviewFilter('ALL')" id="filter-tab-all"
+                            class="px-3 py-1 rounded-lg transition-all bg-white text-[#1d1d1f] font-semibold shadow-xs">
+                        All <span id="badge-total" class="ml-1 text-[11px] text-[#86868b] font-normal">(0)</span>
+                    </button>
+                    <button type="button" onclick="setPreviewFilter('VALID')" id="filter-tab-valid"
+                            class="px-3 py-1 rounded-lg transition-all text-[#86868b] hover:text-[#1d1d1f]">
+                        Valid <span id="badge-valid" class="ml-1 text-[11px] text-emerald-600 font-semibold">(0)</span>
+                    </button>
+                    <button type="button" onclick="setPreviewFilter('ERROR')" id="filter-tab-error"
+                            class="px-3 py-1 rounded-lg transition-all text-[#86868b] hover:text-[#1d1d1f]">
+                        Errors <span id="badge-error" class="ml-1 text-[11px] text-rose-600 font-semibold">(0)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spreadsheet Grid Table Container -->
+        <div class="border border-gray-200/80 rounded-2xl overflow-hidden bg-white shadow-xs">
+            <div class="overflow-x-auto max-h-96 custom-scrollbar">
+                <table class="min-w-full text-left text-xs border-collapse divide-y divide-gray-100">
+                    <thead class="sticky top-0 z-10 bg-gray-50/98 backdrop-blur-md border-b border-gray-200 shadow-xs">
+                        <tr id="preview-table-header" class="text-[#86868b] font-bold uppercase tracking-wider text-[10px] whitespace-nowrap">
+                            <!-- Dynamic <th> generated via JS -->
+                        </tr>
+                    </thead>
+                    <tbody id="preview-table-body" class="divide-y divide-gray-100">
+                        <!-- Dynamic <tr> generated via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty filtered state notice -->
+            <div id="preview-empty-state" class="hidden py-12 text-center space-y-1.5">
+                <div class="text-2xl" id="empty-state-icon">🔍</div>
+                <div class="text-xs font-semibold text-[#1d1d1f]" id="empty-state-title">No rows match your filter</div>
+                <div class="text-[11px] text-[#86868b]" id="empty-state-desc">Try switching the filter tab or clearing search query.</div>
+            </div>
+        </div>
+
+        <!-- Commit Confirmation & Summary Action Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+            <div class="flex items-center gap-2 text-xs text-[#86868b]">
+                <span id="preview-footer-summary">Ready to process validated records.</span>
+            </div>
+
             <div class="flex items-center gap-2">
-                <div class="px-2.5 py-1 bg-gray-100 rounded-full text-xs font-semibold text-[#1d1d1f]" id="summary-total">Total: 0</div>
-                <div class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold" id="summary-valid">Valid: 0</div>
-                <div class="px-2.5 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-semibold" id="summary-error">Errors: 0</div>
+                <button type="button" onclick="document.getElementById('file-input').click()" 
+                        class="px-4 py-2 text-xs font-semibold bg-gray-100 hover:bg-gray-200/80 text-[#1d1d1f] rounded-xl transition-all">
+                    Choose Another File
+                </button>
+                <button id="commit-btn" onclick="handleCommit()" class="apple-btn-primary px-6 py-2 text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm">
+                    <span>🚀 Confirm & Import Valid Rows</span>
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- Preview Table -->
-        <div class="overflow-x-auto max-h-80 border border-gray-100 rounded-xl">
-            <table class="w-full text-left text-xs border-collapse">
-                <thead class="sticky top-0 bg-gray-50/90 backdrop-blur-xs border-b border-gray-200">
-                    <tr id="preview-table-header" class="text-[#86868b] font-semibold uppercase tracking-wider text-[10px]">
-                        <th class="py-2.5 px-3">Row</th>
-                        <th class="py-2.5 px-3">Status</th>
-                        <th class="py-2.5 px-3">Data Details</th>
-                        <th class="py-2.5 px-3">Validation Message</th>
-                    </tr>
-                </thead>
-                <tbody id="preview-table-body" class="divide-y divide-gray-100">
-                    <!-- Dynamic Rows -->
-                </tbody>
-            </table>
+    <!-- Apple Design System Modals -->
+    <!-- 1. Confirmation Modal -->
+    <div id="modal-confirm-import" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.45);">
+        <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xl max-w-md w-full overflow-hidden p-6 space-y-5 animate-scale-in">
+            <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-[#0066cc]/10 text-[#0066cc] flex items-center justify-center text-2xl flex-shrink-0">
+                    🚀
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-[#1d1d1f]" id="confirm-modal-title">Confirm Bulk Import</h3>
+                    <p class="text-xs text-[#86868b] mt-0.5" id="confirm-modal-step">Step 1: Faculty Roster</p>
+                </div>
+            </div>
+
+            <div class="p-3.5 bg-gray-50 rounded-2xl border border-gray-100 text-xs text-[#1d1d1f] space-y-1.5">
+                <div class="flex justify-between items-center font-medium">
+                    <span class="text-[#86868b]">Valid rows to import:</span>
+                    <span class="text-emerald-700 font-bold text-sm" id="confirm-modal-valid-count">0</span>
+                </div>
+                <div class="flex justify-between items-center font-medium" id="confirm-modal-skipped-container">
+                    <span class="text-[#86868b]">Rows with errors (will skip):</span>
+                    <span class="text-rose-600 font-semibold" id="confirm-modal-error-count">0</span>
+                </div>
+            </div>
+
+            <p class="text-xs text-[#86868b] leading-relaxed">
+                Are you sure you want to write these validated records into the database? This action will create active school records and credentials.
+            </p>
+
+            <div class="flex items-center justify-end gap-2.5 pt-1">
+                <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 text-xs font-semibold bg-gray-100 hover:bg-gray-200/80 text-[#1d1d1f] rounded-xl transition-all">
+                    Cancel
+                </button>
+                <button type="button" id="confirm-import-submit-btn" onclick="executeCommit()" class="apple-btn-primary px-5 py-2 text-xs font-semibold shadow-sm inline-flex items-center gap-1.5">
+                    <span>Confirm & Import</span>
+                </button>
+            </div>
         </div>
+    </div>
 
-        <!-- Commit Confirmation Bar -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-100">
-            <div class="text-xs text-[#86868b]" id="commit-help-text">Only valid rows will be committed to the database.</div>
-            <button id="commit-btn" onclick="handleCommit()" class="apple-btn-primary px-5 py-2 text-xs font-semibold">
-                🚀 Confirm & Import Valid Rows
-            </button>
+    <!-- 2. Success Modal -->
+    <div id="modal-success-import" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.45);">
+        <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xl max-w-md w-full overflow-hidden p-6 space-y-5 animate-scale-in text-center">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center text-3xl mx-auto shadow-xs">
+                🎉
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-[#1d1d1f]">Import Successful!</h3>
+                <p class="text-xs text-[#86868b] mt-1" id="success-modal-msg">Successfully imported valid records into database.</p>
+            </div>
+            <div class="pt-2">
+                <button type="button" id="success-next-btn" onclick="handleSuccessNext()" class="apple-btn-primary w-full py-2.5 text-xs font-semibold shadow-sm">
+                    Continue to Next Step ➔
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Error / Alert Modal -->
+    <div id="modal-error-import" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.45);">
+        <div class="bg-white rounded-3xl border border-rose-200/80 shadow-2xl max-w-md w-full overflow-hidden p-6 space-y-4 animate-scale-in">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center text-2xl flex-shrink-0">
+                    ⚠️
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-[#1d1d1f]">Notice</h3>
+                    <p class="text-xs text-[#86868b] mt-0.5" id="error-modal-msg">An issue occurred.</p>
+                </div>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button type="button" onclick="closeErrorModal()" class="px-5 py-2 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] rounded-xl transition-all">
+                    Dismiss
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -125,27 +242,30 @@
 <script>
     let currentStep = 1;
     let currentValidationResults = [];
+    let currentFilter = 'ALL'; // 'ALL', 'VALID', 'ERROR'
+    let currentSearchTerm = '';
+    const DYNAMIC_STEP_COLS = {{ step_columns_json|safe|default:"{}" }};
 
     const STEP_INFOS = {
         1: {
             title: "1. Faculty Roster",
             note: "Creates faculty profiles & logins (Default password: <span class='font-mono font-bold text-[#5A2132]'>Admin@123</span>)",
-            cols: ["First Name", "Last Name", "Email", "Employee Code", "Department", "Designation"]
+            cols: DYNAMIC_STEP_COLS[1] || ["First Name", "Last Name", "Email", "Employee Code", "Department", "Designation"]
         },
         2: {
             title: "2. Classes & Teachers",
             note: "Creates academic standards, divisions, and links class teachers",
-            cols: ["Standard Name", "Standard Code", "Division Name", "Class Teacher Employee Code"]
+            cols: DYNAMIC_STEP_COLS[2] || ["Standard Name", "Standard Code", "Division Name", "Class Teacher Employee Code"]
         },
         3: {
             title: "3. Subject Mappings",
             note: "Maps subjects to divisions and assigns subject teachers for active academic year",
-            cols: ["Standard Name", "Division Name", "Subject Name", "Subject Code", "Subject Teacher Employee Code"]
+            cols: DYNAMIC_STEP_COLS[3] || ["Standard Name", "Division Name", "Subject Name", "Subject Code", "Subject Teacher Employee Code"]
         },
         4: {
             title: "4. Student Enrolment",
             note: "Enrolls students with GR numbers and creates student portal accounts",
-            cols: ["GR Number", "First Name", "Last Name", "Standard Name", "Division Name", "Roll Number", "Gender", "Date of Birth", "Parent Phone", "Parent Email"]
+            cols: DYNAMIC_STEP_COLS[4] || ["GR Number", "First Name", "Last Name", "Standard Name", "Division Name", "Roll Number", "Gender", "Date of Birth"]
         }
     };
 
@@ -167,7 +287,8 @@
 
         // Update step info with clean badges for columns
         const info = STEP_INFOS[stepNum];
-        const chipsHtml = info.cols.map(c => `<span class="px-2 py-0.5 bg-gray-100 text-[#1d1d1f] rounded-md text-[11px] font-medium border border-gray-200/80">${c}</span>`).join('');
+        const cols = (DYNAMIC_STEP_COLS && DYNAMIC_STEP_COLS[stepNum]) || info.cols;
+        const chipsHtml = cols.map(c => `<span class="px-2 py-0.5 bg-gray-100 text-[#1d1d1f] rounded-md text-[11px] font-medium border border-gray-200/80">${c}</span>`).join('');
         
         document.getElementById('step-info-container').innerHTML = `
             <div class="space-y-1.5">
@@ -176,7 +297,7 @@
                     <span class="text-xs text-[#86868b]">${info.note}</span>
                 </div>
                 <div class="pt-1">
-                    <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b] mb-1">Required Columns:</div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b] mb-1">Active Template Columns:</div>
                     <div class="flex flex-wrap gap-1.5">${chipsHtml}</div>
                 </div>
             </div>
@@ -198,11 +319,66 @@
         }
     }
 
+    function showErrorModal(msg) {
+        document.getElementById('error-modal-msg').textContent = msg;
+        const modal = document.getElementById('modal-error-import');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeErrorModal() {
+        const modal = document.getElementById('modal-error-import');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function showConfirmModal(validCount, errorCount) {
+        const info = STEP_INFOS[currentStep];
+        document.getElementById('confirm-modal-step').textContent = info.title;
+        document.getElementById('confirm-modal-valid-count').textContent = `${validCount} records`;
+        document.getElementById('confirm-modal-error-count').textContent = `${errorCount} records`;
+        
+        const modal = document.getElementById('modal-confirm-import');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeConfirmModal() {
+        const modal = document.getElementById('modal-confirm-import');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function showSuccessModal(msg) {
+        document.getElementById('success-modal-msg').textContent = msg;
+        const nextBtn = document.getElementById('success-next-btn');
+        if (currentStep < 4) {
+            nextBtn.textContent = `Continue to Step ${currentStep + 1} ➔`;
+        } else {
+            nextBtn.textContent = 'Go to Student Hub ➔';
+        }
+        const modal = document.getElementById('modal-success-import');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function handleSuccessNext() {
+        const modal = document.getElementById('modal-success-import');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        
+        if (currentStep < 4) {
+            switchStep(currentStep + 1);
+        } else {
+            window.location.href = "{% url 'students:hub' %}";
+        }
+    }
+
     async function handleValidation(e) {
         e.preventDefault();
         const fileInput = document.getElementById('file-input');
         if (!fileInput.files || !fileInput.files[0]) {
-            alert('Please select a file to validate.');
+            showErrorModal('Please select a .xlsx or .csv file to validate.');
             return;
         }
 
@@ -223,14 +399,14 @@
             const data = await resp.json();
 
             if (!data.success) {
-                alert(data.error || 'Validation failed.');
+                showErrorModal(data.error || 'Validation failed.');
                 return;
             }
 
             renderPreview(data);
         } catch (err) {
             console.error(err);
-            alert('An error occurred during file validation.');
+            showErrorModal('An error occurred during file validation.');
         } finally {
             validateBtn.disabled = false;
             validateBtn.innerHTML = '<span>🔍 Validate File</span>';
@@ -239,66 +415,198 @@
 
     function renderPreview(data) {
         currentValidationResults = data.results;
+        currentFilter = 'ALL';
+        currentSearchTerm = '';
+        document.getElementById('preview-search').value = '';
         document.getElementById('preview-section').classList.remove('hidden');
 
-        document.getElementById('summary-total').textContent = `Total: ${data.total_rows}`;
-        document.getElementById('summary-valid').textContent = `Valid: ${data.valid_count}`;
-        document.getElementById('summary-error').textContent = `Errors: ${data.error_count}`;
+        // Update Pill Badges
+        document.getElementById('badge-total').textContent = `(${data.total_rows})`;
+        document.getElementById('badge-valid').textContent = `(${data.valid_count})`;
+        document.getElementById('badge-error').textContent = `(${data.error_count})`;
 
-        const tbody = document.getElementById('preview-table-body');
-        tbody.innerHTML = '';
+        // Build Dynamic Column Headers
+        buildTableHeaders(data.results);
 
-        data.results.forEach(res => {
-            const tr = document.createElement('tr');
-            tr.className = res.status === 'VALID' ? 'hover:bg-emerald-50/30' : 'bg-rose-50/20 hover:bg-rose-50/40';
+        // Render Filtered Rows
+        updateTableRows();
 
-            const detailsStr = Object.entries(res.data)
-                .map(([k, v]) => `<span class="text-[#86868b]">${k}:</span> <strong>${v}</strong>`)
-                .join(' | ');
-
-            const statusBadge = res.status === 'VALID' 
-                ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">VALID</span>'
-                : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">ERROR</span>';
-
-            const errorText = res.errors.length > 0
-                ? `<span class="text-rose-600 font-medium">${res.errors.join(', ')}</span>`
-                : '<span class="text-emerald-600">Ready for import</span>';
-
-            tr.innerHTML = `
-                <td class="py-2.5 px-3 font-mono font-bold text-[#1d1d1f]">Row ${res.row_index}</td>
-                <td class="py-2.5 px-3">${statusBadge}</td>
-                <td class="py-2.5 px-3">${detailsStr}</td>
-                <td class="py-2.5 px-3">${errorText}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-
+        // Update Commit Button state
         const commitBtn = document.getElementById('commit-btn');
         if (data.valid_count === 0) {
             commitBtn.disabled = true;
-            commitBtn.className = 'px-5 py-2 text-xs font-semibold bg-gray-200 text-gray-400 rounded-full cursor-not-allowed';
-            commitBtn.textContent = 'No Valid Rows to Import';
+            commitBtn.className = 'px-6 py-2 text-xs font-semibold bg-gray-200 text-gray-400 rounded-xl cursor-not-allowed';
+            commitBtn.innerHTML = '<span>No Valid Rows to Import</span>';
         } else {
             commitBtn.disabled = false;
-            commitBtn.className = 'apple-btn-primary px-5 py-2 text-xs font-semibold';
-            commitBtn.textContent = `🚀 Import ${data.valid_count} Valid Rows`;
+            commitBtn.className = 'apple-btn-primary px-6 py-2 text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm';
+            commitBtn.innerHTML = `<span>🚀 Import ${data.valid_count} Valid Rows</span>`;
         }
+
+        // Scroll to preview smoothly
+        document.getElementById('preview-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    async function handleCommit() {
+    function buildTableHeaders(results) {
+        if (!results || results.length === 0) return;
+
+        // Collect all distinct column names present in the data rows
+        const colSet = new Set();
+        results.forEach(r => {
+            Object.keys(r.data || {}).forEach(k => colSet.add(k));
+        });
+        const dataCols = Array.from(colSet);
+
+        const theadTr = document.getElementById('preview-table-header');
+        theadTr.innerHTML = `
+            <th class="py-3 px-3.5 bg-gray-50 border-r border-gray-200/80 text-center font-bold text-[#86868b] w-14">#</th>
+            <th class="py-3 px-3.5 bg-gray-50 border-r border-gray-200/80 text-center font-bold text-[#86868b] w-24">Status</th>
+            <th class="py-3 px-4 bg-gray-50 border-r border-gray-200/80 font-bold text-[#86868b] min-w-[180px]">Validation Note</th>
+            ${dataCols.map(col => `<th class="py-3 px-4 bg-gray-50 border-r border-gray-100 last:border-r-0 font-bold text-[#86868b] whitespace-nowrap">${escapeHtml(col)}</th>`).join('')}
+        `;
+
+        // Store columns on the table element for row rendering
+        document.getElementById('preview-table-header').dataset.cols = JSON.stringify(dataCols);
+    }
+
+    function updateTableRows() {
+        const theadTr = document.getElementById('preview-table-header');
+        const dataCols = JSON.parse(theadTr.dataset.cols || '[]');
+        const tbody = document.getElementById('preview-table-body');
+        tbody.innerHTML = '';
+
+        // Filter results by Tab and Search Term
+        let filtered = currentValidationResults.filter(r => {
+            if (currentFilter === 'VALID' && r.status !== 'VALID') return false;
+            if (currentFilter === 'ERROR' && r.status !== 'ERROR') return false;
+
+            if (currentSearchTerm) {
+                const searchLower = currentSearchTerm.toLowerCase();
+                const matchesData = Object.values(r.data || {}).some(v => String(v).toLowerCase().includes(searchLower));
+                const matchesError = (r.errors || []).some(err => err.toLowerCase().includes(searchLower));
+                const matchesRow = String(r.row_index).includes(searchLower);
+                return matchesData || matchesError || matchesRow;
+            }
+            return true;
+        });
+
+        const emptyState = document.getElementById('preview-empty-state');
+        if (filtered.length === 0) {
+            emptyState.classList.remove('hidden');
+            if (currentFilter === 'ERROR') {
+                document.getElementById('empty-state-icon').textContent = '🎉';
+                document.getElementById('empty-state-title').textContent = 'Zero Errors Found';
+                document.getElementById('empty-state-desc').textContent = 'All records passed validation and are ready to import.';
+            } else {
+                document.getElementById('empty-state-icon').textContent = '🔍';
+                document.getElementById('empty-state-title').textContent = 'No matching records';
+                document.getElementById('empty-state-desc').textContent = 'Try adjusting your search query or switching filters.';
+            }
+        } else {
+            emptyState.classList.add('hidden');
+        }
+
+        document.getElementById('preview-footer-summary').textContent = 
+            `Showing ${filtered.length} of ${currentValidationResults.length} records (${currentValidationResults.filter(r => r.status === 'VALID').length} valid).`;
+
+        filtered.forEach(res => {
+            const tr = document.createElement('tr');
+            const isValid = res.status === 'VALID';
+            tr.className = isValid 
+                ? 'hover:bg-emerald-50/20 transition-colors' 
+                : 'bg-rose-50/30 hover:bg-rose-50/50 transition-colors';
+
+            const statusBadge = isValid
+                ? '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200/60"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>VALID</span>'
+                : '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200/60"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>ERROR</span>';
+
+            const noteContent = isValid
+                ? '<span class="inline-flex items-center gap-1 text-emerald-700 font-medium text-xs"><span>✓</span> Ready for import</span>'
+                : `<div class="space-y-0.5 text-rose-700 font-medium text-xs">${res.errors.map(err => `<div class="flex items-start gap-1"><span class="text-rose-500">⚠</span><span>${escapeHtml(err)}</span></div>`).join('')}</div>`;
+
+            // Data Cells
+            const dataCellsHtml = dataCols.map(col => {
+                const val = res.data[col];
+                const displayVal = (val !== undefined && val !== null && String(val).trim() !== '') 
+                    ? escapeHtml(String(val)) 
+                    : '<span class="text-gray-300 font-normal">—</span>';
+                return `<td class="py-2.5 px-4 border-r border-gray-100 last:border-r-0 whitespace-nowrap text-[#1d1d1f] font-normal">${displayVal}</td>`;
+            }).join('');
+
+            tr.innerHTML = `
+                <td class="py-2.5 px-3.5 border-r border-gray-200/80 font-mono font-bold text-center text-[#1d1d1f]">
+                    ${res.row_index}
+                </td>
+                <td class="py-2.5 px-3.5 border-r border-gray-200/80 text-center">
+                    ${statusBadge}
+                </td>
+                <td class="py-2.5 px-4 border-r border-gray-200/80">
+                    ${noteContent}
+                </td>
+                ${dataCellsHtml}
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function setPreviewFilter(filterType) {
+        currentFilter = filterType;
+
+        const tabs = {
+            'ALL': document.getElementById('filter-tab-all'),
+            'VALID': document.getElementById('filter-tab-valid'),
+            'ERROR': document.getElementById('filter-tab-error'),
+        };
+
+        Object.entries(tabs).forEach(([type, el]) => {
+            if (type === filterType) {
+                el.className = "px-3 py-1 rounded-lg transition-all bg-white text-[#1d1d1f] font-semibold shadow-xs";
+            } else {
+                el.className = "px-3 py-1 rounded-lg transition-all text-[#86868b] hover:text-[#1d1d1f]";
+            }
+        });
+
+        updateTableRows();
+    }
+
+    function handlePreviewSearch(term) {
+        currentSearchTerm = term.trim();
+        updateTableRows();
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function handleCommit() {
+        const validRows = currentValidationResults.filter(r => r.status === 'VALID');
+        const errorRows = currentValidationResults.filter(r => r.status === 'ERROR');
+        
+        if (validRows.length === 0) {
+            showErrorModal('No valid rows available to import.');
+            return;
+        }
+
+        // Open Apple confirmation modal instead of browser confirm()
+        showConfirmModal(validRows.length, errorRows.length);
+    }
+
+    async function executeCommit() {
         const validRows = currentValidationResults.filter(r => r.status === 'VALID');
         if (validRows.length === 0) {
-            alert('No valid rows to import.');
+            closeConfirmModal();
+            showErrorModal('No valid rows to import.');
             return;
         }
 
-        if (!confirm(`Import ${validRows.length} valid rows into the database for Step ${currentStep}?`)) {
-            return;
-        }
-
-        const commitBtn = document.getElementById('commit-btn');
-        commitBtn.disabled = true;
-        commitBtn.innerHTML = '<span>⏳ Importing...</span>';
+        const confirmBtn = document.getElementById('confirm-import-submit-btn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span>⏳ Importing...</span>';
 
         try {
             const resp = await fetch("{% url 'onboarding:api-commit' %}", {
@@ -314,24 +622,22 @@
             });
             const data = await resp.json();
 
+            closeConfirmModal();
+
             if (!data.success) {
-                alert(data.error || 'Import failed.');
+                showErrorModal(data.error || 'Import failed.');
                 return;
             }
 
-            alert(data.message);
-            // Advance to next step if available
-            if (currentStep < 4) {
-                switchStep(currentStep + 1);
-            } else {
-                window.location.href = "{% url 'students:hub' %}";
-            }
+            // Show Apple success modal instead of browser alert()
+            showSuccessModal(data.message);
         } catch (err) {
             console.error(err);
-            alert('An error occurred during import commitment.');
+            closeConfirmModal();
+            showErrorModal('An error occurred while saving records.');
         } finally {
-            commitBtn.disabled = false;
-            commitBtn.innerHTML = '🚀 Confirm & Import Valid Rows';
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<span>Confirm & Import</span>';
         }
     }
 

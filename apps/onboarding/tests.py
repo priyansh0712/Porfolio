@@ -94,8 +94,8 @@ class BulkValidationServiceTest(OnboardingTestBase):
         )
 
         rows = [
-            (2, {'First Name': 'Valid', 'Last Name': 'User', 'Email': 'new@xavier.edu', 'Employee Code': 'FAC-001'}),
-            (3, {'First Name': '', 'Last Name': 'Invalid', 'Email': 'existing@xavier.edu', 'Employee Code': 'FAC-000'}),
+            (2, {'First Name': 'Valid', 'Last Name': 'User', 'Email': 'new@xavier.edu', 'Employee Code': 'FAC-001', 'Department': 'Mathematics'}),
+            (3, {'First Name': '', 'Last Name': 'Invalid', 'Email': 'existing@xavier.edu', 'Employee Code': 'FAC-000', 'Department': 'Mathematics'}),
         ]
 
         results = BulkValidationService.validate(self.school, 1, rows)
@@ -153,19 +153,47 @@ class BulkCommitServiceTest(OnboardingTestBase):
         self.assertEqual(count, 1)
         student = Student.objects.get(school=self.school, gr_number='GR-500')
         self.assertEqual(student.full_name, 'Sam Altman')
-        student_user = User.objects.get(username='GR-500')
-        self.assertTrue(student_user.check_password('Admin@123'))
+        self.assertIsNotNone(student.user)
+        self.assertTrue(student.user.check_password('Admin@123'))
+
+    def test_sibling_student_import_no_conflict(self):
+        """Step 4 should successfully import siblings sharing the same parent email."""
+        std = Standard.objects.create(school=self.school, name='Grade 10')
+        div = Division.objects.create(school=self.school, standard=std, name='A')
+
+        valid_rows = [
+            {
+                'row_index': 2,
+                'data': {'GR Number': 'GR-101', 'First Name': 'Aryan', 'Last Name': 'Shah', 'Standard Name': 'Grade 10', 'Division Name': 'A', 'Parent Email': 'shah.family@gmail.com'},
+                'status': 'VALID',
+                'errors': []
+            },
+            {
+                'row_index': 3,
+                'data': {'GR Number': 'GR-102', 'First Name': 'Ananya', 'Last Name': 'Shah', 'Standard Name': 'Grade 10', 'Division Name': 'A', 'Parent Email': 'shah.family@gmail.com'},
+                'status': 'VALID',
+                'errors': []
+            }
+        ]
+
+        count = BulkCommitService.commit_step_4_students(self.school, valid_rows)
+        self.assertEqual(count, 2)
+        s1 = Student.objects.get(school=self.school, gr_number='GR-101')
+        s2 = Student.objects.get(school=self.school, gr_number='GR-102')
+        self.assertIsNotNone(s1.user)
+        self.assertIsNotNone(s2.user)
 
 
 class OnboardingViewsTest(OnboardingTestBase):
     """Tests for onboarding views and AJAX endpoints."""
 
     def test_wizard_view_access(self):
-        """Wizard view should render for School Admin."""
+        """Wizard view should render for School Admin with dynamic step columns context."""
         self.client.force_login(self.admin_user)
         response = self.client.get(reverse('onboarding:wizard'), HTTP_HOST='xavier.localhost:8000')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'onboarding/wizard.html')
+        self.assertIn('step_columns_json', response.context)
 
     def test_sample_download_endpoint(self):
         """Sample download endpoint should return attachment response."""
@@ -216,3 +244,17 @@ class OnboardingViewsTest(OnboardingTestBase):
         self.assertEqual(response.status_code, 200)
         csv_content = response.content.decode('utf-8')
         self.assertIn('Qualification', csv_content)
+
+    def test_dynamic_form_config_student_template(self):
+        """Toggling student form field visibility in StudentFormFieldConfig should reflect in sample template."""
+        from apps.students.models import StudentFormFieldConfig
+        config = StudentFormFieldConfig.get_for_school(self.school)
+        config.show_dob = False
+        config.show_gender = False
+        config.save()
+
+        headers, _ = SampleTemplateService.get_template_headers_and_data(4, school=self.school)
+        self.assertNotIn('Date of Birth', headers)
+        self.assertNotIn('Gender', headers)
+        self.assertIn('GR Number', headers)
+        self.assertIn('First Name', headers)

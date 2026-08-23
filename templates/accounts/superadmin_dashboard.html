@@ -221,78 +221,94 @@
     {% for school in schools %}
     <div id="modal-features-{{ school.pk }}" 
       class="modal-dialog fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 hidden text-left"
-      style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); background: rgba(0, 0, 0, 0.45);"
+      style="backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); background: rgba(0, 0, 0, 0.4);"
       data-lenis-prevent
       onclick="if(event.target === this) closeModal('modal-features-{{ school.pk }}')">
       
       <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xl max-w-lg w-full flex flex-col overflow-hidden my-auto animate-scale-in"
-        style="max-height: 80vh;"
+        style="max-height: 85vh;"
         data-lenis-prevent>
         
         <!-- Header (Fixed top) -->
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0 bg-white">
+        <div class="px-6 py-4.5 border-b border-gray-100 flex items-center justify-between flex-shrink-0 bg-white">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-2xl bg-[#5A2132]/10 text-[#5A2132] font-bold text-base flex items-center justify-center border border-[#5A2132]/20 shadow-2xs">
               {{ school.name|first }}
             </div>
-            <div>
-              <h3 class="text-base font-bold text-[#1d1d1f] tracking-tight">Feature Management</h3>
-              <div class="flex items-center gap-2 mt-0.5">
-                <span class="text-xs font-semibold text-gray-700">{{ school.name }}</span>
-                <span class="font-mono text-[11px] bg-gray-100 text-[#5A2132] px-2 py-0.5 rounded-md border border-gray-200">
-                  {{ school.subdomain }}.ourapp.com
-                </span>
-              </div>
+            <div class="min-w-0">
+              <h3 class="text-sm font-bold text-[#1d1d1f] tracking-tight">Feature Modules</h3>
+              <p class="text-xs text-gray-500 truncate mt-0.5">{{ school.name }} • <span class="font-mono text-[#5A2132]">{{ school.subdomain }}.ourapp.com</span></p>
             </div>
           </div>
           <button onclick="closeModal('modal-features-{{ school.pk }}')" 
-            class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center text-sm font-bold transition-colors">
+            class="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-700 flex items-center justify-center text-xs font-bold transition-colors">
             ✕
           </button>
         </div>
 
-        <!-- Feature List Container (Scrollable middle with min-h-0) -->
-        <div class="flex-1 overflow-y-auto px-6 py-4 space-y-2.5 min-h-0" data-lenis-prevent style="overscroll-behavior: contain;">
-          {% for key, info in feature_catalog.items %}
-          {% with school_features=school_feature_map|get_item:school.pk %}
-          {% with is_on=school_features|get_item:key %}
-          
-          <div class="p-3.5 rounded-2xl border border-gray-200/80 bg-[#f9f9fb] hover:bg-white hover:shadow-xs transition-all flex items-center justify-between gap-4" id="feature-card-{{ school.pk }}-{{ key }}">
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2">
-                <p class="text-xs font-bold text-[#1d1d1f] tracking-tight">{{ info.label }}</p>
-                <span id="badge-{{ school.pk }}-{{ key }}" 
-                  class="px-2 py-0.5 text-[10px] font-bold rounded-full transition-colors {% if is_on %}text-emerald-700 bg-emerald-100 border border-emerald-200{% else %}text-gray-500 bg-gray-200 border border-gray-300/60{% endif %}">
-                  {% if is_on %}ACTIVE{% else %}DISABLED{% endif %}
-                </span>
+        <!-- Feature List (Single Grouped Inset Container - macOS Style) -->
+        <div class="flex-1 overflow-y-auto p-5 min-h-0" data-lenis-prevent style="overscroll-behavior: contain;">
+          <div class="bg-white rounded-2xl border border-gray-200/80 divide-y divide-gray-100 shadow-2xs overflow-hidden">
+            {% for key, info in feature_catalog.items %}
+            {% with school_features=school_feature_map|get_item:school.pk %}
+            {% with is_on=school_features|get_item:key %}
+            
+            <div class="px-4 py-3 flex items-center justify-between gap-3.5 hover:bg-gray-50/50 transition-colors" id="feature-card-{{ school.pk }}-{{ key }}">
+              <div class="flex items-center gap-3 min-w-0">
+                <!-- Sleek Minimalist Icon Box -->
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-2xs
+                  {% if key == 'faculty_attendance' %}bg-rose-50 text-[#5A2132] border border-rose-100
+                  {% elif key == 'faculty_leave' %}bg-emerald-50 text-emerald-700 border border-emerald-100
+                  {% elif key == 'reports' %}bg-blue-50 text-blue-700 border border-blue-100
+                  {% elif key == 'students' %}bg-purple-50 text-purple-700 border border-purple-100
+                  {% elif key == 'academics' %}bg-amber-50 text-amber-700 border border-amber-100
+                  {% else %}bg-rose-50 text-rose-700 border border-rose-100{% endif %}">
+                  {% if key == 'faculty_attendance' %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  {% elif key == 'faculty_leave' %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  {% elif key == 'reports' %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  {% elif key == 'students' %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
+                  {% elif key == 'academics' %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                  {% else %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4 5 5 0 016.924-4.485c.87.214 1.77.34 2.696.375 1.545.059 3.023-.393 4.25-1.258a1 1 0 011.238 1.564 8.002 8.002 0 01-4.838 1.804c-.754 0-1.488-.088-2.19-.255A3.992 3.992 0 017 21zm0 0a2 2 0 100-4 2 2 0 000 4z"/></svg>
+                  {% endif %}
+                </div>
+                
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold text-[#1D1D1F] truncate">{{ info.label }}</p>
+                  <p class="text-[11px] text-[#86868b] truncate mt-0.5">{{ info.description }}</p>
+                </div>
               </div>
-              <p class="text-[11px] text-gray-500 mt-1 leading-normal">{{ info.description }}</p>
+
+              <!-- Pure Apple iOS Switch (No noisy text badges) -->
+              <button type="button"
+                id="btn-toggle-{{ school.pk }}-{{ key }}"
+                data-school-id="{{ school.pk }}"
+                data-feature-key="{{ key }}"
+                data-enabled="{% if is_on %}true{% else %}false{% endif %}"
+                onclick="handleToggleClick(this)"
+                class="ios-switch-btn flex-shrink-0 {% if is_on %}is-active{% else %}is-disabled{% endif %}"
+                role="switch"
+                aria-checked="{% if is_on %}true{% else %}false{% endif %}">
+                <span class="ios-switch-knob"></span>
+              </button>
             </div>
 
-            <!-- Apple-Style Pure CSS iOS Switch -->
-            <button type="button"
-              id="btn-toggle-{{ school.pk }}-{{ key }}"
-              data-school-id="{{ school.pk }}"
-              data-feature-key="{{ key }}"
-              data-enabled="{% if is_on %}true{% else %}false{% endif %}"
-              onclick="handleToggleClick(this)"
-              class="ios-switch-btn {% if is_on %}is-active{% else %}is-disabled{% endif %}"
-              role="switch"
-              aria-checked="{% if is_on %}true{% else %}false{% endif %}">
-              <span class="ios-switch-knob"></span>
-            </button>
+            {% endwith %}
+            {% endwith %}
+            {% endfor %}
           </div>
-
-          {% endwith %}
-          {% endwith %}
-          {% endfor %}
         </div>
 
         <!-- Footer (Fixed bottom) -->
-        <div class="px-6 py-3.5 border-t border-gray-100 flex items-center justify-between flex-shrink-0 bg-gray-50/50">
+        <div class="px-6 py-3.5 border-t border-gray-100 flex items-center justify-between flex-shrink-0 bg-gray-50/60">
           <span class="text-[11px] text-gray-400 font-medium">Changes apply immediately to tenant portal.</span>
           <button type="button" onclick="closeModal('modal-features-{{ school.pk }}')" 
-            class="px-5 py-2 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 bg-white hover:bg-gray-100 shadow-2xs transition-colors">
+            class="px-4 py-1.5 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 bg-white hover:bg-gray-100 shadow-2xs transition-colors">
             Done
           </button>
         </div>

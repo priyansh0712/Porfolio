@@ -55,13 +55,14 @@ class TenantFeatureManagementTest(TestCase):
         )
 
     def test_default_features_enabled_for_existing_schools(self):
-        """Standard V1/V2 catalog features should default to True for schools."""
+        """Standard catalog features should default to True for schools."""
         features_a = FeatureService.get_school_features(self.school_a)
         self.assertTrue(features_a['faculty_attendance'])
         self.assertTrue(features_a['faculty_leave'])
         self.assertTrue(features_a['reports'])
-        self.assertTrue(features_a['notifications'])
-        self.assertFalse(features_a['student_attendance'])  # Future flag defaults to False
+        self.assertTrue(features_a['students'])
+        self.assertTrue(features_a['academics'])
+        self.assertTrue(features_a['school_branding'])
 
     def test_super_admin_can_toggle_feature(self):
         """Super Admin POST endpoint toggles a feature flag for a specific school."""
