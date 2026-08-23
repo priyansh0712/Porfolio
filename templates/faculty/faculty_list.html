@@ -455,25 +455,15 @@
 
     <div class="status-pills">
       <button class="status-pill active" data-filter="all" onclick="filterByStatus('all', this)">All</button>
-      <button class="status-pill" data-filter="active" onclick="filterByStatus('active', this)">Active <span style="font-size: 0.62rem; opacity: 0.7;">{{ active_count }}</span></button>
-      <button class="status-pill" data-filter="inactive" onclick="filterByStatus('inactive', this)">Inactive <span style="font-size: 0.62rem; opacity: 0.7;">{{ inactive_count }}</span></button>
-    </div>
-
-    <!-- View Switcher (Desktop Only: Table vs Digital ID Cards) -->
-    <div class="view-switcher-wrapper hidden md:flex items-center gap-1 bg-[var(--apple-canvas)] p-1 rounded-xl border border-[var(--apple-hairline)] ml-auto">
-      <button onclick="setDirectoryView('table')" id="view-btn-table" title="Table View" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-[var(--apple-ink)] shadow-sm border border-[var(--apple-hairline)] flex items-center gap-1.5 transition-all">
-        <span>📑</span> Table
-      </button>
-      <button onclick="setDirectoryView('cards')" id="view-btn-cards" title="Digital ID Cards View" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--apple-muted)] hover:text-[var(--apple-ink)] flex items-center gap-1.5 transition-all">
-        <span>🎴</span> ID Cards
-      </button>
+      <button class="status-pill" data-filter="active" onclick="filterByStatus('active', this)">Active <span class="ml-1 text-[11px] opacity-75">({{ active_count }})</span></button>
+      <button class="status-pill" data-filter="inactive" onclick="filterByStatus('inactive', this)">Inactive <span class="ml-1 text-[11px] opacity-75">({{ inactive_count }})</span></button>
     </div>
   </div>
 
   <!-- Digital ID Cards / Mobile Cards View (Single Clean List) -->
-  <div id="faculty-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-8">
+  <div id="faculty-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8 md:hidden">
     {% for faculty in faculty_list %}
-    <div class="apple-card faculty-card-item p-4 sm:p-5 flex flex-col justify-between hover:shadow-md transition-all duration-150 cursor-pointer group rounded-2xl border border-[var(--apple-hairline)] bg-white"
+    <div class="apple-card faculty-card-item p-4 sm:p-5 flex flex-col justify-between hover:shadow-sm hover:border-[#5A2132]/30 transition-all duration-150 cursor-pointer group rounded-2xl border border-[var(--apple-hairline)] bg-white"
          data-name="{{ faculty.full_name|lower }}"
          data-email="{{ faculty.email|lower }}"
          data-code="{{ faculty.employee_code|lower }}"
@@ -482,10 +472,10 @@
          onclick="openProfileModal({{ faculty.pk }})">
       <div>
         <!-- Top Row: [Initial] Faculty Name + email@school.edu ... View → -->
-        <div class="flex items-start justify-between gap-2.5 mb-2.5">
+        <div class="flex items-start justify-between gap-2.5">
           <div class="flex items-center gap-3 min-w-0">
             <div class="w-10 h-10 rounded-2xl bg-[#5A2132]/10 text-[#5A2132] font-bold text-xs flex items-center justify-center border border-[#5A2132]/20 flex-shrink-0">
-              {{ faculty.first_name.0 }}{{ faculty.last_name.0 }}
+              {{ faculty.first_name.0|upper }}{{ faculty.last_name.0|upper }}
             </div>
             <div class="min-w-0">
               <h3 class="text-sm font-bold text-[#1D1D1F] group-hover:text-[#5A2132] transition-colors truncate">{{ faculty.full_name }}</h3>
@@ -496,13 +486,11 @@
             <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#5A2132] bg-[#5A2132]/8 group-hover:bg-[#5A2132]/15 border border-[#5A2132]/20 rounded-full transition-colors">
               View &rarr;
             </span>
-            <!-- 44px hit-target expander -->
-            <span class="absolute -inset-2"></span>
           </div>
         </div>
 
         <!-- Middle: Department · Role & Employee Code -->
-        <div class="flex flex-wrap items-center justify-between gap-2 pt-3 mt-2 border-t border-gray-100 text-xs">
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-3 mt-3 border-t border-gray-100 text-xs">
           <div class="text-[#1D1D1F] font-medium truncate">
             <span>{{ faculty.department }}</span>
             <span class="text-gray-300 mx-1">·</span>
@@ -526,8 +514,6 @@
           <th>Faculty</th>
           <th>Employee Code</th>
           <th>Department & Designation</th>
-          <th>Status</th>
-          <th>Face ID</th>
           <th style="text-align: right;">Actions</th>
         </tr>
       </thead>
@@ -545,14 +531,18 @@
 
           <!-- Faculty Info -->
           <td>
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div class="faculty-avatar-circle"
-                   style="background: rgba(90, 33, 50, 0.08); color: #5A2132; border: 1px solid rgba(90, 33, 50, 0.15);">
-                {{ faculty.first_name.0 }}{{ faculty.last_name.0 }}
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-[#5A2132]/10 text-[#5A2132] font-bold text-xs flex items-center justify-center border border-[#5A2132]/20 flex-shrink-0 shadow-2xs">
+                {{ faculty.first_name.0|upper }}{{ faculty.last_name.0|upper }}
               </div>
-              <div>
-                <div style="font-weight: 600; font-size: 0.85rem; color: #1D1D1F; transition: color 0.15s;" class="hover:text-[#5A2132]">{{ faculty.full_name }}</div>
-                <div style="font-size: 0.72rem; color: #86868b; margin-top: 1px;">{{ faculty.email }}</div>
+              <div class="min-w-0">
+                <div class="font-semibold text-sm text-[#1D1D1F] hover:text-[#5A2132] transition-colors flex items-center gap-1.5">
+                  <span>{{ faculty.full_name }}</span>
+                  {% if not faculty.is_active %}
+                    <span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200/60">Inactive</span>
+                  {% endif %}
+                </div>
+                <div class="text-xs text-[#86868b] mt-0.5">{{ faculty.email }}</div>
               </div>
             </div>
           </td>
@@ -568,24 +558,6 @@
           <td>
             <div style="font-weight: 500; font-size: 0.82rem;">{{ faculty.department }}</div>
             <div style="font-size: 0.72rem; color: #86868b; margin-top: 1px;">{{ faculty.designation|default:"—" }}</div>
-          </td>
-
-          <!-- Active Status -->
-          <td>
-            {% if faculty.is_active %}
-              <span class="badge badge-active"><span class="badge-dot badge-dot-active"></span> Active</span>
-            {% else %}
-              <span class="badge badge-inactive"><span class="badge-dot badge-dot-inactive"></span> Inactive</span>
-            {% endif %}
-          </td>
-
-          <!-- Face Enrollment Status -->
-          <td>
-            {% if faculty.is_face_enrolled %}
-              <span class="badge badge-enrolled"><span class="badge-dot badge-dot-enrolled"></span> Enrolled</span>
-            {% else %}
-              <span class="badge badge-pending"><span class="badge-dot badge-dot-pending"></span> Pending</span>
-            {% endif %}
           </td>
 
           <!-- Actions -->
@@ -892,38 +864,6 @@
 
 {% block extra_js %}
 <script>
-// ── View Switcher (Table vs Digital ID Cards) ──
-function setDirectoryView(mode) {
-    const tableContainer = document.getElementById('faculty-table-container');
-    const cards = document.getElementById('faculty-cards-container');
-    const btnTable = document.getElementById('view-btn-table');
-    const btnCards = document.getElementById('view-btn-cards');
-
-    if (mode === 'cards') {
-        if (tableContainer) {
-            tableContainer.classList.add('hidden');
-            tableContainer.classList.remove('md:block');
-        }
-        if (cards) cards.classList.remove('hidden');
-        if (btnCards) btnCards.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-[var(--apple-ink)] shadow-sm border border-[var(--apple-hairline)] flex items-center gap-1.5 transition-all";
-        if (btnTable) btnTable.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--apple-muted)] hover:text-[var(--apple-ink)] flex items-center gap-1.5 transition-all";
-    } else {
-        if (tableContainer) {
-            tableContainer.classList.remove('hidden');
-            tableContainer.classList.add('md:block');
-        }
-        if (cards) {
-            if (window.innerWidth >= 768) {
-                cards.classList.add('hidden');
-            } else {
-                cards.classList.remove('hidden');
-            }
-        }
-        if (btnTable) btnTable.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-[var(--apple-ink)] shadow-sm border border-[var(--apple-hairline)] flex items-center gap-1.5 transition-all";
-        if (btnCards) btnCards.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--apple-muted)] hover:text-[var(--apple-ink)] flex items-center gap-1.5 transition-all";
-    }
-}
-
 // ── Modal Management ──
 let currentMode = 'create';
 let currentEditId = null;
