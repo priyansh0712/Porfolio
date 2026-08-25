@@ -144,9 +144,42 @@ class MySubjectsView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        curr_ay = AcademicYear.objects.filter(school=self.request.tenant, is_current=True).first()
+        tenant = self.request.tenant
+        curr_ay = AcademicYear.objects.filter(school=tenant, is_current=True).first()
         context['academic_year'] = curr_ay
 
+        allocations = list(self.get_queryset())
+        
+        # Calculate student count for each allocation for selector tabs
+        allocations_list = []
+        for alloc in allocations:
+            count = Student.objects.filter(
+                school=tenant,
+                academic_year=curr_ay,
+                division=alloc.division,
+                is_active=True
+            ).count()
+            allocations_list.append({
+                'allocation': alloc,
+                'count': count,
+            })
+        context['allocations_list'] = allocations_list
+
+        # Determine active / selected allocation
+        selected_alloc_id = self.request.GET.get('subject')
+        selected_item = None
+        if selected_alloc_id:
+            for item in allocations_list:
+                if str(item['allocation'].pk) == str(selected_alloc_id):
+                    selected_item = item
+                    break
+
+        if not selected_item and allocations_list:
+            selected_item = allocations_list[0]
+
+        context['selected_item'] = selected_item
+
+        # Paginate student roster for the selected subject/class
         from django.core.paginator import Paginator
         per_page_param = self.request.GET.get('per_page', '10')
         try:
@@ -158,11 +191,10 @@ class MySubjectsView(LoginRequiredMixin, ListView):
         context['search'] = search_q
         context['per_page'] = per_page_param
 
-        allocations = self.get_queryset()
-        subject_rosters = []
-        for alloc in allocations:
+        if selected_item:
+            alloc = selected_item['allocation']
             roster_qs = Student.objects.filter(
-                school=self.request.tenant,
+                school=tenant,
                 academic_year=curr_ay,
                 division=alloc.division,
                 is_active=True
@@ -179,17 +211,27 @@ class MySubjectsView(LoginRequiredMixin, ListView):
 
             total_count = roster_qs.count()
             paginator = Paginator(roster_qs, per_page_val if per_page_val > 0 else 10)
-            page_num = self.request.GET.get(f'page_{alloc.pk}', self.request.GET.get('page', 1))
+            page_num = self.request.GET.get('page', 1)
             page_obj = paginator.get_page(page_num)
 
-            subject_rosters.append({
-                'allocation': alloc,
-                'students': page_obj,
-                'page_obj': page_obj,
-                'count': total_count,
-            })
+            context['students'] = page_obj
+            context['page_obj'] = page_obj
+            context['total_count'] = total_count
+        else:
+            context['students'] = []
+            context['page_obj'] = None
+            context['total_count'] = 0
 
-        context['subject_rosters'] = subject_rosters
+        # Backwards-compatibility for existing tests/templates
+        context['subject_rosters'] = [
+            {
+                'allocation': selected_item['allocation'],
+                'students': context['students'],
+                'page_obj': context['page_obj'],
+                'count': selected_item['count'],
+            }
+        ] if selected_item else []
+
         return context
 
 

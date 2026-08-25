@@ -61,20 +61,26 @@
                     <p class="text-xs text-[#86868b] mt-0.5">Students enrolled in {{ allocation.division.standard.name }} {{ allocation.division.name }}.</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <!-- Search Input -->
-                    <form method="GET" action="{% url 'faculty:my_class' %}" class="relative min-w-[220px]">
-                        <div style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #9ca3af; display: flex; align-items: center;">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
-                        </div>
+                    <!-- Search Input with Embedded Circular Search Button -->
+                    <form method="GET" action="{% url 'faculty:my_class' %}"
+                        style="height: 36px; min-width: 240px; padding: 3px 4px 3px 14px; border-radius: 9999px; display: flex; align-items: center; gap: 6px;"
+                        class="bg-white border border-gray-300 focus-within:border-[#0066cc] focus-within:ring-2 focus-within:ring-[#0066cc]/20 transition-all shadow-2xs">
                         <input type="text" name="q" value="{{ search }}" placeholder="Search students..." autocomplete="off"
-                            style="padding-left: 32px !important; padding-right: 28px !important;"
-                            class="w-full py-1.5 text-xs rounded-xl border border-gray-200 focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc]/20 bg-gray-50 focus:bg-white text-[#1D1D1F] placeholder:text-gray-400 transition-all h-[34px]">
+                            style="border: none !important; outline: none !important; background: transparent !important; padding: 0 !important; box-shadow: none !important;"
+                            class="flex-1 min-w-0 text-xs text-[#1D1D1F] placeholder:text-gray-400">
                         {% if search %}
                         <a href="{% url 'faculty:my_class' %}"
-                            style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); text-decoration: none;"
-                            class="w-4 h-4 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-[9px] font-bold text-gray-600"
+                            class="w-4 h-4 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-[9px] font-bold text-gray-600 flex-shrink-0 transition-colors"
                             title="Clear search">✕</a>
                         {% endif %}
+                        <button type="submit"
+                            style="width: 28px; height: 28px; border-radius: 9999px; background-color: #0066cc; border: none; display: flex; align-items: center; justify-content: center; color: #ffffff; flex-shrink: 0; cursor: pointer;"
+                            class="hover:bg-[#0071e3] transition-all hover:scale-105 active:scale-95 shadow-2xs"
+                            title="Search">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+                            </svg>
+                        </button>
                         <input type="hidden" name="per_page" value="{{ per_page|default:'10' }}">
                     </form>
 
