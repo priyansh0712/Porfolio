@@ -6,6 +6,12 @@
         <table class="w-full text-sm">
             <thead>
                 <tr class="bg-gray-50/75 border-b border-gray-200/70">
+                    <!-- Checkbox Column for Select Mode -->
+                    <th class="student-select-col w-12 px-3 py-3 text-center transition-all duration-200" style="display: none;">
+                        <input type="checkbox" id="student-select-all-cb" onchange="toggleSelectAllStudents(this)"
+                            class="w-4 h-4 rounded-md border-gray-300 text-[#0066cc] focus:ring-[#0066cc] cursor-pointer"
+                            title="Select All Students on Page">
+                    </th>
                     <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Student</th>
                     <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Class / Grade</th>
                     <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Roll No</th>
@@ -13,29 +19,19 @@
                     <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Action</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody class="divide-y divide-gray-100" id="students-table-body">
                 {% for student in students %}
-                <tr class="hover:bg-gray-50/70 transition-colors group {% if can_edit_students %}cursor-pointer{% endif %}"
+                <tr id="student-row-{{ student.pk }}" class="hover:bg-gray-50/70 transition-colors group {% if can_edit_students %}cursor-pointer{% endif %}"
                     {% if can_edit_students %}
-                    onclick="openEditStudentModal(
-                        {{ student.pk }},
-                        '{{ student.full_name|escapejs }}',
-                        '{{ student.gr_number|escapejs }}',
-                        '{{ student.roll_number|default:'' }}',
-                        '{{ student.gender }}',
-                        '{{ student.blood_group }}',
-                        '{{ student.dob|date:'Y-m-d'|default:'' }}',
-                        '{{ student.standard.pk }}',
-                        '{{ student.division.pk }}',
-                        '{{ student.admission_date|date:'Y-m-d'|default:'' }}',
-                        '{{ student.guardian_name|escapejs }}',
-                        '{{ student.guardian_phone|escapejs }}',
-                        '{{ student.emergency_contact|escapejs }}',
-                        '{{ student.address|escapejs }}',
-                        '{{ student.custom_fields_json|escapejs }}',
-                        {{ student.is_active|yesno:"true,false" }}
-                    )"
+                    onclick="handleStudentRowClick(event, {{ student.pk }}, '{{ student.full_name|escapejs }}', '{{ student.gr_number|escapejs }}', '{{ student.roll_number|default:'' }}', '{{ student.gender }}', '{{ student.blood_group }}', '{{ student.dob|date:'Y-m-d'|default:'' }}', '{{ student.standard.pk }}', '{{ student.division.pk }}', '{{ student.admission_date|date:'Y-m-d'|default:'' }}', '{{ student.guardian_name|escapejs }}', '{{ student.guardian_phone|escapejs }}', '{{ student.emergency_contact|escapejs }}', '{{ student.address|escapejs }}', '{{ student.custom_fields_json|escapejs }}', {{ student.is_active|yesno:'true,false' }})"
                     {% endif %}>
+                    
+                    <!-- Row Checkbox (Hidden until Select Mode is activated) -->
+                    <td class="student-select-col w-12 px-3 py-3 text-center transition-all duration-200" style="display: none;" onclick="event.stopPropagation()">
+                        <input type="checkbox" value="{{ student.pk }}" data-student-name="{{ student.full_name }}" data-is-active="{{ student.is_active|yesno:'true,false' }}" onchange="handleStudentRowCheck(this, event)"
+                            class="student-row-cb w-4 h-4 rounded-md border-gray-300 text-[#0066cc] focus:ring-[#0066cc] cursor-pointer">
+                    </td>
+
                     <!-- Avatar + Name -->
                     <td class="px-4 py-3">
                         <div class="flex items-center gap-3">
@@ -121,29 +117,18 @@
     <!-- Mobile Card List View (< 768px) -->
     <div class="block md:hidden divide-y divide-gray-100">
         {% for student in students %}
-        <div class="p-3.5 hover:bg-gray-50/70 transition-colors {% if can_edit_students %}cursor-pointer{% endif %}"
+        <div id="student-card-{{ student.pk }}" class="p-3.5 hover:bg-gray-50/70 transition-colors {% if can_edit_students %}cursor-pointer{% endif %}"
             {% if can_edit_students %}
-            onclick="openEditStudentModal(
-                {{ student.pk }},
-                '{{ student.full_name|escapejs }}',
-                '{{ student.gr_number|escapejs }}',
-                '{{ student.roll_number|default:'' }}',
-                '{{ student.gender }}',
-                '{{ student.blood_group }}',
-                '{{ student.dob|date:'Y-m-d'|default:'' }}',
-                '{{ student.standard.pk }}',
-                '{{ student.division.pk }}',
-                '{{ student.admission_date|date:'Y-m-d'|default:'' }}',
-                '{{ student.guardian_name|escapejs }}',
-                '{{ student.guardian_phone|escapejs }}',
-                '{{ student.emergency_contact|escapejs }}',
-                '{{ student.address|escapejs }}',
-                '{{ student.custom_fields_json|escapejs }}',
-                {{ student.is_active|yesno:"true,false" }}
-            )"
+            onclick="handleStudentRowClick(event, {{ student.pk }}, '{{ student.full_name|escapejs }}', '{{ student.gr_number|escapejs }}', '{{ student.roll_number|default:'' }}', '{{ student.gender }}', '{{ student.blood_group }}', '{{ student.dob|date:'Y-m-d'|default:'' }}', '{{ student.standard.pk }}', '{{ student.division.pk }}', '{{ student.admission_date|date:'Y-m-d'|default:'' }}', '{{ student.guardian_name|escapejs }}', '{{ student.guardian_phone|escapejs }}', '{{ student.emergency_contact|escapejs }}', '{{ student.address|escapejs }}', '{{ student.custom_fields_json|escapejs }}', {{ student.is_active|yesno:'true,false' }})"
             {% endif %}>
             <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3 min-w-0">
+                    <!-- Mobile Checkbox for Select Mode -->
+                    <div class="student-select-col flex-shrink-0 transition-all duration-200" style="display: none;" onclick="event.stopPropagation()">
+                        <input type="checkbox" value="{{ student.pk }}" data-student-name="{{ student.full_name }}" data-is-active="{{ student.is_active|yesno:'true,false' }}" onchange="handleStudentRowCheck(this, event)"
+                            class="student-row-cb w-4 h-4 rounded-md border-gray-300 text-[#0066cc] focus:ring-[#0066cc] cursor-pointer">
+                    </div>
+
                     <!-- Avatar -->
                     <div class="w-10 h-10 rounded-full bg-[#0066cc]/8 text-[#0066cc] border border-[#0066cc]/20 flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-2xs">
                         {{ student.initials }}

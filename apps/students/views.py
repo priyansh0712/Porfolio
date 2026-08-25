@@ -421,6 +421,113 @@ class StudentRestoreView(SchoolAdminRequiredMixin, View):
         return redirect('/students/')
 
 
+class StudentBulkDeactivateView(SchoolStaffRequiredMixin, View):
+    """
+    POST: Bulk soft-deactivate selected students.
+    - School Admin can bulk deactivate any student in school.
+    - Class Teacher can bulk deactivate only students in their assigned class.
+    """
+
+    def post(self, request):
+        tenant = request.tenant
+        user = request.user
+        is_admin = user.role == User.Role.SCHOOL_ADMIN
+
+        raw_items = request.POST.getlist('student_ids')
+        student_ids = []
+        for item in raw_items:
+            for part in str(item).split(','):
+                part = part.strip()
+                if part.isdigit():
+                    student_ids.append(int(part))
+
+        if not student_ids:
+            messages.warning(request, 'No students selected for deactivation.')
+            return redirect('/students/')
+
+        # Scoped permission check for Class Teacher
+        if not is_admin:
+            academic_year = AcademicService.get_current_academic_year(tenant)
+            ct_division = _get_class_teacher_division(user, tenant, academic_year)
+            if ct_division is None:
+                return HttpResponseForbidden('Access denied: Only Class Teachers and School Administrators can deactivate students.')
+            
+            # Check if all student_ids belong to the class teacher's division
+            valid_ids = set(Student.objects.filter(school=tenant, division=ct_division, pk__in=student_ids).values_list('pk', flat=True))
+            if len(valid_ids) != len(student_ids):
+                return HttpResponseForbidden('Access denied: You can only deactivate students from your assigned class.')
+
+        count = StudentService.bulk_soft_delete_students(student_ids, school=tenant)
+        messages.success(request, f"Successfully deactivated {count} student{'s' if count != 1 else ''}.")
+        return redirect('/students/')
+
+
+class StudentBulkDeleteView(SchoolAdminRequiredMixin, View):
+    """
+    POST: Permanently delete selected students and their accounts.
+    Strictly School Admin only.
+    """
+
+    def post(self, request):
+        tenant = request.tenant
+
+        raw_items = request.POST.getlist('student_ids')
+        student_ids = []
+        for item in raw_items:
+            for part in str(item).split(','):
+                part = part.strip()
+                if part.isdigit():
+                    student_ids.append(int(part))
+
+        if not student_ids:
+            messages.warning(request, 'No students selected for permanent deletion.')
+            return redirect('/students/')
+
+        count = StudentService.bulk_hard_delete_students(student_ids, school=tenant)
+        messages.success(request, f"Permanently deleted {count} student{'s' if count != 1 else ''}.")
+        return redirect('/students/')
+
+
+class StudentBulkRestoreView(SchoolStaffRequiredMixin, View):
+    """
+    POST: Bulk reactivate / restore soft-deleted students.
+    - School Admin can bulk restore any student in school.
+    - Class Teacher can bulk restore only students in their assigned class.
+    """
+
+    def post(self, request):
+        tenant = request.tenant
+        user = request.user
+        is_admin = user.role == User.Role.SCHOOL_ADMIN
+
+        raw_items = request.POST.getlist('student_ids')
+        student_ids = []
+        for item in raw_items:
+            for part in str(item).split(','):
+                part = part.strip()
+                if part.isdigit():
+                    student_ids.append(int(part))
+
+        if not student_ids:
+            messages.warning(request, 'No students selected for reactivation.')
+            return redirect('/students/?status=inactive')
+
+        # Scoped permission check for Class Teacher
+        if not is_admin:
+            academic_year = AcademicService.get_current_academic_year(tenant)
+            ct_division = _get_class_teacher_division(user, tenant, academic_year)
+            if ct_division is None:
+                return HttpResponseForbidden('Access denied: Only Class Teachers and School Administrators can activate students.')
+
+            valid_ids = set(Student.objects.filter(school=tenant, division=ct_division, pk__in=student_ids).values_list('pk', flat=True))
+            if len(valid_ids) != len(student_ids):
+                return HttpResponseForbidden('Access denied: You can only activate students from your assigned class.')
+
+        count = StudentService.bulk_restore_students(student_ids, school=tenant)
+        messages.success(request, f"Successfully activated {count} student{'s' if count != 1 else ''}.")
+        return redirect('/students/?status=active')
+
+
 # ---------------------------------------------------------------------------
 # Transfer Request Views
 # ---------------------------------------------------------------------------

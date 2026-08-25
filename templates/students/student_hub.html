@@ -19,22 +19,26 @@
             </div>
 
             {% if academic_year %}
-            <div class="flex items-center gap-2 self-start">
-                {% if is_admin %}
-                <button onclick="openAddStudentModal()"
-                    class="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full px-4 py-2.5 transition-all shadow-sm">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+            <div class="flex items-center gap-2.5 self-start">
+                {% if can_edit_students %}
+                <!-- Select Mode Toggle Button (Secondary Action) -->
+                <button type="button" id="toggle-select-mode-btn" onclick="toggleStudentSelectionMode()"
+                    class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1d1d1f] bg-white hover:bg-gray-50 border border-gray-300 rounded-full px-4 py-2.5 transition-all shadow-xs cursor-pointer">
+                    <svg id="toggle-select-mode-icon" class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect width="18" height="18" x="3" y="3" rx="4" stroke-width="2"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 12 2 2 4-4"/>
                     </svg>
-                    Add Student
+                    <span id="toggle-select-mode-text">Select</span>
                 </button>
-                {% elif ct_division %}
+                {% endif %}
+
+                {% if is_admin or ct_division %}
                 <button onclick="openAddStudentModal()"
-                    class="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full px-4 py-2.5 transition-all shadow-sm">
+                    class="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-[#0066cc] hover:bg-[#0071e3] rounded-full px-4 py-2.5 transition-all shadow-sm cursor-pointer">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                     </svg>
-                    Add Student
+                    <span>Add Student</span>
                 </button>
                 {% endif %}
             </div>
@@ -47,9 +51,6 @@
                     href="{% url 'academics:hub' %}" class="underline text-[#0066cc]">Academic Management</a>.</p>
         </div>
         {% else %}
-
-        <!-- Alerts -->
-        {% include "components/alerts.html" %}
 
         {% if is_subject_teacher %}
         <div
@@ -283,6 +284,226 @@
         openTransferModal(student.pk, student.fullName);
     }
 
+    // ── Student Selection Mode & Bulk Actions ───────────────────────────────────
+    let isStudentSelectionMode = false;
+    let selectedStudentIds = new Set();
+
+    function toggleStudentSelectionMode() {
+        if (isStudentSelectionMode) {
+            exitStudentSelectionMode();
+        } else {
+            enterStudentSelectionMode();
+        }
+    }
+
+    function enterStudentSelectionMode() {
+        isStudentSelectionMode = true;
+        const btn = document.getElementById('toggle-select-mode-btn');
+        const btnText = document.getElementById('toggle-select-mode-text');
+        const btnIcon = document.getElementById('toggle-select-mode-icon');
+        if (btn) {
+            btn.style.setProperty('background-color', '#1d1d1f', 'important');
+            btn.style.setProperty('color', '#ffffff', 'important');
+            btn.style.setProperty('border-color', '#1d1d1f', 'important');
+        }
+        if (btnIcon) {
+            btnIcon.style.setProperty('color', '#ffffff', 'important');
+        }
+        if (btnText) {
+            btnText.style.setProperty('color', '#ffffff', 'important');
+            btnText.textContent = 'Cancel Selection';
+        }
+
+        // Reveal checkbox columns in table and mobile cards
+        document.querySelectorAll('.student-select-col').forEach(el => {
+            el.style.display = '';
+        });
+
+        updateBulkActionBar();
+    }
+
+    function exitStudentSelectionMode() {
+        isStudentSelectionMode = false;
+        selectedStudentIds.clear();
+
+        const btn = document.getElementById('toggle-select-mode-btn');
+        const btnText = document.getElementById('toggle-select-mode-text');
+        const btnIcon = document.getElementById('toggle-select-mode-icon');
+        if (btn) {
+            btn.style.setProperty('background-color', '#ffffff', 'important');
+            btn.style.setProperty('color', '#1d1d1f', 'important');
+            btn.style.setProperty('border-color', '#d1d5db', 'important');
+        }
+        if (btnIcon) {
+            btnIcon.style.setProperty('color', '#6b7280', 'important');
+        }
+        if (btnText) {
+            btnText.style.setProperty('color', '#1d1d1f', 'important');
+            btnText.textContent = 'Select';
+        }
+
+        // Uncheck all checkboxes
+        document.querySelectorAll('.student-row-cb, #student-select-all-cb').forEach(cb => {
+            cb.checked = false;
+            cb.indeterminate = false;
+        });
+
+        // Remove row selection highlighting
+        document.querySelectorAll('#students-table-body tr, [id^="student-card-"]').forEach(row => {
+            row.classList.remove('bg-[#0066cc]/5');
+        });
+
+        // Hide checkbox columns
+        document.querySelectorAll('.student-select-col').forEach(el => {
+            el.style.display = 'none';
+        });
+
+        updateBulkActionBar();
+    }
+
+    function handleStudentRowClick(e, pk, fullName, grNumber, rollNumber, gender, bloodGroup, dob, standardId, divisionId, admissionDate, guardianName, guardianPhone, emergencyContact, address, customFieldsJson, isActive) {
+        if (isStudentSelectionMode) {
+            // Toggle selection checkbox for this row
+            const rowCb = document.querySelector(`.student-row-cb[value="${pk}"]`);
+            if (rowCb) {
+                rowCb.checked = !rowCb.checked;
+                handleStudentRowCheck(rowCb, e);
+            }
+            return;
+        }
+        // Normal edit modal open
+        openEditStudentModal(pk, fullName, grNumber, rollNumber, gender, bloodGroup, dob, standardId, divisionId, admissionDate, guardianName, guardianPhone, emergencyContact, address, customFieldsJson, isActive);
+    }
+
+    function handleStudentRowCheck(cb, event) {
+        if (event) event.stopPropagation();
+        const pk = parseInt(cb.value);
+        if (cb.checked) {
+            selectedStudentIds.add(pk);
+        } else {
+            selectedStudentIds.delete(pk);
+        }
+
+        // Update row visual highlight
+        const desktopRow = document.getElementById(`student-row-${pk}`);
+        const mobileCard = document.getElementById(`student-card-${pk}`);
+        if (cb.checked) {
+            if (desktopRow) desktopRow.classList.add('bg-[#0066cc]/5');
+            if (mobileCard) mobileCard.classList.add('bg-[#0066cc]/5');
+        } else {
+            if (desktopRow) desktopRow.classList.remove('bg-[#0066cc]/5');
+            if (mobileCard) mobileCard.classList.remove('bg-[#0066cc]/5');
+        }
+
+        // Sync master select-all checkbox state
+        const allRowCbs = document.querySelectorAll('.student-row-cb');
+        const masterCb = document.getElementById('student-select-all-cb');
+        if (masterCb && allRowCbs.length > 0) {
+            masterCb.checked = (selectedStudentIds.size === allRowCbs.length);
+            masterCb.indeterminate = (selectedStudentIds.size > 0 && selectedStudentIds.size < allRowCbs.length);
+        }
+
+        updateBulkActionBar();
+    }
+
+    function toggleSelectAllStudents(masterCb) {
+        const allRowCbs = document.querySelectorAll('.student-row-cb');
+        allRowCbs.forEach(cb => {
+            cb.checked = masterCb.checked;
+            const pk = parseInt(cb.value);
+            const desktopRow = document.getElementById(`student-row-${pk}`);
+            const mobileCard = document.getElementById(`student-card-${pk}`);
+            if (masterCb.checked) {
+                selectedStudentIds.add(pk);
+                if (desktopRow) desktopRow.classList.add('bg-[#0066cc]/5');
+                if (mobileCard) mobileCard.classList.add('bg-[#0066cc]/5');
+            } else {
+                selectedStudentIds.delete(pk);
+                if (desktopRow) desktopRow.classList.remove('bg-[#0066cc]/5');
+                if (mobileCard) mobileCard.classList.remove('bg-[#0066cc]/5');
+            }
+        });
+        updateBulkActionBar();
+    }
+
+    function updateBulkActionBar() {
+        const bar = document.getElementById('student-bulk-action-bar');
+        const countLabel = document.getElementById('bulk-selected-count-label');
+        const btnRestore = document.getElementById('bulk-btn-restore');
+        const btnDeactivate = document.getElementById('bulk-btn-deactivate');
+        if (!bar) return;
+
+        const count = selectedStudentIds.size;
+        if (isStudentSelectionMode && count > 0) {
+            if (countLabel) countLabel.textContent = `${count} selected`;
+            bar.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+            bar.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+
+            // Detect if selected students are inactive or current filter is inactive
+            const statusFilter = document.getElementById('student-filter-form')?.querySelector('[name="status"]')?.value;
+            
+            let activeCount = 0;
+            let inactiveCount = 0;
+            selectedStudentIds.forEach(id => {
+                const cb = document.querySelector(`.student-row-cb[value="${id}"]`);
+                if (cb) {
+                    if (cb.getAttribute('data-is-active') === 'false') {
+                        inactiveCount++;
+                    } else if (cb.getAttribute('data-is-active') === 'true') {
+                        activeCount++;
+                    }
+                }
+            });
+
+            if (statusFilter === 'inactive' || (inactiveCount > 0 && activeCount === 0)) {
+                // Selected students are inactive -> Show Activate button
+                if (btnRestore) btnRestore.style.display = 'inline-flex';
+                if (btnDeactivate) btnDeactivate.style.display = 'none';
+            } else if (activeCount > 0 && inactiveCount === 0) {
+                // Selected students are active -> Show Deactivate button
+                if (btnRestore) btnRestore.style.display = 'none';
+                if (btnDeactivate) btnDeactivate.style.display = 'inline-flex';
+            } else {
+                // Mixed selection -> Show both
+                if (btnRestore) btnRestore.style.display = 'inline-flex';
+                if (btnDeactivate) btnDeactivate.style.display = 'inline-flex';
+            }
+        } else {
+            bar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+            bar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+        }
+    }
+
+    function openBulkRestoreModal() {
+        const count = selectedStudentIds.size;
+        if (count === 0) return;
+        const countText = document.getElementById('bulk-restore-count-text');
+        if (countText) countText.textContent = `${count} student${count > 1 ? 's' : ''}`;
+        const idsInput = document.getElementById('bulk-restore-ids-input');
+        if (idsInput) idsInput.value = Array.from(selectedStudentIds).join(',');
+        openModal('modal-bulk-restore');
+    }
+
+    function openBulkDeactivateModal() {
+        const count = selectedStudentIds.size;
+        if (count === 0) return;
+        const countText = document.getElementById('bulk-deactivate-count-text');
+        if (countText) countText.textContent = `${count} student${count > 1 ? 's' : ''}`;
+        const idsInput = document.getElementById('bulk-deactivate-ids-input');
+        if (idsInput) idsInput.value = Array.from(selectedStudentIds).join(',');
+        openModal('modal-bulk-deactivate');
+    }
+
+    function openBulkDeleteModal() {
+        const count = selectedStudentIds.size;
+        if (count === 0) return;
+        const countText = document.getElementById('bulk-delete-count-text');
+        if (countText) countText.textContent = `${count} student${count > 1 ? 's' : ''}`;
+        const idsInput = document.getElementById('bulk-delete-ids-input');
+        if (idsInput) idsInput.value = Array.from(selectedStudentIds).join(',');
+        openModal('modal-bulk-delete');
+    }
+
     // ── Delete Student confirm modal ─────────────────────────────────────────────
     function openDeleteStudentModal(pk, name) {
         document.getElementById('delete-student-name').textContent = name;
@@ -487,6 +708,28 @@
                 const container = document.getElementById('students-table-container');
                 if (container) {
                     container.innerHTML = html;
+                }
+                // If selection mode is active, reveal checkboxes and restore checked states
+                if (isStudentSelectionMode) {
+                    document.querySelectorAll('.student-select-col').forEach(el => {
+                        el.style.display = '';
+                    });
+                    document.querySelectorAll('.student-row-cb').forEach(cb => {
+                        const pk = parseInt(cb.value);
+                        if (selectedStudentIds.has(pk)) {
+                            cb.checked = true;
+                            const desktopRow = document.getElementById(`student-row-${pk}`);
+                            const mobileCard = document.getElementById(`student-card-${pk}`);
+                            if (desktopRow) desktopRow.classList.add('bg-[#0066cc]/5');
+                            if (mobileCard) mobileCard.classList.add('bg-[#0066cc]/5');
+                        }
+                    });
+                    const allRowCbs = document.querySelectorAll('.student-row-cb');
+                    const masterCb = document.getElementById('student-select-all-cb');
+                    if (masterCb && allRowCbs.length > 0) {
+                        masterCb.checked = (selectedStudentIds.size === allRowCbs.length);
+                        masterCb.indeterminate = (selectedStudentIds.size > 0 && selectedStudentIds.size < allRowCbs.length);
+                    }
                 }
             })
             .catch(err => {

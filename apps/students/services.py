@@ -155,6 +155,85 @@ class StudentService:
 
     @staticmethod
     @transaction.atomic
+    def bulk_soft_delete_students(student_ids, school):
+        """
+        Bulk soft-deactivate students for a school. Sets is_active=False and deactivates linked users.
+
+        Args:
+            student_ids: List or QuerySet of student primary keys.
+            school: Tenant school instance for security scoping.
+
+        Returns:
+            int: Number of students deactivated.
+        """
+        from apps.students.models import Student
+        students = list(Student.objects.filter(school=school, pk__in=student_ids))
+        if not students:
+            return 0
+
+        user_ids = [s.user_id for s in students if s.user_id]
+
+        # Update students
+        Student.objects.filter(school=school, pk__in=[s.pk for s in students]).update(
+            is_active=False,
+            updated_at=timezone.now()
+        )
+
+        # Deactivate associated users
+        if user_ids:
+            from apps.accounts.models import User
+            User.objects.filter(school=school, pk__in=user_ids).update(is_active=False)
+
+        return len(students)
+
+    @staticmethod
+    @transaction.atomic
+    def hard_delete_student(student):
+        """
+        Permanently delete a student and their associated user account.
+
+        Args:
+            student: Student instance to permanently delete.
+        """
+        user = student.user
+        student.delete()
+        if user and user.role == User.Role.STUDENT:
+            user.delete()
+
+    @staticmethod
+    @transaction.atomic
+    def bulk_hard_delete_students(student_ids, school):
+        """
+        Permanently delete students and their associated user accounts.
+
+        Args:
+            student_ids: List or QuerySet of student primary keys.
+            school: Tenant school instance for security scoping.
+
+        Returns:
+            int: Number of students permanently deleted.
+        """
+        from apps.students.models import Student
+        from apps.accounts.models import User
+
+        students = list(Student.objects.filter(school=school, pk__in=student_ids))
+        if not students:
+            return 0
+
+        user_ids = [s.user_id for s in students if s.user_id]
+        pks = [s.pk for s in students]
+
+        # Delete students first
+        Student.objects.filter(school=school, pk__in=pks).delete()
+
+        # Delete associated student user accounts
+        if user_ids:
+            User.objects.filter(school=school, pk__in=user_ids, role=User.Role.STUDENT).delete()
+
+        return len(students)
+
+    @staticmethod
+    @transaction.atomic
     def restore_student(student):
         """Reactivate a soft-deleted student and restore their user account."""
         student.is_active = True
@@ -163,6 +242,41 @@ class StudentService:
         if student.user:
             student.user.is_active = True
             student.user.save(update_fields=['is_active'])
+
+    @staticmethod
+    @transaction.atomic
+    def bulk_restore_students(student_ids, school):
+        """
+        Bulk reactivate soft-deleted students and restore their user accounts.
+
+        Args:
+            student_ids: List or QuerySet of student primary keys.
+            school: Tenant school instance for security scoping.
+
+        Returns:
+            int: Number of students reactivated.
+        """
+        from apps.students.models import Student
+        from apps.accounts.models import User
+
+        students = list(Student.objects.filter(school=school, pk__in=student_ids))
+        if not students:
+            return 0
+
+        user_ids = [s.user_id for s in students if s.user_id]
+        pks = [s.pk for s in students]
+
+        # Reactivate students
+        Student.objects.filter(school=school, pk__in=pks).update(
+            is_active=True,
+            updated_at=timezone.now()
+        )
+
+        # Reactivate associated user accounts
+        if user_ids:
+            User.objects.filter(school=school, pk__in=user_ids).update(is_active=True)
+
+        return len(students)
 
     @staticmethod
     @transaction.atomic

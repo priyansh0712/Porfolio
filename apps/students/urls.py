@@ -12,6 +12,9 @@ urlpatterns = [
     path('<int:pk>/edit/', views.StudentUpdateView.as_view(), name='update'),
     path('<int:pk>/delete/', views.StudentDeleteView.as_view(), name='delete'),
     path('<int:pk>/restore/', views.StudentRestoreView.as_view(), name='restore'),
+    path('bulk-deactivate/', views.StudentBulkDeactivateView.as_view(), name='bulk_deactivate'),
+    path('bulk-delete/', views.StudentBulkDeleteView.as_view(), name='bulk_delete'),
+    path('bulk-restore/', views.StudentBulkRestoreView.as_view(), name='bulk_restore'),
 
     # Transfer request workflow
     path('<int:pk>/transfer/', views.TransferRequestCreateView.as_view(), name='transfer_create'),

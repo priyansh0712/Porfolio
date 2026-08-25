@@ -510,6 +510,86 @@
 </div>
 
 
+{# ── 4A. BULK DEACTIVATE STUDENTS MODAL ────────────────────────────────────── #}
+<div id="modal-bulk-deactivate" class="modal-dialog hidden fixed inset-0 z-50 items-center justify-center p-4" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.45);" data-lenis-prevent>
+    <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xl max-w-sm w-full p-6 text-center my-auto animate-scale-in" data-lenis-prevent>
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style="background-color: #fef3c7; color: #d97706;">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="10" y1="15" x2="10" y2="9" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="15" x2="14" y2="9" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="text-base font-bold text-[#1d1d1f] mb-1">Deactivate Selected Students?</h3>
+        <p class="text-xs text-gray-500 mb-6 leading-relaxed">
+            <span id="bulk-deactivate-count-text" class="font-bold text-[#1d1d1f]">0 students</span> will be marked inactive. Their login access will be disabled and they will be moved to the Inactive list. This can be undone later.
+        </p>
+        <div class="flex gap-3">
+            <button type="button" onclick="closeModal('modal-bulk-deactivate')"
+                style="background-color: #f3f4f6 !important; color: #1d1d1f !important;"
+                class="flex-1 py-2.5 rounded-full text-xs font-semibold hover:bg-gray-200 transition-all cursor-pointer">Cancel</button>
+            <form method="POST" action="{% url 'students:bulk_deactivate' %}" id="form-bulk-deactivate" class="flex-1">
+                {% csrf_token %}
+                <input type="hidden" name="student_ids" id="bulk-deactivate-ids-input" value="">
+                <button type="submit"
+                    style="background-color: #d97706 !important; color: #ffffff !important;"
+                    class="w-full py-2.5 rounded-full text-xs font-semibold transition-all shadow-sm cursor-pointer hover:opacity-90">Deactivate</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{# ── 4B. BULK ACTIVATE / RESTORE STUDENTS MODAL ───────────────────────────── #}
+<div id="modal-bulk-restore" class="modal-dialog hidden fixed inset-0 z-50 items-center justify-center p-4" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.45);" data-lenis-prevent>
+    <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xl max-w-sm w-full p-6 text-center my-auto animate-scale-in" data-lenis-prevent>
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style="background-color: #e8f5e9; color: #16a34a;">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </div>
+        <h3 class="text-base font-bold text-[#1d1d1f] mb-1">Activate Selected Students?</h3>
+        <p class="text-xs text-gray-500 mb-6 leading-relaxed">
+            <span id="bulk-restore-count-text" class="font-bold text-[#1d1d1f]">0 students</span> will be reactivated with their login credentials restored and moved back to active class rosters.
+        </p>
+        <div class="flex gap-3">
+            <button type="button" onclick="closeModal('modal-bulk-restore')"
+                style="background-color: #f3f4f6 !important; color: #1d1d1f !important;"
+                class="flex-1 py-2.5 rounded-full text-xs font-semibold hover:bg-gray-200 transition-all cursor-pointer">Cancel</button>
+            <form method="POST" action="{% url 'students:bulk_restore' %}" id="form-bulk-restore" class="flex-1">
+                {% csrf_token %}
+                <input type="hidden" name="student_ids" id="bulk-restore-ids-input" value="">
+                <button type="submit"
+                    style="background-color: #16a34a !important; color: #ffffff !important;"
+                    class="w-full py-2.5 rounded-full text-xs font-semibold transition-all shadow-sm cursor-pointer hover:opacity-90">Activate</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{# ── 4C. BULK PERMANENT DELETE STUDENTS MODAL ─────────────────────────────── #}
+{% if is_admin %}
+<div id="modal-bulk-delete" class="modal-dialog hidden fixed inset-0 z-50 items-center justify-center p-4" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.45);" data-lenis-prevent>
+    <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xl max-w-sm w-full p-6 text-center my-auto animate-scale-in" data-lenis-prevent>
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style="background-color: #fee2e2; color: #dc2626;">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </div>
+        <h3 class="text-base font-bold text-red-600 mb-1">Permanently Delete Students?</h3>
+        <p class="text-xs text-gray-500 mb-6 leading-relaxed">
+            Are you absolutely sure? <span id="bulk-delete-count-text" class="font-bold text-red-600">0 students</span> and their student accounts will be <strong class="text-red-700">permanently destroyed</strong>. This action <strong>CANNOT</strong> be undone.
+        </p>
+        <div class="flex gap-3">
+            <button type="button" onclick="closeModal('modal-bulk-delete')"
+                style="background-color: #f3f4f6 !important; color: #1d1d1f !important;"
+                class="flex-1 py-2.5 rounded-full text-xs font-semibold hover:bg-gray-200 transition-all cursor-pointer">Cancel</button>
+            <form method="POST" action="{% url 'students:bulk_delete' %}" id="form-bulk-delete" class="flex-1">
+                {% csrf_token %}
+                <input type="hidden" name="student_ids" id="bulk-delete-ids-input" value="">
+                <button type="submit"
+                    style="background-color: #dc2626 !important; color: #ffffff !important;"
+                    class="w-full py-2.5 rounded-full text-xs font-semibold transition-all shadow-sm cursor-pointer hover:opacity-90">Delete Permanently</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
 {# ── 5. TRANSFER REQUEST MODAL ────────────────────────────────────────────── #}
 <div id="modal-transfer-student" class="modal-dialog hidden fixed inset-0 z-50 items-center justify-center p-4" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.45);" data-lenis-prevent>
     <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xl max-w-md w-full p-6 text-left my-auto animate-scale-in" data-lenis-prevent>

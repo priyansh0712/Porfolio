@@ -911,6 +911,114 @@ class SubjectTeacherPermissionTests(StudentBaseTestCase):
         self.assertTrue(resp.context['is_subject_teacher'])
 
 
+class BulkStudentActionTests(StudentBaseTestCase):
+    """Integration tests for Bulk Deactivate and Bulk Permanent Delete workflows."""
+
+    def setUp(self):
+        super().setUp()
+        self.client = Client()
+        # Allocate faculty_a as Class Teacher for division_a
+        ClassTeacherAllocation.objects.create(
+            school=self.school_a,
+            academic_year=self.year_a,
+            faculty=self.faculty_a,
+            division=self.division_a,
+        )
+        self.s1 = self._make_student(gr_number='GR-BLK-1', full_name='Student One')
+        self.s2 = self._make_student(gr_number='GR-BLK-2', full_name='Student Two')
+        self.s3 = self._make_student(gr_number='GR-BLK-3', full_name='Student Three', division=self.division_a2)
+
+    def test_admin_bulk_deactivate_success(self):
+        """School Admin can bulk deactivate multiple students at once."""
+        self.client.force_login(self.admin_a)
+        resp = self.client.post('/students/bulk-deactivate/', {
+            'student_ids': f"{self.s1.pk},{self.s2.pk}"
+        }, HTTP_HOST='greenwood.localhost')
+        self.assertRedirects(resp, '/students/')
+        self.s1.refresh_from_db()
+        self.s2.refresh_from_db()
+        self.s3.refresh_from_db()
+        self.assertFalse(self.s1.is_active)
+        self.assertFalse(self.s2.is_active)
+        self.assertTrue(self.s3.is_active)
+
+    def test_admin_bulk_permanent_delete_success(self):
+        """School Admin can permanently bulk delete selected students."""
+        self.client.force_login(self.admin_a)
+        resp = self.client.post('/students/bulk-delete/', {
+            'student_ids': f"{self.s1.pk},{self.s2.pk}"
+        }, HTTP_HOST='greenwood.localhost')
+        self.assertRedirects(resp, '/students/')
+        self.assertFalse(Student.objects.filter(pk=self.s1.pk).exists())
+        self.assertFalse(Student.objects.filter(pk=self.s2.pk).exists())
+        self.assertTrue(Student.objects.filter(pk=self.s3.pk).exists())
+
+    def test_class_teacher_can_bulk_deactivate_assigned_class(self):
+        """Class Teacher can bulk deactivate students within their assigned division."""
+        self.client.force_login(self.faculty_user_a)
+        resp = self.client.post('/students/bulk-deactivate/', {
+            'student_ids': f"{self.s1.pk},{self.s2.pk}"
+        }, HTTP_HOST='greenwood.localhost')
+        self.assertRedirects(resp, '/students/')
+        self.s1.refresh_from_db()
+        self.s2.refresh_from_db()
+        self.assertFalse(self.s1.is_active)
+        self.assertFalse(self.s2.is_active)
+
+    def test_class_teacher_cannot_bulk_deactivate_students_outside_division_returns_403(self):
+        """Class Teacher receives 403 Forbidden when attempting to deactivate students from another division."""
+        self.client.force_login(self.faculty_user_a)
+        # s3 belongs to division_a2 (not assigned to faculty_a)
+        resp = self.client.post('/students/bulk-deactivate/', {
+            'student_ids': f"{self.s1.pk},{self.s3.pk}"
+        }, HTTP_HOST='greenwood.localhost')
+        self.assertEqual(resp.status_code, 403)
+        self.s1.refresh_from_db()
+        self.s3.refresh_from_db()
+        self.assertTrue(self.s1.is_active)
+        self.assertTrue(self.s3.is_active)
+
+    def test_class_teacher_cannot_bulk_delete_returns_403(self):
+        """Class Teacher cannot permanently bulk delete (Admin only)."""
+        self.client.force_login(self.faculty_user_a)
+        resp = self.client.post('/students/bulk-delete/', {
+            'student_ids': f"{self.s1.pk},{self.s2.pk}"
+        }, HTTP_HOST='greenwood.localhost')
+        self.assertEqual(resp.status_code, 403)
+        self.assertTrue(Student.objects.filter(pk=self.s1.pk).exists())
+
+    def test_admin_bulk_restore_success(self):
+        """School Admin can bulk restore/reactivate inactive students."""
+        self.s1.is_active = False
+        self.s1.save()
+        self.s2.is_active = False
+        self.s2.save()
+
+        self.client.force_login(self.admin_a)
+        resp = self.client.post('/students/bulk-restore/', {
+            'student_ids': f"{self.s1.pk},{self.s2.pk}"
+        }, HTTP_HOST='greenwood.localhost')
+        self.assertRedirects(resp, '/students/?status=active')
+        self.s1.refresh_from_db()
+        self.s2.refresh_from_db()
+        self.assertTrue(self.s1.is_active)
+        self.assertTrue(self.s2.is_active)
+
+    def test_class_teacher_bulk_restore_assigned_class_success(self):
+        """Class Teacher can bulk restore inactive students in their class."""
+        self.s1.is_active = False
+        self.s1.save()
+
+        self.client.force_login(self.faculty_user_a)
+        resp = self.client.post('/students/bulk-restore/', {
+            'student_ids': f"{self.s1.pk}"
+        }, HTTP_HOST='greenwood.localhost')
+        self.assertRedirects(resp, '/students/?status=active')
+        self.s1.refresh_from_db()
+        self.assertTrue(self.s1.is_active)
+
+
+
 
 
 
