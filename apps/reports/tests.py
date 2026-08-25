@@ -294,7 +294,7 @@ class PrincipalDashboardModuleAwarenessTest(ReportsTestBase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'School Overview')
-        self.assertContains(response, 'Everything important about your school, in one place.')
+        self.assertContains(response, 'Real-time school performance and operational snapshot.')
         self.assertContains(response, 'Total Students')
         self.assertContains(response, 'Total Faculty')
         self.assertContains(response, 'Active Divisions')
