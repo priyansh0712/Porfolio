@@ -759,6 +759,13 @@
                 const container = document.getElementById('students-table-container');
                 if (container) {
                     container.innerHTML = html;
+
+                    // Dynamically update the 3 KPI Cards at the top
+                    const kpiPayload = container.querySelector('#students-kpi-payload');
+                    const mainKpiContainer = document.getElementById('students-kpi-container');
+                    if (kpiPayload && mainKpiContainer) {
+                        mainKpiContainer.innerHTML = kpiPayload.innerHTML;
+                    }
                 }
                 // If selection mode is active, reveal checkboxes and restore checked states
                 if (isStudentSelectionMode) {

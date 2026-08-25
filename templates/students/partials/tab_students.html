@@ -1,5 +1,10 @@
 <!-- Students Tab: Clean Search bar + filters + responsive table -->
 
+<!-- 3 Dynamic KPI Cards Container -->
+<div id="students-kpi-container">
+    {% include 'students/partials/student_kpi_cards.html' %}
+</div>
+
 <!-- Clean Single-Row Toolbar -->
 <form method="GET" id="student-filter-form" action="{% url 'students:hub' %}" onsubmit="event.preventDefault(); triggerLiveStudentFilter();" class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-3.5 mb-4 flex flex-col md:flex-row md:items-center gap-2.5">
     <input type="hidden" name="tab" value="students">

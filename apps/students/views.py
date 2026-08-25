@@ -270,12 +270,71 @@ class StudentHubView(SchoolStaffRequiredMixin, TemplateView):
             ctx['is_paginated'] = is_paginated
             ctx['total_students_count'] = total_count
             ctx['per_page'] = per_page_param
+
+            # --- Dynamic KPIs calculation for Student Hub ---
+            kpi_total = total_count
+            kpi_boys = qs.filter(gender=Student.Gender.MALE).count()
+            kpi_girls = qs.filter(gender=Student.Gender.FEMALE).count()
+            if kpi_total > 0:
+                kpi_boys_pct = round((kpi_boys / kpi_total) * 100)
+                kpi_girls_pct = round((kpi_girls / kpi_total) * 100)
+            else:
+                kpi_boys_pct = 0
+                kpi_girls_pct = 0
+
+            kpi_standards_count = qs.values('standard').distinct().count()
+            kpi_divisions_count = qs.values('division').distinct().count()
+
+            selected_division_obj = None
+            class_teacher_name = None
+            target_div_id = div_filter if div_filter else (ct_division.id if ct_division else None)
+            if target_div_id:
+                try:
+                    selected_division_obj = Division.objects.select_related('standard').get(id=target_div_id, school=tenant)
+                    ct_alloc = ClassTeacherAllocation.objects.filter(
+                        school=tenant,
+                        academic_year=academic_year,
+                        division=selected_division_obj,
+                    ).select_related('faculty__user').first()
+                    if ct_alloc and ct_alloc.faculty and ct_alloc.faculty.user:
+                        raw_name = ct_alloc.faculty.user.get_full_name() or ct_alloc.faculty.user.username
+                        class_teacher_name = raw_name.strip().title() if raw_name else None
+                except Division.DoesNotExist:
+                    selected_division_obj = None
+
+            selected_standard_obj = None
+            if std_filter:
+                try:
+                    selected_standard_obj = Standard.objects.get(id=std_filter, school=tenant)
+                except Standard.DoesNotExist:
+                    selected_standard_obj = None
+
+            ctx['kpi_total_students'] = kpi_total
+            ctx['kpi_boys_count'] = kpi_boys
+            ctx['kpi_girls_count'] = kpi_girls
+            ctx['kpi_boys_pct'] = kpi_boys_pct
+            ctx['kpi_girls_pct'] = kpi_girls_pct
+            ctx['kpi_standards_count'] = kpi_standards_count
+            ctx['kpi_divisions_count'] = kpi_divisions_count
+            ctx['selected_division_obj'] = selected_division_obj
+            ctx['selected_standard_obj'] = selected_standard_obj
+            ctx['class_teacher_name'] = class_teacher_name
         else:
             ctx['students'] = Student.objects.none()
             ctx['page_obj'] = None
             ctx['is_paginated'] = False
             ctx['total_students_count'] = 0
             ctx['per_page'] = '10'
+            ctx['kpi_total_students'] = 0
+            ctx['kpi_boys_count'] = 0
+            ctx['kpi_girls_count'] = 0
+            ctx['kpi_boys_pct'] = 0
+            ctx['kpi_girls_pct'] = 0
+            ctx['kpi_standards_count'] = 0
+            ctx['kpi_divisions_count'] = 0
+            ctx['selected_division_obj'] = None
+            ctx['selected_standard_obj'] = None
+            ctx['class_teacher_name'] = None
 
         # --- Transfers tab ---
         transfer_qs = StudentTransferRequest.objects.filter(

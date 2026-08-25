@@ -89,6 +89,12 @@ class AcademicHubView(SchoolAdminRequiredMixin, TemplateView):
         context['subject_form'] = SubjectForm(tenant=tenant)
         context['curriculum_form'] = ClassCurriculumForm(tenant=tenant)
 
+        # 9. KPI Card Counts
+        context['total_divisions_count'] = Division.objects.filter(school=tenant).count()
+        ct_count = ClassTeacherAllocation.objects.filter(school=tenant, academic_year=selected_year).count() if selected_year else 0
+        st_count = SubjectTeacherAllocation.objects.filter(school=tenant, academic_year=selected_year).count() if selected_year else 0
+        context['total_allocations_count'] = ct_count + st_count
+
         return context
 
 

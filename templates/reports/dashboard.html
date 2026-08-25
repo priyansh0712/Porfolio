@@ -15,53 +15,54 @@
     </div>
 
     {# ═══ 2. Top-Level School Overview (Design 1: Balanced Left/Right Anchor) ═══ #}
+    {# ═══ 2. Top-Level School Overview (Clickable Interactive Cards) ═══ #}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {# 1. Total Students #}
-        <div class="apple-card p-4 flex items-center justify-between gap-3 hover:border-[#0066cc]/30 hover:shadow-xs transition-all group bg-white">
+        <a href="{% url 'students:hub' %}" class="apple-card p-4 flex items-center justify-between gap-3 hover:border-[#0066cc]/40 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 group bg-white cursor-pointer block">
             <div class="min-w-0 flex-1">
-                <span class="text-xs font-semibold text-[#86868b] tracking-wide block truncate">Total Students</span>
+                <span class="text-xs font-semibold text-[#86868b] group-hover:text-[#0066cc] transition-colors tracking-wide block truncate">Total Students</span>
                 <div class="text-2xl font-bold text-[#1D1D1F] tracking-tight leading-none my-1">{{ total_students }}</div>
                 <div class="text-[11px] text-[#86868b] truncate">Active enrolled students</div>
             </div>
-            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#0066cc]/8 text-[#0066cc] flex items-center justify-center flex-shrink-0 group-hover:bg-[#0066cc]/14 group-hover:scale-105 transition-all">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#0066cc]/8 text-[#0066cc] flex items-center justify-center flex-shrink-0 group-hover:bg-[#0066cc] group-hover:text-white group-hover:scale-105 transition-all shadow-2xs">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
             </div>
-        </div>
+        </a>
 
         {# 2. Total Faculty #}
-        <div class="apple-card p-4 flex items-center justify-between gap-3 hover:border-[#0066cc]/30 hover:shadow-xs transition-all group bg-white">
+        <a href="{% url 'faculty:list' %}" class="apple-card p-4 flex items-center justify-between gap-3 hover:border-[#0066cc]/40 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 group bg-white cursor-pointer block">
             <div class="min-w-0 flex-1">
-                <span class="text-xs font-semibold text-[#86868b] tracking-wide block truncate">Total Faculty</span>
+                <span class="text-xs font-semibold text-[#86868b] group-hover:text-[#0066cc] transition-colors tracking-wide block truncate">Total Faculty</span>
                 <div class="text-2xl font-bold text-[#1D1D1F] tracking-tight leading-none my-1">{{ total_faculty }}</div>
                 <div class="text-[11px] text-[#86868b] truncate">Teaching & staff roster</div>
             </div>
-            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#0066cc]/8 text-[#0066cc] flex items-center justify-center flex-shrink-0 group-hover:bg-[#0066cc]/14 group-hover:scale-105 transition-all">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#0066cc]/8 text-[#0066cc] flex items-center justify-center flex-shrink-0 group-hover:bg-[#0066cc] group-hover:text-white group-hover:scale-105 transition-all shadow-2xs">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/>
                 </svg>
             </div>
-        </div>
+        </a>
 
         {# 3. Active Divisions #}
-        <div class="apple-card p-4 flex items-center justify-between gap-3 hover:border-[#0066cc]/30 hover:shadow-xs transition-all group bg-white">
+        <a href="{% url 'academics:hub' %}?tab=standards" class="apple-card p-4 flex items-center justify-between gap-3 hover:border-[#0066cc]/40 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 group bg-white cursor-pointer block">
             <div class="min-w-0 flex-1">
-                <span class="text-xs font-semibold text-[#86868b] tracking-wide block truncate">Active Divisions</span>
+                <span class="text-xs font-semibold text-[#86868b] group-hover:text-[#0066cc] transition-colors tracking-wide block truncate">Active Divisions</span>
                 <div class="text-2xl font-bold text-[#1D1D1F] tracking-tight leading-none my-1">{{ total_classes }}</div>
                 <div class="text-[11px] text-[#86868b] truncate">Grade divisions & sections</div>
             </div>
-            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#0066cc]/8 text-[#0066cc] flex items-center justify-center flex-shrink-0 group-hover:bg-[#0066cc]/14 group-hover:scale-105 transition-all">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#0066cc]/8 text-[#0066cc] flex items-center justify-center flex-shrink-0 group-hover:bg-[#0066cc] group-hover:text-white group-hover:scale-105 transition-all shadow-2xs">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
                 </svg>
             </div>
-        </div>
+        </a>
 
         {# 4. Academic Session #}
-        <div class="apple-card p-4 flex items-center justify-between gap-3 hover:border-[#0066cc]/30 hover:shadow-xs transition-all group bg-white">
+        <a href="{% url 'academics:hub' %}?tab=years" class="apple-card p-4 flex items-center justify-between gap-3 hover:border-[#0066cc]/40 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 group bg-white cursor-pointer block">
             <div class="min-w-0 flex-1">
-                <span class="text-xs font-semibold text-[#86868b] tracking-wide block truncate">Academic Session</span>
+                <span class="text-xs font-semibold text-[#86868b] group-hover:text-[#0066cc] transition-colors tracking-wide block truncate">Academic Session</span>
                 <div class="text-2xl font-bold text-[#1D1D1F] tracking-tight leading-none my-1 truncate" title="{{ academic_year_name }}">{{ academic_year_name }}</div>
                 <div class="text-[11px] text-[#86868b] truncate">
                     {% if current_academic_year %}
@@ -71,12 +72,12 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#0066cc]/8 text-[#0066cc] flex items-center justify-center flex-shrink-0 group-hover:bg-[#0066cc]/14 group-hover:scale-105 transition-all">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#0066cc]/8 text-[#0066cc] flex items-center justify-center flex-shrink-0 group-hover:bg-[#0066cc] group-hover:text-white group-hover:scale-105 transition-all shadow-2xs">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
             </div>
-        </div>
+        </a>
     </div>
 
     {# ═══ 3. Needs Your Attention (Compact Action Section) ═══ #}

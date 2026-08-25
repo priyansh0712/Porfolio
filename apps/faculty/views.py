@@ -282,12 +282,25 @@ class FacultyListView(SchoolAdminRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         all_qs = Faculty.objects.filter(school=self.request.tenant)
-        ctx['departments'] = sorted(
-            all_qs.values_list('department', flat=True).distinct()
-        )
+        depts_list = sorted(set(filter(None, (d.strip() for d in all_qs.values_list('department', flat=True)))))
+        ctx['departments'] = depts_list
+        ctx['departments_count'] = len(depts_list)
         ctx['total_count'] = all_qs.count()
         ctx['active_count'] = all_qs.filter(is_active=True).count()
         ctx['inactive_count'] = all_qs.filter(is_active=False).count()
+
+        # Class teacher allocations & divisions KPI
+        from apps.academics.models import AcademicYear, ClassTeacherAllocation, Division
+        curr_ay = AcademicYear.objects.filter(school=self.request.tenant, is_current=True).first()
+        if curr_ay:
+            ctx['assigned_class_teachers_count'] = ClassTeacherAllocation.objects.filter(
+                school=self.request.tenant, academic_year=curr_ay
+            ).values('faculty').distinct().count()
+            ctx['total_divisions_count'] = Division.objects.filter(school=self.request.tenant).count()
+        else:
+            ctx['assigned_class_teachers_count'] = 0
+            ctx['total_divisions_count'] = 0
+
         ctx['form'] = FacultyForm(tenant=self.request.tenant)
         ctx['per_page'] = self.request.GET.get('per_page', '10')
         ctx['q'] = self.request.GET.get('q', '')

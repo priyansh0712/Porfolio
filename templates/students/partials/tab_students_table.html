@@ -1,4 +1,7 @@
 <!-- Students Table Partial (rendered directly or via AJAX live filter) -->
+<div id="students-kpi-payload" class="hidden">
+    {% include 'students/partials/student_kpi_cards.html' %}
+</div>
 <div id="students-table-inner" class="bg-white rounded-2xl border border-gray-200/80 shadow-xs transition-opacity duration-150">
     {% if students %}
     <!-- Desktop Table View (>= 768px) with Window Sticky Header -->
