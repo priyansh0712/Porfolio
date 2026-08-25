@@ -773,9 +773,9 @@
                 <span class="text-gray-400">Rows:</span>
                 <select onchange="location.href='?page=1&per_page='+this.value+'{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}'"
                     class="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1 font-semibold text-[#1d1d1f] focus:outline-none focus:ring-1 focus:ring-[#0066cc] cursor-pointer">
-                    <option value="25" {% if per_page == '25' or not per_page %}selected{% endif %}>25</option>
+                    <option value="10" {% if per_page == '10' or not per_page %}selected{% endif %}>10</option>
+                    <option value="25" {% if per_page == '25' %}selected{% endif %}>25</option>
                     <option value="50" {% if per_page == '50' %}selected{% endif %}>50</option>
-                    <option value="100" {% if per_page == '100' %}selected{% endif %}>100</option>
                     <option value="all" {% if per_page == 'all' %}selected{% endif %}>All</option>
                 </select>
             </div>

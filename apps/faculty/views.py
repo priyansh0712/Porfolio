@@ -29,6 +29,17 @@ class MyClassView(LoginRequiredMixin, ListView):
     model = Student
     template_name = 'faculty/my_class.html'
     context_object_name = 'students'
+    paginate_by = 10
+
+    def get_paginate_by(self, queryset):
+        per_page = self.request.GET.get('per_page', '10')
+        if per_page == 'all':
+            return queryset.count() or 1
+        try:
+            val = int(per_page)
+            return val if val > 0 else 10
+        except (ValueError, TypeError):
+            return 10
 
     def get_queryset(self):
         faculty = getattr(self.request.user, 'faculty_profile', None)
@@ -97,6 +108,7 @@ class MyClassView(LoginRequiredMixin, ListView):
             is_active=True
         ).count() if allocation else 0
         context['search'] = self.request.GET.get('q', '')
+        context['per_page'] = self.request.GET.get('per_page', '10')
         context['status_filter'] = self.request.GET.get('status', 'active')
         context['can_edit_students'] = True  # Class teacher can edit students in their class
         context['is_admin'] = False
@@ -135,19 +147,46 @@ class MySubjectsView(LoginRequiredMixin, ListView):
         curr_ay = AcademicYear.objects.filter(school=self.request.tenant, is_current=True).first()
         context['academic_year'] = curr_ay
 
+        from django.core.paginator import Paginator
+        per_page_param = self.request.GET.get('per_page', '10')
+        try:
+            per_page_val = int(per_page_param) if per_page_param != 'all' else 9999
+        except (ValueError, TypeError):
+            per_page_val = 10
+
+        search_q = self.request.GET.get('q', '').strip()
+        context['search'] = search_q
+        context['per_page'] = per_page_param
+
         allocations = self.get_queryset()
         subject_rosters = []
         for alloc in allocations:
-            roster = Student.objects.filter(
+            roster_qs = Student.objects.filter(
                 school=self.request.tenant,
                 academic_year=curr_ay,
                 division=alloc.division,
                 is_active=True
             ).order_by('roll_number', 'full_name')
+
+            if search_q:
+                from django.db.models import Q
+                roster_qs = roster_qs.filter(
+                    Q(full_name__icontains=search_q) |
+                    Q(gr_number__icontains=search_q) |
+                    Q(roll_number__icontains=search_q) |
+                    Q(guardian_phone__icontains=search_q)
+                )
+
+            total_count = roster_qs.count()
+            paginator = Paginator(roster_qs, per_page_val if per_page_val > 0 else 10)
+            page_num = self.request.GET.get(f'page_{alloc.pk}', self.request.GET.get('page', 1))
+            page_obj = paginator.get_page(page_num)
+
             subject_rosters.append({
                 'allocation': alloc,
-                'students': roster,
-                'count': roster.count(),
+                'students': page_obj,
+                'page_obj': page_obj,
+                'count': total_count,
             })
 
         context['subject_rosters'] = subject_rosters
@@ -162,17 +201,17 @@ class FacultyListView(SchoolAdminRequiredMixin, ListView):
     model = Faculty
     template_name = 'faculty/faculty_list.html'
     context_object_name = 'faculty_list'
-    paginate_by = 25
+    paginate_by = 10
 
     def get_paginate_by(self, queryset):
-        per_page = self.request.GET.get('per_page', '25')
+        per_page = self.request.GET.get('per_page', '10')
         if per_page == 'all':
             return queryset.count() or 1
         try:
             val = int(per_page)
-            return val if val > 0 else 25
+            return val if val > 0 else 10
         except (ValueError, TypeError):
-            return 25
+            return 10
 
     def get_queryset(self):
         """Layer 3: Scope to current tenant with optional filtering."""
@@ -208,7 +247,7 @@ class FacultyListView(SchoolAdminRequiredMixin, ListView):
         ctx['active_count'] = all_qs.filter(is_active=True).count()
         ctx['inactive_count'] = all_qs.filter(is_active=False).count()
         ctx['form'] = FacultyForm(tenant=self.request.tenant)
-        ctx['per_page'] = self.request.GET.get('per_page', '25')
+        ctx['per_page'] = self.request.GET.get('per_page', '10')
         ctx['q'] = self.request.GET.get('q', '')
         ctx['selected_dept'] = self.request.GET.get('department', '')
         ctx['status_filter'] = self.request.GET.get('status', 'all')

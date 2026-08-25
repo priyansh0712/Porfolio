@@ -674,7 +674,7 @@
     let filterAbortController = null;
     let searchDebounceTimer = null;
     let currentStudentPage = 1;
-    let currentStudentPerPage = '{{ per_page|default:"25" }}';
+    let currentStudentPerPage = '{{ per_page|default:"10" }}';
 
     function goToStudentPage(page) {
         currentStudentPage = page;

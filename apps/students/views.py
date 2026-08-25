@@ -247,7 +247,7 @@ class StudentHubView(SchoolStaffRequiredMixin, TemplateView):
 
             # Pagination
             from django.core.paginator import Paginator
-            per_page_param = self.request.GET.get('per_page', '25')
+            per_page_param = self.request.GET.get('per_page', '10')
             total_count = qs.count()
 
             if per_page_param == 'all':
@@ -257,9 +257,9 @@ class StudentHubView(SchoolStaffRequiredMixin, TemplateView):
                 try:
                     per_page_val = int(per_page_param)
                     if per_page_val <= 0:
-                        per_page_val = 25
+                        per_page_val = 10
                 except (ValueError, TypeError):
-                    per_page_val = 25
+                    per_page_val = 10
                 paginator = Paginator(qs, per_page_val)
                 page_number = self.request.GET.get('page', 1)
                 page_obj = paginator.get_page(page_number)
@@ -275,7 +275,7 @@ class StudentHubView(SchoolStaffRequiredMixin, TemplateView):
             ctx['page_obj'] = None
             ctx['is_paginated'] = False
             ctx['total_students_count'] = 0
-            ctx['per_page'] = '25'
+            ctx['per_page'] = '10'
 
         # --- Transfers tab ---
         transfer_qs = StudentTransferRequest.objects.filter(

@@ -5,10 +5,29 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-6 pb-16">
-    <!-- Header Title -->
-    <div>
-        <h1 class="text-2xl font-bold text-[#1d1d1f] tracking-tight">Subject Teacher Dashboard</h1>
-        <p class="text-xs sm:text-sm text-[#86868b] mt-0.5">Assigned Taught Subjects & Student Rosters • Session {{ academic_year.name }}</p>
+    <!-- Header Title & Search Toolbar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-[#1d1d1f] tracking-tight">Subject Teacher Dashboard</h1>
+            <p class="text-xs sm:text-sm text-[#86868b] mt-0.5">Assigned Taught Subjects & Student Rosters • Session {{ academic_year.name }}</p>
+        </div>
+        {% if subject_rosters %}
+        <form method="GET" action="{% url 'faculty:my_subjects' %}" class="relative min-w-[240px]">
+            <div style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #9ca3af; display: flex; align-items: center;">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
+            </div>
+            <input type="text" name="q" value="{{ search }}" placeholder="Search students in subjects..." autocomplete="off"
+                style="padding-left: 32px !important; padding-right: 28px !important;"
+                class="w-full py-1.5 text-xs rounded-xl border border-gray-200 focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc]/20 bg-white text-[#1D1D1F] placeholder:text-gray-400 transition-all h-[36px] shadow-2xs">
+            {% if search %}
+            <a href="{% url 'faculty:my_subjects' %}"
+                style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); text-decoration: none;"
+                class="w-4 h-4 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-[9px] font-bold text-gray-600"
+                title="Clear search">✕</a>
+            {% endif %}
+            <input type="hidden" name="per_page" value="{{ per_page|default:'10' }}">
+        </form>
+        {% endif %}
     </div>
 
     {% if subject_rosters %}
@@ -28,21 +47,21 @@
                         </div>
                     </div>
 
-                    <!-- Student Table -->
-                    <div class="overflow-x-auto border border-gray-100 rounded-xl">
+                    <!-- Student Table with Sticky Header (top: 64px) -->
+                    <div class="border border-gray-200/80 rounded-xl shadow-2xs">
                         <table class="w-full text-left text-xs border-collapse">
-                            <thead class="bg-gray-50/90 backdrop-blur-xs border-b border-gray-200">
-                                <tr class="text-[#86868b] font-semibold uppercase tracking-wider text-[10px]">
-                                    <th class="py-2.5 px-3.5">Roll No</th>
-                                    <th class="py-2.5 px-3.5">GR Number</th>
-                                    <th class="py-2.5 px-3.5">Student Name</th>
-                                    <th class="py-2.5 px-3.5">Gender</th>
-                                    <th class="py-2.5 px-3.5">Guardian Contact</th>
+                            <thead class="sticky top-16 z-20" style="position: sticky; top: 64px; z-index: 20;">
+                                <tr class="text-[#86868b] font-semibold uppercase tracking-wider text-[10px] bg-gray-50/95 border-b border-gray-200">
+                                    <th class="py-2.5 px-3.5" style="position: sticky; top: 64px; z-index: 20; background-color: #fafafa !important; box-shadow: 0 1px 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.03);">Roll No</th>
+                                    <th class="py-2.5 px-3.5" style="position: sticky; top: 64px; z-index: 20; background-color: #fafafa !important; box-shadow: 0 1px 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.03);">GR Number</th>
+                                    <th class="py-2.5 px-3.5" style="position: sticky; top: 64px; z-index: 20; background-color: #fafafa !important; box-shadow: 0 1px 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.03);">Student Name</th>
+                                    <th class="py-2.5 px-3.5" style="position: sticky; top: 64px; z-index: 20; background-color: #fafafa !important; box-shadow: 0 1px 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.03);">Gender</th>
+                                    <th class="py-2.5 px-3.5" style="position: sticky; top: 64px; z-index: 20; background-color: #fafafa !important; box-shadow: 0 1px 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.03);">Guardian Contact</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
                                 {% for student in item.students %}
-                                    <tr class="hover:bg-gray-50/50">
+                                    <tr class="hover:bg-gray-50/50 transition-colors">
                                         <td class="py-2.5 px-3.5 font-mono font-bold text-[#1d1d1f]">{{ student.roll_number|default:"—" }}</td>
                                         <td class="py-2.5 px-3.5 font-mono text-[#0066cc] font-semibold">{{ student.gr_number }}</td>
                                         <td class="py-2.5 px-3.5 font-semibold text-[#1d1d1f]">{{ student.full_name }}</td>
@@ -57,11 +76,89 @@
                                     </tr>
                                 {% empty %}
                                     <tr>
-                                        <td colspan="5" class="py-6 text-center text-[#86868b]">No students enrolled in this division.</td>
+                                        <td colspan="5" class="py-6 text-center text-[#86868b]">
+                                            {% if search %}No students matched search "{{ search }}".{% else %}No students enrolled in this division.{% endif %}
+                                        </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+
+                        <!-- Table Footer & Apple Pagination Bar -->
+                        <div class="px-4 py-3 border-t border-gray-200/80 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs rounded-b-xl">
+                            <!-- Showing entries counter + Per Page Selector -->
+                            <div class="flex items-center gap-3 text-gray-500 font-medium">
+                                <span>
+                                    {% if item.page_obj.paginator %}
+                                        Showing <span class="font-bold text-[#1d1d1f]">{{ item.page_obj.start_index }}</span> to <span class="font-bold text-[#1d1d1f]">{{ item.page_obj.end_index }}</span> of <span class="font-bold text-[#1d1d1f]">{{ item.page_obj.paginator.count }}</span> students
+                                    {% else %}
+                                        Showing <span class="font-bold text-[#1d1d1f]">{{ item.students|length }}</span> students
+                                    {% endif %}
+                                </span>
+
+                                <!-- Per page dropdown -->
+                                <div class="flex items-center gap-1.5 pl-3 border-l border-gray-200">
+                                    <span class="text-gray-400">Rows:</span>
+                                    <select onchange="location.href='?page_{{ item.allocation.pk }}=1&per_page='+this.value+'{% if search %}&q={{ search|urlencode }}{% endif %}'"
+                                        class="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1 font-semibold text-[#1d1d1f] focus:outline-none focus:ring-1 focus:ring-[#0066cc] cursor-pointer">
+                                        <option value="10" {% if per_page == '10' or not per_page %}selected{% endif %}>10</option>
+                                        <option value="25" {% if per_page == '25' %}selected{% endif %}>25</option>
+                                        <option value="50" {% if per_page == '50' %}selected{% endif %}>50</option>
+                                        <option value="all" {% if per_page == 'all' %}selected{% endif %}>All</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Pagination Controls -->
+                            {% if item.page_obj.has_other_pages %}
+                            <nav class="flex items-center gap-1" aria-label="Subject Roster Pagination">
+                                {% if item.page_obj.has_previous %}
+                                <a href="?page_{{ item.allocation.pk }}={{ item.page_obj.previous_page_number }}&per_page={{ per_page }}{% if search %}&q={{ search|urlencode }}{% endif %}"
+                                    class="px-2.5 py-1 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1">
+                                    ‹ Prev
+                                </a>
+                                {% else %}
+                                <span class="px-2.5 py-1 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
+                                    ‹ Prev
+                                </span>
+                                {% endif %}
+
+                                <!-- Page Number Pills -->
+                                <div class="flex items-center gap-1">
+                                    {% for p in item.page_obj.paginator.page_range %}
+                                        {% if p == item.page_obj.number %}
+                                            <span class="w-6 h-6 flex items-center justify-center rounded-lg bg-[#0066cc] text-white font-bold text-xs shadow-2xs">
+                                                {{ p }}
+                                            </span>
+                                        {% elif p >= item.page_obj.number|add:"-2" and p <= item.page_obj.number|add:"2" %}
+                                            <a href="?page_{{ item.allocation.pk }}={{ p }}&per_page={{ per_page }}{% if search %}&q={{ search|urlencode }}{% endif %}"
+                                                class="w-6 h-6 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-blue-50 hover:text-[#0066cc] transition-colors shadow-2xs">
+                                                {{ p }}
+                                            </a>
+                                        {% elif p == 1 or p == item.page_obj.paginator.num_pages %}
+                                            <a href="?page_{{ item.allocation.pk }}={{ p }}&per_page={{ per_page }}{% if search %}&q={{ search|urlencode }}{% endif %}"
+                                                class="w-6 h-6 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-blue-50 hover:text-[#0066cc] transition-colors shadow-2xs">
+                                                {{ p }}
+                                            </a>
+                                        {% elif p == item.page_obj.number|add:"-3" or p == item.page_obj.number|add:"3" %}
+                                            <span class="w-4 text-center text-gray-400 font-bold text-xs">…</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+
+                                {% if item.page_obj.has_next %}
+                                <a href="?page_{{ item.allocation.pk }}={{ item.page_obj.next_page_number }}&per_page={{ per_page }}{% if search %}&q={{ search|urlencode }}{% endif %}"
+                                    class="px-2.5 py-1 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1">
+                                    Next ›
+                                </a>
+                                {% else %}
+                                <span class="px-2.5 py-1 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
+                                    Next ›
+                                </span>
+                                {% endif %}
+                            </nav>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             {% endfor %}
