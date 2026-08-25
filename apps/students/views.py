@@ -399,25 +399,51 @@ class StudentUpdateView(SchoolStaffRequiredMixin, View):
         return redirect('/students/')
 
 
-class StudentDeleteView(SchoolAdminRequiredMixin, View):
-    """POST: soft-deactivate a student (School Admin only)."""
+class StudentDeleteView(SchoolStaffRequiredMixin, View):
+    """POST: soft-deactivate a student (School Admin or Class Teacher for own class)."""
 
     def post(self, request, pk):
         tenant = request.tenant
+        user = request.user
+        is_admin = user.role == User.Role.SCHOOL_ADMIN
         student = get_object_or_404(Student, pk=pk, school=tenant)
+        if not is_admin:
+            academic_year = AcademicService.get_current_academic_year(tenant)
+            ct_division = _get_class_teacher_division(user, tenant, academic_year)
+            if ct_division is None or student.division != ct_division:
+                return HttpResponseForbidden('Access denied: You can only deactivate students from your assigned class.')
         StudentService.soft_delete_student(student)
         messages.success(request, f"Student '{student.full_name}' has been deactivated.")
         return redirect('/students/')
 
 
-class StudentRestoreView(SchoolAdminRequiredMixin, View):
-    """POST: restore a soft-deleted student (School Admin only)."""
+class StudentRestoreView(SchoolStaffRequiredMixin, View):
+    """POST: restore a soft-deleted student (School Admin or Class Teacher for own class)."""
+
+    def post(self, request, pk):
+        tenant = request.tenant
+        user = request.user
+        is_admin = user.role == User.Role.SCHOOL_ADMIN
+        student = get_object_or_404(Student, pk=pk, school=tenant)
+        if not is_admin:
+            academic_year = AcademicService.get_current_academic_year(tenant)
+            ct_division = _get_class_teacher_division(user, tenant, academic_year)
+            if ct_division is None or student.division != ct_division:
+                return HttpResponseForbidden('Access denied: You can only restore students from your assigned class.')
+        StudentService.restore_student(student)
+        messages.success(request, f"Student '{student.full_name}' has been restored.")
+        return redirect('/students/')
+
+
+class StudentHardDeleteView(SchoolAdminRequiredMixin, View):
+    """POST: permanently delete a single student (School Admin only)."""
 
     def post(self, request, pk):
         tenant = request.tenant
         student = get_object_or_404(Student, pk=pk, school=tenant)
-        StudentService.restore_student(student)
-        messages.success(request, f"Student '{student.full_name}' has been restored.")
+        name = student.full_name
+        StudentService.bulk_hard_delete_students([student.pk], school=tenant)
+        messages.success(request, f"Student '{name}' has been permanently deleted.")
         return redirect('/students/')
 
 

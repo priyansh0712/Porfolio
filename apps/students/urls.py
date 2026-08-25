@@ -12,6 +12,7 @@ urlpatterns = [
     path('<int:pk>/edit/', views.StudentUpdateView.as_view(), name='update'),
     path('<int:pk>/delete/', views.StudentDeleteView.as_view(), name='delete'),
     path('<int:pk>/restore/', views.StudentRestoreView.as_view(), name='restore'),
+    path('<int:pk>/hard-delete/', views.StudentHardDeleteView.as_view(), name='hard_delete'),
     path('bulk-deactivate/', views.StudentBulkDeactivateView.as_view(), name='bulk_deactivate'),
     path('bulk-delete/', views.StudentBulkDeleteView.as_view(), name='bulk_delete'),
     path('bulk-restore/', views.StudentBulkRestoreView.as_view(), name='bulk_restore'),

@@ -133,6 +133,15 @@ class Student(models.Model):
         return '?'
 
     @property
+    def age(self):
+        """Calculate age from DOB in years."""
+        if not self.dob:
+            return None
+        from datetime import date
+        today = date.today()
+        return today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
+
+    @property
     def display_blood_group(self):
         return self.blood_group if self.blood_group else '—'
 

@@ -607,12 +607,29 @@ class StudentCRUDViewTests(StudentBaseTestCase):
         student.refresh_from_db()
         self.assertTrue(student.is_active)
 
-    def test_faculty_cannot_delete_student(self):
-        """Faculty member cannot delete a student (403 forbidden)."""
-        student = self._make_student(gr_number='GR205', full_name='Nandini Shah')
+    def test_faculty_cannot_delete_other_division_student(self):
+        """Faculty member cannot delete a student from another division (403 forbidden)."""
+        student = self._make_student(division=self.division_a2, gr_number='GR205', full_name='Nandini Shah')
         self.client.force_login(self.faculty_user_a)
         resp = self.client.post(f'/students/{student.pk}/delete/', HTTP_HOST='greenwood.localhost')
         self.assertEqual(resp.status_code, 403)
+
+    def test_class_teacher_can_deactivate_own_student(self):
+        """Class Teacher can soft-deactivate a student from their own division."""
+        student = self._make_student(division=self.division_a, gr_number='GR206', full_name='Drashti Mehta')
+        self.client.force_login(self.faculty_user_a)
+        resp = self.client.post(f'/students/{student.pk}/delete/', HTTP_HOST='greenwood.localhost')
+        self.assertEqual(resp.status_code, 302)
+        student.refresh_from_db()
+        self.assertFalse(student.is_active)
+
+    def test_admin_can_permanently_hard_delete_student(self):
+        """School Admin can permanently delete a student."""
+        student = self._make_student(division=self.division_a, gr_number='GR207', full_name='Hard Delete Student')
+        self.client.force_login(self.admin_a)
+        resp = self.client.post(f'/students/{student.pk}/hard-delete/', HTTP_HOST='greenwood.localhost')
+        self.assertEqual(resp.status_code, 302)
+        self.assertFalse(Student.objects.filter(pk=student.pk).exists())
 
 
 class TransferWorkflowViewTests(StudentBaseTestCase):

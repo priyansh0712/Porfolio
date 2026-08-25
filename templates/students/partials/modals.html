@@ -510,6 +510,31 @@
 </div>
 
 
+{# ── 4.1 PERMANENT DELETE SINGLE STUDENT MODAL (ADMIN ONLY) ───────────────── #}
+<div id="modal-permanent-delete-student" class="modal-dialog hidden fixed inset-0 z-50 items-center justify-center p-4" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.45);" data-lenis-prevent>
+    <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xl max-w-sm w-full p-6 text-center my-auto animate-scale-in" data-lenis-prevent>
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style="background-color: #fee2e2; color: #dc2626;">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </div>
+        <h3 class="text-base font-bold text-[#1d1d1f] mb-1">Permanently Delete Student?</h3>
+        <p class="text-xs text-gray-500 mb-6 leading-relaxed">
+            <span id="permanent-delete-student-name" class="font-bold text-red-600"></span> will be permanently wiped from the database including face encodings and attendance records. <span class="font-bold text-red-600">This action CANNOT be undone!</span>
+        </p>
+        <div class="flex gap-3">
+            <button type="button" onclick="closeModal('modal-permanent-delete-student')"
+                style="background-color: #f3f4f6 !important; color: #1d1d1f !important;"
+                class="flex-1 py-2.5 rounded-full text-xs font-semibold hover:bg-gray-200 transition-all cursor-pointer">Cancel</button>
+            <form method="POST" id="form-permanent-delete-student" class="flex-1">
+                {% csrf_token %}
+                <button type="submit"
+                    style="background-color: #dc2626 !important; color: #ffffff !important;"
+                    class="w-full py-2.5 rounded-full text-xs font-semibold transition-all shadow-sm cursor-pointer hover:opacity-90">Delete Forever</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 {# ── 4A. BULK DEACTIVATE STUDENTS MODAL ────────────────────────────────────── #}
 <div id="modal-bulk-deactivate" class="modal-dialog hidden fixed inset-0 z-50 items-center justify-center p-4" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.45);" data-lenis-prevent>
     <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xl max-w-sm w-full p-6 text-center my-auto animate-scale-in" data-lenis-prevent>

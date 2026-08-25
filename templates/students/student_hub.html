@@ -361,18 +361,50 @@
         updateBulkActionBar();
     }
 
-    function handleStudentRowClick(e, pk, fullName, grNumber, rollNumber, gender, bloodGroup, dob, standardId, divisionId, admissionDate, guardianName, guardianPhone, emergencyContact, address, customFieldsJson, isActive) {
+    function toggleStudentAccordion(event, pk) {
+        if (event) event.stopPropagation();
         if (isStudentSelectionMode) {
-            // Toggle selection checkbox for this row
+            // In selection mode: toggle checkbox instead of expanding accordion
             const rowCb = document.querySelector(`.student-row-cb[value="${pk}"]`);
             if (rowCb) {
                 rowCb.checked = !rowCb.checked;
-                handleStudentRowCheck(rowCb, e);
+                handleStudentRowCheck(rowCb, event);
             }
             return;
         }
-        // Normal edit modal open
-        openEditStudentModal(pk, fullName, grNumber, rollNumber, gender, bloodGroup, dob, standardId, divisionId, admissionDate, guardianName, guardianPhone, emergencyContact, address, customFieldsJson, isActive);
+
+        // Desktop detail row
+        const detailRow = document.getElementById(`student-detail-row-${pk}`);
+        const chevron = document.getElementById(`student-chevron-${pk}`);
+        const mainRow = document.getElementById(`student-row-${pk}`);
+
+        // Mobile detail card
+        const mobileDetail = document.getElementById(`student-mobile-detail-${pk}`);
+        const mobileChevron = document.getElementById(`student-mobile-chevron-${pk}`);
+
+        if (detailRow) {
+            const isHidden = detailRow.classList.contains('hidden');
+            if (isHidden) {
+                detailRow.classList.remove('hidden');
+                if (chevron) chevron.classList.add('rotate-180');
+                if (mainRow) mainRow.classList.add('bg-blue-50/40');
+            } else {
+                detailRow.classList.add('hidden');
+                if (chevron) chevron.classList.remove('rotate-180');
+                if (mainRow) mainRow.classList.remove('bg-blue-50/40');
+            }
+        }
+
+        if (mobileDetail) {
+            const isHidden = mobileDetail.classList.contains('hidden');
+            if (isHidden) {
+                mobileDetail.classList.remove('hidden');
+                if (mobileChevron) mobileChevron.classList.add('rotate-180');
+            } else {
+                mobileDetail.classList.add('hidden');
+                if (mobileChevron) mobileChevron.classList.remove('rotate-180');
+            }
+        }
     }
 
     function handleStudentRowCheck(cb, event) {
@@ -516,6 +548,15 @@
         document.getElementById('restore-student-name').textContent = name;
         document.getElementById('form-restore-student').action = '/students/' + pk + '/restore/';
         openModal('modal-restore-student');
+    }
+
+    // ── Single Permanent Delete modal (Admin only) ────────────────────────────────
+    function openSinglePermanentDeleteModal(pk, name) {
+        const nameEl = document.getElementById('permanent-delete-student-name');
+        const formEl = document.getElementById('form-permanent-delete-student');
+        if (nameEl) nameEl.textContent = name;
+        if (formEl) formEl.action = '/students/' + pk + '/hard-delete/';
+        openModal('modal-permanent-delete-student');
     }
 
     // ── Transfer Request modal ───────────────────────────────────────────────────
