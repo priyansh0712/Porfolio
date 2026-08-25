@@ -33,6 +33,11 @@
             --apple-blue: #0066cc;
             --apple-blue-hover: #0071e3;
             --apple-hairline: #e0e0e0;
+
+            /* ── Sidebar Manual Size Controls (Tame ahiya thi control kari shako cho) ── */
+            --sidebar-font-size: 13.5px;       /* 👈 Main Navigation Font Size (e.g. 12.5px, 13px, 13.5px, 14px) */
+            --sidebar-icon-size: 17px;       /* 👈 Navigation Icon Size (e.g. 15px, 16px, 17px, 18px) */
+            --sidebar-label-size: 10.5px;    /* 👈 Section Header Size (MAIN, PEOPLE, etc.) */
         }
 
         *,
@@ -304,6 +309,37 @@
         #admin-sidebar::-webkit-scrollbar { width: 4px; }
         #admin-sidebar::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
         #admin-sidebar:hover::-webkit-scrollbar-thumb { background: var(--apple-hairline); }
+
+        /* Strict Sidebar SVG Dimensions & Font Control */
+        .sidebar-nav-item,
+        #admin-sidebar a.sidebar-nav-item,
+        #admin-sidebar button.sidebar-nav-item {
+            font-size: var(--sidebar-font-size, 13px) !important;
+        }
+
+        .sidebar-section-label {
+            font-size: var(--sidebar-label-size, 10.5px) !important;
+        }
+
+        .sidebar-nav-item svg,
+        #admin-sidebar a svg,
+        #admin-sidebar button svg {
+            width: var(--sidebar-icon-size, 17px) !important;
+            height: var(--sidebar-icon-size, 17px) !important;
+            min-width: var(--sidebar-icon-size, 17px) !important;
+            max-width: var(--sidebar-icon-size, 17px) !important;
+            min-height: var(--sidebar-icon-size, 17px) !important;
+            max-height: var(--sidebar-icon-size, 17px) !important;
+            flex-shrink: 0 !important;
+            display: inline-block !important;
+        }
+
+        #admin-sidebar button[onclick*="closeSidebar"] svg {
+            width: 18px !important;
+            height: 18px !important;
+            min-width: 18px !important;
+            max-width: 18px !important;
+        }
 
         .erp-nav-active {
             background: color-mix(in srgb, var(--apple-blue) 8%, transparent) !important;
@@ -604,174 +640,6 @@
     </div><!-- End #erp-main-wrapper -->
     {% endif %}
 
-    <!-- Global Command Palette Modal (Ctrl + K) -->
-    <div id="cmd-palette-modal"
-        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-start justify-center pt-20 px-4 hidden transition-all duration-200"
-        onclick="if(event.target === this) toggleCmdPalette();">
-        <div
-            class="bg-white/95 backdrop-blur-xl border border-[var(--apple-hairline)] w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden transform transition-all">
-            <!-- Search Header -->
-            <div class="flex items-center px-4 py-3.5 border-b border-[var(--apple-hairline)]">
-                <span class="text-base text-[var(--apple-muted)] mr-3">🔍</span>
-                <input type="text" id="cmd-search-input"
-                    placeholder="Type a command or search (e.g. Dashboard, Faculty, Kiosk)..."
-                    class="w-full bg-transparent text-sm font-semibold text-[var(--apple-ink)] focus:outline-none placeholder-[var(--apple-muted)]/60">
-                <span
-                    class="text-[10px] font-mono text-[var(--apple-muted)] bg-[var(--apple-canvas)] px-2 py-1 rounded-md">ESC
-                    to close</span>
-            </div>
-
-            <!-- Command Results List -->
-            <div id="cmd-results-list" class="max-h-80 overflow-y-auto p-2 space-y-1">
-                {% if user.is_authenticated and user.role == 'FACULTY' %}
-                <!-- Faculty Search Commands -->
-                <a href="{% url 'accounts:dashboard' %}"
-                    class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-base">🏠</span>
-                        <div>
-                            <div class="text-xs font-semibold text-[var(--apple-ink)]">Faculty Dashboard</div>
-                            <div class="text-[11px] text-[var(--apple-muted)]">View leave balances, punctuality &
-                                notifications</div>
-                        </div>
-                    </div>
-                    <span
-                        class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
-                </a>
-
-                <a href="{% url 'leaves:apply_leave' %}"
-                    class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-base">🌴</span>
-                        <div>
-                            <div class="text-xs font-semibold text-[var(--apple-ink)]">Apply for Leave</div>
-                            <div class="text-[11px] text-[var(--apple-muted)]">Submit a new leave request</div>
-                        </div>
-                    </div>
-                    <span
-                        class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
-                </a>
-
-                <a href="{% url 'leaves:faculty_attendance' %}"
-                    class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-base">📅</span>
-                        <div>
-                            <div class="text-xs font-semibold text-[var(--apple-ink)]">My Attendance History</div>
-                            <div class="text-[11px] text-[var(--apple-muted)]">Filter and view monthly check-in history
-                            </div>
-                        </div>
-                    </div>
-                    <span
-                        class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
-                </a>
-                {% elif user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}
-                <!-- Admin Search Commands -->
-                <a href="{% url 'accounts:dashboard' %}"
-                    class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-base">🏠</span>
-                        <div>
-                            <div class="text-xs font-semibold text-[var(--apple-ink)]">Admin Dashboard Overview</div>
-                            <div class="text-[11px] text-[var(--apple-muted)]">Go to school management dashboard</div>
-                        </div>
-                    </div>
-                    <span
-                        class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
-                </a>
-
-                <a href="{% url 'faculty:list' %}"
-                    class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-base">👥</span>
-                        <div>
-                            <div class="text-xs font-semibold text-[var(--apple-ink)]">Faculty Directory & Add Staff
-                            </div>
-                            <div class="text-[11px] text-[var(--apple-muted)]">View faculty list and enroll biometrics
-                            </div>
-                        </div>
-                    </div>
-                    <span
-                        class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
-                </a>
-
-                <a href="{% url 'leaves:admin_requests' %}"
-                    class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-base">🌴</span>
-                        <div>
-                            <div class="text-xs font-semibold text-[var(--apple-ink)]">Approve Faculty Leaves</div>
-                            <div class="text-[11px] text-[var(--apple-muted)]">Review and approve pending leave requests
-                            </div>
-                        </div>
-                    </div>
-                    <span
-                        class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
-                </a>
-
-                <a href="{% url 'reports:report-list' %}"
-                    class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-base">📊</span>
-                        <div>
-                            <div class="text-xs font-semibold text-[var(--apple-ink)]">Attendance Reports & Export</div>
-                            <div class="text-[11px] text-[var(--apple-muted)]">Filter and download attendance records
-                            </div>
-                        </div>
-                    </div>
-                    <span
-                        class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
-                </a>
-
-                {% if school_features.faculty_attendance %}
-                <a href="{% url 'attendance:kiosk' %}" target="_blank"
-                    class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-base">📷</span>
-                        <div>
-                            <div class="text-xs font-semibold text-[var(--apple-ink)]">Open Attendance Webcam Kiosk
-                            </div>
-                            <div class="text-[11px] text-[var(--apple-muted)]">Launch live webcam face scanner</div>
-                        </div>
-                    </div>
-                    <span
-                        class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
-                </a>
-                {% endif %}
-                {% else %}
-                <!-- Guest Search Commands -->
-                <a href="{% url 'public:landing' %}"
-                    class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-base">🏠</span>
-                        <div>
-                            <div class="text-xs font-semibold text-[var(--apple-ink)]">Home Page</div>
-                            <div class="text-[11px] text-[var(--apple-muted)]">Go to StudentERP landing page</div>
-                        </div>
-                    </div>
-                    <span
-                        class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
-                </a>
-
-                <a href="{% url 'public:register' %}"
-                    class="cmd-item flex items-center justify-between p-3 rounded-xl hover:bg-[var(--apple-canvas)] transition-colors group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-base">🏢</span>
-                        <div>
-                            <div class="text-xs font-semibold text-[var(--apple-ink)]">Register School Tenant</div>
-                            <div class="text-[11px] text-[var(--apple-muted)]">Register a new school tenant SaaS account
-                            </div>
-                        </div>
-                    </div>
-                    <span
-                        class="text-xs font-mono text-[var(--apple-muted)] opacity-0 group-hover:opacity-100">&crarr;</span>
-                </a>
-                {% endif %}
-
-            </div>
-        </div>
-    </div>
-
     <!-- Quick Floating Action Drawer FAB Button (Bottom Left) - Strictly Desktop Only (>=768px) -->
     <div class="hidden md:block fixed bottom-6 left-6 z-40">
         <button onclick="toggleQuickDrawer()" id="fab-quick-btn" title="Quick Actions Drawer"
@@ -872,15 +740,6 @@
                     </div>
                 </a>
                 {% endif %}
-
-                <button onclick="toggleCmdPalette(); toggleQuickDrawer();"
-                    class="w-full text-left flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--apple-canvas)] border-t border-[var(--apple-hairline)] pt-2 transition-colors">
-                    <span class="p-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm">🔍</span>
-                    <div>
-                        <div class="text-xs font-bold text-[var(--apple-ink)]">Global Search (Ctrl + K)</div>
-                        <div class="text-[10px] text-[var(--apple-muted)]">Spotlight command palette</div>
-                    </div>
-                </button>
             </div>
         </div>
     </div>
@@ -1019,37 +878,6 @@
             }
         });
 
-        // Command Palette Logic (Ctrl + K)
-        function toggleCmdPalette() {
-            const modal = document.getElementById('cmd-palette-modal');
-            const input = document.getElementById('cmd-search-input');
-            if (modal) {
-                if (modal.classList.contains('hidden')) {
-                    modal.classList.remove('hidden');
-                    if (input) {
-                        input.value = '';
-                        input.focus();
-                        filterCmdItems('');
-                    }
-                } else {
-                    modal.classList.add('hidden');
-                }
-            }
-        }
-
-        function filterCmdItems(query) {
-            const q = query.toLowerCase().trim();
-            const items = document.querySelectorAll('.cmd-item');
-            items.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                if (!q || text.includes(q)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
         // ── Admin Sidebar Drawer Toggle ──
         function toggleSidebar() {
             var sidebar = document.getElementById('admin-sidebar');
@@ -1094,10 +922,7 @@
         }
 
         document.addEventListener('keydown', function (e) {
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-                e.preventDefault();
-                toggleCmdPalette();
-            } else if (e.key === 'Escape') {
+            if (e.key === 'Escape') {
                 // Close mobile "More" bottom sheet if open
                 var moreSheet = document.getElementById('mobile-more-sheet');
                 if (moreSheet && !moreSheet.classList.contains('hidden')) {
@@ -1109,11 +934,6 @@
                 if (sidebar && sidebar.classList.contains('sidebar-open')) {
                     closeSidebar();
                     return;
-                }
-                // Then close command palette
-                var modal = document.getElementById('cmd-palette-modal');
-                if (modal && !modal.classList.contains('hidden')) {
-                    modal.classList.add('hidden');
                 }
             }
         });
@@ -1130,10 +950,6 @@
                     menu.classList.toggle('hidden');
                 });
             }
-
-            document.getElementById('cmd-search-input')?.addEventListener('input', function (e) {
-                filterCmdItems(e.target.value);
-            });
 
             // Fallback scroll progress handler
             if (!lenisInstance) {
