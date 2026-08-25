@@ -42,3 +42,10 @@ Progress: [████████████████████] 100%
 - **Phase 2**: Student Master Records, Scoped CRUD & Student Portal (`STU-01` to `STU-06`) — VERIFIED & SHIPPED
 - **Phase 3**: 4-Step Bulk Excel/CSV Onboarding Engine (`BULK-01` to `BULK-05`) — VERIFIED & SHIPPED
 - **Phase 4**: Faculty & Student Views, Password Security & Integration Polish (`FAC-01`, `FAC-02`, `AUTH-01`, `SEC-01`) — VERIFIED & SHIPPED
+
+### Quick Tasks Completed
+
+| # | Description | Date | Status | Directory |
+|---|-------------|------|--------|-----------|
+| 260825-dyc | Fix UI review findings for Phase 4 (Token normalization, mobile nav drawer fixes, password visibility toggles) | 2026-08-25 | Verified (281/281 passing) | [260825-dyc-fix-ui-review-findings-for-phase-4](./quick/260825-dyc-fix-ui-review-findings-for-phase-4/) |
+

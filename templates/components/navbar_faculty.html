@@ -27,7 +27,13 @@
                 {% if school_features.faculty_attendance %}
                 <a href="{% url 'leaves:faculty_attendance' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1">My Attendance</a>
                 {% endif %}
-                <a href="{% url 'accounts:password_change' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1" title="Security & Password">🔒 Password</a>
+                <a href="{% url 'accounts:password_change' %}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1" title="Security & Password">
+                    <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <span>Password</span>
+                </a>
                 {% if school_features.notifications %}
                 <a href="{% url 'notifications:notification_list' %}" class="relative inline-flex items-center px-2 py-1 text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors" title="Notifications">
                     <span class="text-base">🔔</span>
@@ -60,13 +66,21 @@
     <!-- Mobile Navigation Drawer -->
     <div id="mobile-menu" class="hidden md:hidden border-b border-[var(--apple-hairline)] bg-white px-4 pt-3 pb-5 space-y-1.5 shadow-lg">
         <a href="{% url 'accounts:dashboard' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">Dashboard</a>
+        <a href="{% url 'faculty:my_class' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">My Class</a>
+        <a href="{% url 'faculty:my_subjects' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">My Subjects</a>
         {% if school_features.faculty_leave %}
         <a href="{% url 'leaves:apply_leave' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">Apply Leave</a>
         {% endif %}
-        <a href="{% url 'students:hub' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">My Class</a>
         {% if school_features.faculty_attendance %}
         <a href="{% url 'leaves:faculty_attendance' %}" class="flex items-center px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">My Attendance</a>
         {% endif %}
+        <a href="{% url 'accounts:password_change' %}" class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>Password & Security</span>
+        </a>
         {% if school_features.notifications %}
         <a href="{% url 'notifications:notification_list' %}" class="flex items-center justify-between px-3 py-2.5 text-sm font-medium text-[var(--apple-ink)] rounded-xl hover:bg-[var(--apple-canvas)] min-h-[44px]">
             <span>🔔 Notifications</span>

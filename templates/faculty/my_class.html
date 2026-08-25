@@ -11,11 +11,13 @@
         <div>
             <h1 class="text-2xl sm:text-3xl font-bold text-[#1d1d1f] tracking-tight">Class Teacher Dashboard</h1>
             {% if allocation %}
-                <p class="text-xs sm:text-sm text-gray-500 mt-1">
-                    Assigned Class: <strong class="text-[#5A2132] font-bold">{{ allocation.division.standard.name }} — {{ allocation.division.name }}</strong> • Session {{ academic_year.name }}
+                <p class="text-xs sm:text-sm text-[#86868b] mt-1">
+                    Assigned Class: <strong class="text-[#0066cc] font-semibold">{{ allocation.division.standard.name }} — {{ allocation.division.name }}</strong> • Session {{ academic_year.name }}
                 </p>
             {% else %}
-                <p class="text-xs sm:text-sm text-amber-600 font-medium mt-1">⚠️ No active class teacher assignment for this academic session.</p>
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 mt-2 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/70">
+                    <span>⚠️</span> No active class teacher assignment for this academic session.
+                </div>
             {% endif %}
         </div>
         {% if allocation %}
@@ -39,17 +41,17 @@
             <div class="apple-card p-4 sm:p-5">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Class Division</div>
                 <div class="text-xl font-bold text-[#1d1d1f] mt-1">{{ allocation.division.standard.name }} {{ allocation.division.name }}</div>
-                <div class="text-[11px] text-gray-400 mt-0.5">Assigned Class Teacher</div>
+                <div class="text-[11px] text-[#86868b] mt-0.5">Assigned Class Teacher</div>
             </div>
             <div class="apple-card p-4 sm:p-5">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Total Students</div>
-                <div class="text-xl font-bold text-[#5A2132] mt-1">{{ total_students }}</div>
-                <div class="text-[11px] text-gray-400 mt-0.5">Enrolled Active Students</div>
+                <div class="text-xl font-bold text-[#0066cc] mt-1">{{ total_students }}</div>
+                <div class="text-[11px] text-[#86868b] mt-0.5">Enrolled Active Students</div>
             </div>
             <div class="apple-card p-4 sm:p-5">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Academic Year</div>
                 <div class="text-xl font-bold text-emerald-700 mt-1">{{ academic_year.name }}</div>
-                <div class="text-[11px] text-gray-400 mt-0.5">Current Active Session</div>
+                <div class="text-[11px] text-[#86868b] mt-0.5">Current Active Session</div>
             </div>
         </div>
 
@@ -61,7 +63,7 @@
                     <h3 class="text-base font-bold text-[#1d1d1f]">Class Student Roster</h3>
                     <p class="text-xs text-[#86868b] mt-0.5">Students enrolled in {{ allocation.division.standard.name }} {{ allocation.division.name }}.</p>
                 </div>
-                <div class="text-xs font-semibold text-[#5A2132] bg-[#5A2132]/8 border border-[#5A2132]/20 px-3 py-1 rounded-full">
+                <div class="text-xs font-semibold text-[#0066cc] bg-[#0066cc]/8 border border-[#0066cc]/20 px-3 py-1 rounded-full">
                     {{ total_students }} Students
                 </div>
             </div>
@@ -100,7 +102,7 @@
                                 )">
                                 <!-- Roll No -->
                                 <td class="py-3 px-4 text-center">
-                                    <span class="font-mono text-xs font-bold text-[#5A2132] bg-[#5A2132]/8 border border-[#5A2132]/20 px-2.5 py-1 rounded-lg">
+                                    <span class="font-mono text-xs font-bold text-[#1d1d1f] bg-gray-100 border border-gray-200/80 px-2.5 py-1 rounded-lg">
                                         {{ student.roll_number|default:"—" }}
                                     </span>
                                 </td>
@@ -108,18 +110,18 @@
                                 <!-- Avatar, Full Name & Details -->
                                 <td class="py-3 px-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-[#5A2132]/8 text-[#5A2132] border border-[#5A2132]/20 flex items-center justify-center text-xs font-bold flex-shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                                        <div class="w-8 h-8 rounded-full bg-[#0066cc]/8 text-[#0066cc] border border-[#0066cc]/20 flex items-center justify-center text-xs font-bold flex-shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
                                             {{ student.initials }}
                                         </div>
                                         <div class="min-w-0">
-                                            <p class="font-semibold text-[#1D1D1F] text-xs group-hover:text-[#5A2132] transition-colors truncate">
+                                            <p class="font-semibold text-[#1D1D1F] text-xs group-hover:text-[#0066cc] transition-colors truncate">
                                                 {{ student.full_name }}
                                             </p>
                                             <div class="flex flex-wrap items-center gap-1.5 mt-0.5 text-[10px] text-gray-400 font-medium">
                                                 <span>{% if student.dob %}{{ student.dob|date:"d M Y" }}{% else %}DOB not set{% endif %}</span>
                                                 {% if student.gender %}<span>• {{ student.get_gender_display }}</span>{% endif %}
                                                 {% if student.guardian_phone %}
-                                                    <span>• <a href="tel:{{ student.guardian_phone }}" onclick="event.stopPropagation();" class="text-[#5A2132] hover:underline font-mono font-medium">📞 {{ student.guardian_phone }}</a></span>
+                                                    <span>• <a href="tel:{{ student.guardian_phone }}" onclick="event.stopPropagation();" class="text-[#0066cc] hover:underline font-mono font-medium">📞 {{ student.guardian_phone }}</a></span>
                                                 {% endif %}
                                             </div>
                                         </div>
@@ -152,7 +154,7 @@
                                         '{{ student.address|escapejs }}',
                                         '{{ student.custom_fields_json|escapejs }}',
                                         {{ student.is_active|yesno:'true,false' }}
-                                    )" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#5A2132] bg-[#5A2132]/8 hover:bg-[#5A2132]/15 border border-[#5A2132]/20 transition-all cursor-pointer shadow-2xs">
+                                    )" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#0066cc] bg-[#0066cc]/8 hover:bg-[#0066cc]/15 border border-[#0066cc]/20 transition-all cursor-pointer shadow-2xs">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
