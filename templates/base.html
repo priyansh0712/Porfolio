@@ -26,7 +26,8 @@
         :root {
             --apple-canvas: #f5f5f7;
             --apple-surface: #ffffff;
-            --apple-sidebar: #fafafc;
+            --apple-sidebar: linear-gradient(180deg, #0d3b66 0%, #06192d 100%);
+            --apple-sidebar-border: rgba(255, 255, 255, 0.1);
             --apple-topbar: #fafafc;
             --apple-ink: #1d1d1f;
             --apple-muted: #86868b;
@@ -299,8 +300,8 @@
             bottom: 0;
             width: 260px;
             z-index: 45;
-            background: var(--apple-sidebar, #fafafc);
-            border-right: 1px solid var(--apple-hairline);
+            background: var(--apple-sidebar, linear-gradient(180deg, #0d3b66 0%, #06192d 100%)) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
             transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s ease;
             overflow-y: auto;
             overflow-x: hidden;
@@ -308,7 +309,7 @@
 
         #admin-sidebar::-webkit-scrollbar { width: 4px; }
         #admin-sidebar::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
-        #admin-sidebar:hover::-webkit-scrollbar-thumb { background: var(--apple-hairline); }
+        #admin-sidebar:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); }
 
         /* Strict Sidebar SVG Dimensions & Font Control */
         .sidebar-nav-item,
@@ -319,19 +320,17 @@
 
         .sidebar-section-label {
             font-size: var(--sidebar-label-size, 10.5px) !important;
+            color: #93c5fd !important;
+            letter-spacing: 0.06em !important;
         }
 
-        .sidebar-nav-item svg,
         #admin-sidebar a svg,
         #admin-sidebar button svg {
-            width: var(--sidebar-icon-size, 17px) !important;
-            height: var(--sidebar-icon-size, 17px) !important;
-            min-width: var(--sidebar-icon-size, 17px) !important;
-            max-width: var(--sidebar-icon-size, 17px) !important;
-            min-height: var(--sidebar-icon-size, 17px) !important;
-            max-height: var(--sidebar-icon-size, 17px) !important;
+            width: var(--sidebar-icon-size, 18px) !important;
+            height: var(--sidebar-icon-size, 18px) !important;
+            min-width: var(--sidebar-icon-size, 18px) !important;
+            max-width: var(--sidebar-icon-size, 18px) !important;
             flex-shrink: 0 !important;
-            display: inline-block !important;
         }
 
         #admin-sidebar button[onclick*="closeSidebar"] svg {
@@ -348,44 +347,50 @@
         }
 
         .erp-nav-active {
-            background: color-mix(in srgb, var(--apple-blue) 8%, transparent) !important;
-            color: var(--apple-blue) !important;
-            font-weight: 600 !important;
-            border: 1px solid color-mix(in srgb, var(--apple-blue) 18%, transparent) !important;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            background: #ffffff !important;
+            color: #0a2540 !important;
+            font-weight: 700 !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15) !important;
         }
-        .erp-nav-active svg { color: var(--apple-blue); }
+        .erp-nav-active svg { color: #0066cc !important; }
 
         .erp-nav-default {
-            color: #555558;
+            color: rgba(255, 255, 255, 0.82) !important;
             border: 1px solid transparent;
         }
         .erp-nav-default:hover {
-            color: #1d1d1f;
-            background: rgba(0, 0, 0, 0.035);
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+        .erp-nav-default svg {
+            color: rgba(255, 255, 255, 0.75) !important;
+        }
+        .erp-nav-default:hover svg {
+            color: #ffffff !important;
         }
 
         .erp-subnav-active {
-            color: var(--apple-blue) !important;
+            color: #0a2540 !important;
             font-weight: 700 !important;
-            background: color-mix(in srgb, var(--apple-blue) 12%, transparent) !important;
-            border: 1px solid color-mix(in srgb, var(--apple-blue) 22%, transparent) !important;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            background: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
         }
         .erp-subnav-active .erp-dot {
-            background-color: var(--apple-blue) !important;
+            background-color: #0066cc !important;
         }
 
         .erp-subnav-default {
-            color: #555558;
+            color: rgba(255, 255, 255, 0.75) !important;
             border: 1px solid transparent;
         }
         .erp-subnav-default:hover {
-            color: #1d1d1f;
-            background: rgba(0, 0, 0, 0.035);
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.1) !important;
         }
         .erp-subnav-default .erp-dot {
-            background-color: #d1d5db;
+            background-color: rgba(255, 255, 255, 0.4) !important;
         }
 
         #erp-main-wrapper {
@@ -490,7 +495,7 @@
     {% endif %}
 
     <!-- Main Container -->
-    <main class="flex-grow {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% else %}max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% endif %} box-border">
+    <main class="flex-grow {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}w-full max-w-full px-4 sm:px-6 lg:px-8 pt-5 sm:pt-6 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% else %}max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% endif %} box-border">
         {% include "components/alerts.html" %}
         {% block content %}{% endblock %}
     </main>
