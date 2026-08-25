@@ -1,22 +1,22 @@
 <!-- Students Table Partial (rendered directly or via AJAX live filter) -->
-<div id="students-table-inner" class="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden transition-opacity duration-150">
+<div id="students-table-inner" class="bg-white rounded-2xl border border-gray-200/80 shadow-xs transition-opacity duration-150">
     {% if students %}
-    <!-- Desktop Table View (>= 768px) -->
-    <div class="hidden md:block overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="bg-gray-50/75 border-b border-gray-200/70">
+    <!-- Desktop Table View (>= 768px) with Window Sticky Header -->
+    <div class="hidden md:block">
+        <table class="w-full text-sm border-collapse">
+            <thead class="sticky top-14 z-20" style="position: sticky; top: 56px; z-index: 20;">
+                <tr class="bg-gray-50/95 border-b border-gray-200">
                     <!-- Checkbox Column for Select Mode -->
-                    <th class="student-select-col w-12 px-3 py-3 text-center transition-all duration-200" style="display: none;">
+                    <th class="student-select-col w-12 px-3 py-3 text-center transition-all duration-200" style="display: none; position: sticky; top: 56px; z-index: 20; background-color: #f9fafb !important; box-shadow: 0 1px 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.03);">
                         <input type="checkbox" id="student-select-all-cb" onchange="toggleSelectAllStudents(this)"
                             class="w-4 h-4 rounded-md border-gray-300 text-[#0066cc] focus:ring-[#0066cc] cursor-pointer"
                             title="Select All Students on Page">
                     </th>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Student</th>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Class / Grade</th>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Roll No</th>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">GR No</th>
-                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Action</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" style="position: sticky; top: 56px; z-index: 20; background-color: #f9fafb !important; box-shadow: 0 1px 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.03);">Student</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" style="position: sticky; top: 56px; z-index: 20; background-color: #f9fafb !important; box-shadow: 0 1px 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.03);">Class / Grade</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" style="position: sticky; top: 56px; z-index: 20; background-color: #f9fafb !important; box-shadow: 0 1px 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.03);">Roll No</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" style="position: sticky; top: 56px; z-index: 20; background-color: #f9fafb !important; box-shadow: 0 1px 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.03);">GR No</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide" style="position: sticky; top: 56px; z-index: 20; background-color: #f9fafb !important; box-shadow: 0 1px 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.03);">Action</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100" id="students-table-body">
@@ -343,9 +343,79 @@
         {% endfor %}
     </div>
 
-    <!-- Footer count -->
-    <div class="px-4 py-3 border-t border-gray-100 text-xs text-gray-400">
-        {{ students|length }} student{{ students|length|pluralize }} found
+    <!-- Footer Count & Apple Pagination Bar -->
+    <div class="px-5 py-3.5 border-t border-gray-200/80 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <!-- Showing entries counter + Per Page Selector -->
+        <div class="flex items-center gap-3 text-gray-500 font-medium">
+            <span>
+                {% if page_obj.paginator %}
+                    Showing <span class="font-bold text-[#1d1d1f]">{{ page_obj.start_index }}</span> to <span class="font-bold text-[#1d1d1f]">{{ page_obj.end_index }}</span> of <span class="font-bold text-[#1d1d1f]">{{ page_obj.paginator.count }}</span> students
+                {% else %}
+                    Showing <span class="font-bold text-[#1d1d1f]">{{ students|length }}</span> student{{ students|length|pluralize }}
+                {% endif %}
+            </span>
+
+            <!-- Per page dropdown -->
+            <div class="flex items-center gap-1.5 pl-3 border-l border-gray-200">
+                <span class="text-gray-400">Rows:</span>
+                <select id="student-per-page-select" onchange="changeStudentPerPage(this.value)" class="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1 font-semibold text-[#1d1d1f] focus:outline-none focus:ring-1 focus:ring-[#0066cc] cursor-pointer">
+                    <option value="25" {% if per_page == '25' or not per_page %}selected{% endif %}>25</option>
+                    <option value="50" {% if per_page == '50' %}selected{% endif %}>50</option>
+                    <option value="100" {% if per_page == '100' %}selected{% endif %}>100</option>
+                    <option value="all" {% if per_page == 'all' %}selected{% endif %}>All</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if page_obj.has_other_pages %}
+        <nav class="flex items-center gap-1" aria-label="Student Pagination">
+            {% if page_obj.has_previous %}
+            <button type="button" onclick="goToStudentPage({{ page_obj.previous_page_number }})"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1 cursor-pointer">
+                ‹ Prev
+            </button>
+            {% else %}
+            <span class="px-2.5 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
+                ‹ Prev
+            </span>
+            {% endif %}
+
+            <!-- Page Number Pills -->
+            <div class="flex items-center gap-1">
+                {% for p in page_obj.paginator.page_range %}
+                    {% if p == page_obj.number %}
+                        <span class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#0066cc] text-white font-bold text-xs shadow-2xs">
+                            {{ p }}
+                        </span>
+                    {% elif p >= page_obj.number|add:"-2" and p <= page_obj.number|add:"2" %}
+                        <button type="button" onclick="goToStudentPage({{ p }})"
+                            class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-blue-50 hover:text-[#0066cc] transition-colors cursor-pointer shadow-2xs">
+                            {{ p }}
+                        </button>
+                    {% elif p == 1 or p == page_obj.paginator.num_pages %}
+                        <button type="button" onclick="goToStudentPage({{ p }})"
+                            class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-blue-50 hover:text-[#0066cc] transition-colors cursor-pointer shadow-2xs">
+                            {{ p }}
+                        </button>
+                    {% elif p == page_obj.number|add:"-3" or p == page_obj.number|add:"3" %}
+                        <span class="w-5 text-center text-gray-400 font-bold text-xs">…</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {% if page_obj.has_next %}
+            <button type="button" onclick="goToStudentPage({{ page_obj.next_page_number }})"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1 cursor-pointer">
+                Next ›
+            </button>
+            {% else %}
+            <span class="px-2.5 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
+                Next ›
+            </span>
+            {% endif %}
+        </nav>
+        {% endif %}
     </div>
 
     {% else %}

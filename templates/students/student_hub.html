@@ -375,34 +375,25 @@
 
         // Desktop detail row
         const detailRow = document.getElementById(`student-detail-row-${pk}`);
-        const chevron = document.getElementById(`student-chevron-${pk}`);
         const mainRow = document.getElementById(`student-row-${pk}`);
 
         // Mobile detail card
         const mobileDetail = document.getElementById(`student-mobile-detail-${pk}`);
-        const mobileChevron = document.getElementById(`student-mobile-chevron-${pk}`);
 
-        if (detailRow) {
-            const isHidden = detailRow.classList.contains('hidden');
-            if (isHidden) {
+        const isCurrentlyHidden = detailRow ? detailRow.classList.contains('hidden') : (mobileDetail ? mobileDetail.classList.contains('hidden') : true);
+
+        // Auto-close all other open student accordions (Single Accordion Rule)
+        document.querySelectorAll('[id^="student-detail-row-"]').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('[id^="student-row-"]').forEach(el => el.classList.remove('bg-blue-50/40'));
+        document.querySelectorAll('[id^="student-mobile-detail-"]').forEach(el => el.classList.add('hidden'));
+
+        if (isCurrentlyHidden) {
+            if (detailRow) {
                 detailRow.classList.remove('hidden');
-                if (chevron) chevron.classList.add('rotate-180');
                 if (mainRow) mainRow.classList.add('bg-blue-50/40');
-            } else {
-                detailRow.classList.add('hidden');
-                if (chevron) chevron.classList.remove('rotate-180');
-                if (mainRow) mainRow.classList.remove('bg-blue-50/40');
             }
-        }
-
-        if (mobileDetail) {
-            const isHidden = mobileDetail.classList.contains('hidden');
-            if (isHidden) {
+            if (mobileDetail) {
                 mobileDetail.classList.remove('hidden');
-                if (mobileChevron) mobileChevron.classList.add('rotate-180');
-            } else {
-                mobileDetail.classList.add('hidden');
-                if (mobileChevron) mobileChevron.classList.remove('rotate-180');
             }
         }
     }
@@ -682,10 +673,27 @@
     // ── Seamless Instant AJAX Live Filter (Zero Full-Page Reload) ───────────────
     let filterAbortController = null;
     let searchDebounceTimer = null;
+    let currentStudentPage = 1;
+    let currentStudentPerPage = '{{ per_page|default:"25" }}';
 
-    function triggerLiveStudentFilter() {
+    function goToStudentPage(page) {
+        currentStudentPage = page;
+        triggerLiveStudentFilter(true);
+    }
+
+    function changeStudentPerPage(perPage) {
+        currentStudentPerPage = perPage;
+        currentStudentPage = 1;
+        triggerLiveStudentFilter(true);
+    }
+
+    function triggerLiveStudentFilter(keepPage) {
         const filterForm = document.getElementById('student-filter-form');
         if (!filterForm) return;
+
+        if (!keepPage) {
+            currentStudentPage = 1;
+        }
 
         const qInput = document.getElementById('student-search-input');
         const stdSelect = filterForm.querySelector('[name=standard]');
@@ -717,6 +725,8 @@
         if (std) params.set('standard', std);
         if (div) params.set('division', div);
         if (status && status !== 'active') params.set('status', status);
+        if (currentStudentPage > 1) params.set('page', currentStudentPage);
+        if (currentStudentPerPage && currentStudentPerPage !== '25') params.set('per_page', currentStudentPerPage);
 
         const queryString = params.toString();
         const fetchUrl = '/students/?' + queryString;

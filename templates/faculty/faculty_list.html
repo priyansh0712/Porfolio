@@ -110,7 +110,6 @@
     background: #ffffff;
     border: 1px solid #e0e0e0;
     border-radius: 18px;
-    overflow: hidden;
     box-shadow: 0 2px 12px rgba(0,0,0,0.02);
   }
   .faculty-table {
@@ -118,6 +117,9 @@
     border-collapse: collapse;
   }
   .faculty-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     padding: 12px 16px;
     font-size: 0.68rem;
     font-weight: 600;
@@ -125,7 +127,9 @@
     letter-spacing: 0.04em;
     color: #86868b;
     text-align: left;
-    background: #fafafa;
+    background: rgba(250, 250, 250, 0.96);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-bottom: 1px solid #e0e0e0;
     white-space: nowrap;
   }
@@ -464,42 +468,76 @@
   <!-- Digital ID Cards / Mobile Cards View (Single Clean List) -->
   <div id="faculty-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8 md:hidden">
     {% for faculty in faculty_list %}
-    <div class="apple-card faculty-card-item p-4 sm:p-5 flex flex-col justify-between hover:shadow-sm hover:border-[#0066cc]/30 transition-all duration-150 cursor-pointer group rounded-2xl border border-[var(--apple-hairline)] bg-white"
+    <div class="apple-card faculty-card-item p-3.5 sm:p-4 flex flex-col justify-between hover:shadow-sm hover:border-[#0066cc]/30 transition-all duration-150 cursor-pointer group rounded-2xl border border-[var(--apple-hairline)] bg-white"
          data-name="{{ faculty.full_name|lower }}"
          data-email="{{ faculty.email|lower }}"
          data-code="{{ faculty.employee_code|lower }}"
          data-dept="{{ faculty.department }}"
          data-status="{% if faculty.is_active %}active{% else %}inactive{% endif %}"
-         onclick="openProfileModal({{ faculty.pk }})">
+         data-id="{{ faculty.pk }}"
+         onclick="toggleFacultyAccordion(event, {{ faculty.pk }})">
       <div>
-        <!-- Top Row: [Initial] Faculty Name + email@school.edu ... View → -->
-        <div class="flex items-start justify-between gap-2.5">
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-10 h-10 rounded-2xl bg-[#0066cc]/10 text-[#0066cc] font-bold text-xs flex items-center justify-center border border-[#0066cc]/20 flex-shrink-0">
-              {{ faculty.first_name.0|upper }}{{ faculty.last_name.0|upper }}
+        <!-- Top Row: [Initial] Faculty Name + Department + iOS Toggle & Action buttons -->
+        <div class="flex items-center justify-between gap-2.5">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-10 h-10 rounded-full bg-[#0066cc]/8 text-[#0066cc] border border-[#0066cc]/20 flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-2xs">
+              {{ faculty.initials }}
             </div>
-            <div class="min-w-0">
-              <h3 class="text-sm font-bold text-[#1D1D1F] group-hover:text-[#0066cc] transition-colors truncate">{{ faculty.full_name }}</h3>
-              <p class="text-xs text-[#86868b] truncate mt-0.5">{{ faculty.email }}</p>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <h3 class="text-sm font-bold text-[#1D1D1F] group-hover:text-[#0066cc] transition-colors truncate">{{ faculty.full_name }}</h3>
+                {% if not faculty.is_active %}
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-600 border border-red-200">Inactive</span>
+                {% endif %}
+              </div>
+              <div class="flex items-center flex-wrap gap-1.5 mt-0.5">
+                <span class="text-[11px] text-[#86868b] font-medium">{{ faculty.department }}</span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-gray-100 border border-gray-200/60 text-[10px] font-mono font-medium text-gray-600">Code: {{ faculty.employee_code }}</span>
+              </div>
             </div>
           </div>
-          <div class="relative flex items-center justify-center flex-shrink-0">
-            <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#0066cc] bg-[#0066cc]/8 group-hover:bg-[#0066cc]/15 border border-[#0066cc]/20 rounded-full transition-colors">
-              View &rarr;
-            </span>
+
+          <!-- Mobile Actions (Toggle Switch + Edit) -->
+          <div class="flex items-center gap-2 flex-shrink-0" onclick="event.stopPropagation()">
+            <!-- iOS Toggle Switch -->
+            <button type="button"
+                onclick="event.stopPropagation(); toggleFacultyStatus({{ faculty.pk }})"
+                style="background-color: {% if faculty.is_active %}#16a34a{% else %}#d1d5db{% endif %} !important; width: 36px; height: 20px; border-radius: 9999px; position: relative; display: inline-flex; align-items: center; padding: 2px; cursor: pointer; border: none; transition: background-color 0.2s;"
+                role="switch" aria-checked="{% if faculty.is_active %}true{% else %}false{% endif %}"
+                title="{% if faculty.is_active %}Active: Click to Deactivate{% else %}Inactive: Click to Activate{% endif %}">
+                <span style="display: inline-block; width: 16px; height: 16px; border-radius: 9999px; background-color: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: transform 0.2s; {% if faculty.is_active %}transform: translateX(16px);{% else %}transform: translateX(0px);{% endif %}"></span>
+            </button>
+            <!-- Quick Edit Button -->
+            <button type="button" onclick="event.stopPropagation(); openFacultyModal('edit', {{ faculty.pk }})" class="p-1.5 rounded-xl text-gray-500 hover:text-[#0066cc] hover:bg-gray-100 cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
           </div>
         </div>
 
-        <!-- Middle: Department · Role & Employee Code -->
-        <div class="flex flex-wrap items-center justify-between gap-2 pt-3 mt-3 border-t border-gray-100 text-xs">
-          <div class="text-[#1D1D1F] font-medium truncate">
-            <span>{{ faculty.department }}</span>
-            <span class="text-gray-300 mx-1">·</span>
-            <span class="text-gray-500">{{ faculty.designation|default:"Faculty Member" }}</span>
+        <!-- Mobile Expanded Card Details (Option A) -->
+        <div id="faculty-mobile-detail-{{ faculty.pk }}" style="background-color: #f5f5f7 !important;" class="hidden pt-3 mt-3 border-t border-gray-200 -mx-3.5 -mb-3.5 p-3.5 border-l-4 border-l-[#0066cc] space-y-3">
+          <div class="grid grid-cols-1 gap-2 text-xs">
+            <div style="background-color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;" class="rounded-xl p-3 border border-gray-200 space-y-1.5">
+              <span class="font-bold text-[#0066cc] text-[11px] uppercase tracking-wide block pb-1 border-b border-gray-100">Professional Info</span>
+              <div class="space-y-1 text-[11px] pt-0.5">
+                <div><span class="text-[#86868b] font-semibold">Department:</span> <span class="font-bold text-[#1d1d1f]">{{ faculty.department }}</span></div>
+                <div><span class="text-[#86868b] font-semibold">Designation:</span> <span class="font-semibold text-[#1d1d1f]">{{ faculty.designation|default:"Faculty Member" }}</span></div>
+                <div><span class="text-[#86868b] font-semibold">Code:</span> <span class="font-mono font-bold text-gray-700">{{ faculty.employee_code }}</span></div>
+              </div>
+            </div>
+            <div style="background-color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;" class="rounded-xl p-3 border border-gray-200 space-y-1.5">
+              <span class="font-bold text-[#0066cc] text-[11px] uppercase tracking-wide block pb-1 border-b border-gray-100">Contact & Face ID</span>
+              <div class="space-y-1 text-[11px] pt-0.5">
+                <div><span class="text-[#86868b] font-semibold">Email:</span> <span class="font-semibold text-[#1d1d1f] select-all">{{ faculty.email }}</span></div>
+                {% if faculty.phone_number %}<div><span class="text-[#86868b] font-semibold">Phone:</span> <a href="tel:{{ faculty.phone_number }}" class="text-[#0066cc] font-mono font-bold">📞 {{ faculty.phone_number }}</a></div>{% endif %}
+                <div><span class="text-[#86868b] font-semibold">Face ID:</span> {% if faculty.is_face_enrolled %}<span class="text-emerald-600 font-bold">● Enrolled</span>{% else %}<span class="text-amber-600 font-bold">○ Pending</span>{% endif %}</div>
+              </div>
+            </div>
           </div>
-          <span class="font-mono text-[10px] font-bold px-2 py-0.5 bg-[#f5f5f7] border border-gray-200/80 rounded-md text-[#1D1D1F]">
-            {{ faculty.employee_code }}
-          </span>
+          <div class="flex items-center gap-2 pt-1">
+            <button type="button" onclick="event.stopPropagation(); openEnrollFaceModal({{ faculty.pk }}, '{{ faculty.full_name|escapejs }}', '{{ faculty.employee_code|escapejs }}', {{ faculty.is_face_enrolled|yesno:'true,false' }})" style="background-color: #ffffff !important;" class="flex-1 py-2 text-center text-xs font-semibold text-[#0066cc] border border-blue-200 rounded-xl shadow-2xs cursor-pointer">📷 Enroll Face</button>
+            <button type="button" onclick="event.stopPropagation(); openFacultyModal('edit', {{ faculty.pk }})" style="background-color: #ffffff !important;" class="flex-1 py-2 text-center text-xs font-semibold text-gray-700 border border-gray-200 rounded-xl shadow-2xs cursor-pointer">✏️ Edit Profile</button>
+          </div>
         </div>
       </div>
     </div>
@@ -509,73 +547,290 @@
   <!-- Desktop Faculty Data Table (hidden on mobile < 768px) -->
   <div class="faculty-table-container hidden md:block" id="faculty-table-container">
     {% if faculty_list %}
-    <table class="faculty-table" id="faculty-table">
-      <thead>
+    <table class="faculty-table border-collapse" id="faculty-table">
+      <thead class="sticky top-14 z-20" style="position: sticky; top: 56px; z-index: 20;">
         <tr>
-          <th>Faculty</th>
-          <th>Employee Code</th>
-          <th>Department & Designation</th>
-          <th style="text-align: right;">Actions</th>
+          <th style="position: sticky; top: 56px; z-index: 20; background-color: #fafafa !important; box-shadow: 0 1px 0 #e0e0e0, 0 2px 4px rgba(0,0,0,0.03);">Faculty</th>
+          <th style="position: sticky; top: 56px; z-index: 20; background-color: #fafafa !important; box-shadow: 0 1px 0 #e0e0e0, 0 2px 4px rgba(0,0,0,0.03);">Employee Code</th>
+          <th style="position: sticky; top: 56px; z-index: 20; background-color: #fafafa !important; box-shadow: 0 1px 0 #e0e0e0, 0 2px 4px rgba(0,0,0,0.03);">Department & Designation</th>
+          <th style="text-align: right; position: sticky; top: 56px; z-index: 20; background-color: #fafafa !important; box-shadow: 0 1px 0 #e0e0e0, 0 2px 4px rgba(0,0,0,0.03);">Actions</th>
         </tr>
       </thead>
       <tbody id="faculty-tbody">
         {% for faculty in faculty_list %}
-        <tr data-name="{{ faculty.full_name|lower }}"
+        <tr id="faculty-row-{{ faculty.pk }}"
+            class="faculty-main-row group transition-colors hover:bg-gray-50/70"
+            data-name="{{ faculty.full_name|lower }}"
             data-email="{{ faculty.email|lower }}"
             data-code="{{ faculty.employee_code|lower }}"
             data-dept="{{ faculty.department }}"
             data-status="{% if faculty.is_active %}active{% else %}inactive{% endif %}"
             data-id="{{ faculty.pk }}"
-            onclick="openProfileModal({{ faculty.pk }})"
+            onclick="toggleFacultyAccordion(event, {{ faculty.pk }})"
             style="cursor: pointer;"
-            title="Click to view details & actions">
+            title="Click to expand faculty details">
 
           <!-- Faculty Info -->
           <td>
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-[#0066cc]/10 text-[#0066cc] font-bold text-xs flex items-center justify-center border border-[#0066cc]/20 flex-shrink-0 shadow-2xs">
-                {{ faculty.first_name.0|upper }}{{ faculty.last_name.0|upper }}
+              <div class="w-9 h-9 rounded-full bg-[#0066cc]/8 text-[#0066cc] border border-[#0066cc]/20 flex items-center justify-center text-xs font-bold flex-shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                {{ faculty.initials }}
               </div>
               <div class="min-w-0">
-                <div class="font-semibold text-sm text-[#1D1D1F] hover:text-[#0066cc] transition-colors flex items-center gap-1.5">
-                  <span>{{ faculty.full_name }}</span>
+                <div class="flex items-center gap-2">
+                  <p class="font-semibold text-[#1D1D1F] text-sm group-hover:text-[#0066cc] transition-colors truncate">{{ faculty.full_name }}</p>
                   {% if not faculty.is_active %}
-                    <span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200/60">Inactive</span>
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-600 border border-red-200">Inactive</span>
                   {% endif %}
                 </div>
-                <div class="text-xs text-[#86868b] mt-0.5">{{ faculty.email }}</div>
+                <div class="flex flex-wrap items-center gap-1.5 mt-0.5 text-[11px] text-gray-400 font-medium">
+                  <span>{{ faculty.email }}</span>
+                  {% if faculty.phone_number %}
+                    <span>• <a href="tel:{{ faculty.phone_number }}" onclick="event.stopPropagation();" class="text-[#0066cc] hover:underline font-mono font-medium">📞 {{ faculty.phone_number }}</a></span>
+                  {% endif %}
+                </div>
               </div>
             </div>
           </td>
 
           <!-- Employee Code -->
           <td>
-            <span style="font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.78rem; font-weight: 500; color: #1d1d1f; background: #f5f5f7; padding: 3px 10px; border-radius: 6px; border: 1px solid #e0e0e0;">
+            <span class="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-lg border border-gray-200/60">
               {{ faculty.employee_code }}
             </span>
           </td>
 
           <!-- Department & Designation -->
           <td>
-            <div style="font-weight: 500; font-size: 0.82rem;">{{ faculty.department }}</div>
-            <div style="font-size: 0.72rem; color: #86868b; margin-top: 1px;">{{ faculty.designation|default:"—" }}</div>
+            <div class="font-semibold text-xs text-[#1D1D1F]">{{ faculty.department }}</div>
+            <div class="text-[11px] text-[#86868b] mt-0.5">{{ faculty.designation|default:"Faculty Member" }}</div>
           </td>
 
-          <!-- Actions -->
-          <td style="text-align: right;">
-            <div style="display: flex; justify-content: flex-end; align-items: center;">
-              <span class="action-btn" style="padding: 5px 10px; border-radius: 980px; font-size: 0.72rem; color: #86868b; background: #f5f5f7; border-color: #e0e0e0; display: inline-flex; align-items: center; gap: 4px;">
-                View
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                  <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-              </span>
+          <!-- Actions Column: iOS Toggle Switch + Face ID + Edit + Delete -->
+          <td style="text-align: right;" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-end gap-2.5">
+              <!-- iOS Active / Inactive Toggle Switch -->
+              <button type="button"
+                  onclick="event.stopPropagation(); toggleFacultyStatus({{ faculty.pk }})"
+                  style="background-color: {% if faculty.is_active %}#16a34a{% else %}#d1d5db{% endif %} !important; width: 36px; height: 20px; border-radius: 9999px; position: relative; display: inline-flex; align-items: center; padding: 2px; cursor: pointer; border: none; transition: background-color 0.2s;"
+                  role="switch" aria-checked="{% if faculty.is_active %}true{% else %}false{% endif %}"
+                  title="{% if faculty.is_active %}Active: Click to Deactivate{% else %}Inactive: Click to Activate{% endif %}">
+                  <span style="display: inline-block; width: 16px; height: 16px; border-radius: 9999px; background-color: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: transform 0.2s; {% if faculty.is_active %}transform: translateX(16px);{% else %}transform: translateX(0px);{% endif %}"></span>
+              </button>
+
+              <!-- Quick Face ID Button -->
+              <button type="button"
+                  onclick="event.stopPropagation(); openEnrollFaceModal({{ faculty.pk }}, '{{ faculty.full_name|escapejs }}', '{{ faculty.employee_code|escapejs }}', {{ faculty.is_face_enrolled|yesno:'true,false' }})"
+                  class="p-1.5 rounded-xl {% if faculty.is_face_enrolled %}text-emerald-600 hover:bg-emerald-50 border border-emerald-200/60 bg-emerald-50/50{% else %}text-[#0066cc] hover:bg-[#0066cc]/10 border border-[#0066cc]/20 bg-[#0066cc]/5{% endif %} transition-all cursor-pointer"
+                  title="{% if faculty.is_face_enrolled %}Face ID Enrolled (Click to Re-enroll){% else %}Face ID Pending (Click to Enroll){% endif %}">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </button>
+
+              <!-- Quick Edit Button (Pencil Icon) -->
+              <button type="button" onclick="event.stopPropagation(); openFacultyModal('edit', {{ faculty.pk }})"
+                  class="p-1.5 rounded-xl text-gray-500 hover:text-[#0066cc] hover:bg-[#0066cc]/10 transition-all cursor-pointer"
+                  title="Edit Faculty Details">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              </button>
+
+              <!-- Delete Button (Trash Icon) -->
+              <button type="button" onclick="event.stopPropagation(); openDeleteModal({{ faculty.pk }}, '{{ faculty.full_name|escapejs }}')"
+                  class="p-1.5 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+                  title="Delete Faculty Member">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Expandable Inline Detail Card Row (Option A: Apple Parchment Surface) -->
+        <tr id="faculty-detail-row-{{ faculty.pk }}" class="hidden" style="background-color: #f5f5f7 !important;">
+          <td colspan="4" class="p-0">
+            <div style="background-color: #f5f5f7 !important;" class="border-y border-gray-200 p-5 space-y-4 border-l-4 border-l-[#0066cc]">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+
+                <!-- Card 1: Professional Profile -->
+                <div style="background-color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;" class="rounded-2xl p-4 border border-gray-200 space-y-2.5">
+                  <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+                    <span class="font-bold text-[#0066cc] uppercase tracking-wide text-[11px]">Professional Info</span>
+                    <span class="font-mono text-[10px] font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md">{{ faculty.employee_code }}</span>
+                  </div>
+                  <div class="space-y-1.5 pt-0.5">
+                    <div class="flex justify-between"><span class="text-[#86868b] font-medium">Department:</span> <span class="font-bold text-[#1d1d1f]">{{ faculty.department }}</span></div>
+                    <div class="flex justify-between"><span class="text-[#86868b] font-medium">Designation:</span> <span class="font-semibold text-[#1d1d1f]">{{ faculty.designation|default:"Faculty Member" }}</span></div>
+                    <div class="flex justify-between"><span class="text-[#86868b] font-medium">Joined Date:</span> <span class="font-medium text-[#1d1d1f]">{{ faculty.date_joined|date:"d M Y"|default:"—" }}</span></div>
+                    <div class="flex justify-between items-center"><span class="text-[#86868b] font-medium">Status:</span>
+                      {% if faculty.is_active %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>
+                      {% else %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">Inactive</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Contact & Face Biometrics -->
+                <div style="background-color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;" class="rounded-2xl p-4 border border-gray-200 space-y-2.5">
+                  <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+                    <span class="font-bold text-[#0066cc] uppercase tracking-wide text-[11px]">Contact & Face ID</span>
+                    {% if faculty.is_face_enrolled %}
+                      <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">● Enrolled</span>
+                    {% else %}
+                      <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">○ Pending</span>
+                    {% endif %}
+                  </div>
+                  <div class="space-y-1.5 pt-0.5">
+                    <div><span class="text-[#86868b] font-medium block text-[10px]">EMAIL ADDRESS:</span> <span class="font-semibold text-[#1d1d1f] select-all">{{ faculty.email }}</span></div>
+                    <div><span class="text-[#86868b] font-medium block text-[10px]">PHONE NUMBER:</span>
+                      {% if faculty.phone_number %}
+                        <a href="tel:{{ faculty.phone_number }}" class="text-[#0066cc] font-mono font-bold hover:underline">📞 {{ faculty.phone_number }}</a>
+                      {% else %}
+                        <span class="text-gray-400 font-normal">Not provided</span>
+                      {% endif %}
+                    </div>
+                    <div class="flex justify-between items-center pt-1"><span class="text-[#86868b] font-medium">Face Biometrics:</span>
+                      <button type="button" onclick="event.stopPropagation(); openEnrollFaceModal({{ faculty.pk }}, '{{ faculty.full_name|escapejs }}', '{{ faculty.employee_code|escapejs }}', {{ faculty.is_face_enrolled|yesno:'true,false' }})"
+                        class="text-[11px] font-bold text-[#0066cc] hover:underline cursor-pointer">
+                        {% if faculty.is_face_enrolled %}🔄 Re-enroll{% else %}📷 Enroll Now{% endif %}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Class & Subject Allocations -->
+                <div style="background-color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;" class="rounded-2xl p-4 border border-gray-200 space-y-2.5">
+                  <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+                    <span class="font-bold text-[#0066cc] uppercase tracking-wide text-[11px]">Academic Roles</span>
+                    <span class="text-[10px] font-medium text-gray-400">Current Session</span>
+                  </div>
+                  <div class="space-y-1.5 pt-0.5">
+                    <div><span class="text-[#86868b] font-medium block text-[10px]">CLASS TEACHER FOR:</span>
+                      {% if faculty.current_class_teacher_division %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-[#0066cc]/10 text-[#0066cc] border border-[#0066cc]/20 mt-0.5">
+                          {{ faculty.current_class_teacher_division }}
+                        </span>
+                      {% else %}
+                        <span class="text-gray-400 font-normal text-[11px]">None (Subject Faculty)</span>
+                      {% endif %}
+                    </div>
+                    <div><span class="text-[#86868b] font-medium block text-[10px] mt-1">ASSIGNED SUBJECTS:</span>
+                      {% if faculty.current_taught_subjects %}
+                        <div class="flex flex-wrap gap-1 mt-0.5">
+                          {% for subj in faculty.current_taught_subjects %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+                              {{ subj }}
+                            </span>
+                          {% endfor %}
+                        </div>
+                      {% else %}
+                        <span class="text-gray-400 font-normal text-[11px]">No subjects mapped</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Quick Action Buttons Footer inside expanded tray -->
+              <div class="flex flex-wrap items-center justify-between pt-1 gap-3">
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="event.stopPropagation(); openEnrollFaceModal({{ faculty.pk }}, '{{ faculty.full_name|escapejs }}', '{{ faculty.employee_code|escapejs }}', {{ faculty.is_face_enrolled|yesno:'true,false' }})"
+                    style="background-color: #ffffff !important;" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#0066cc] border border-blue-200 rounded-xl shadow-2xs hover:bg-blue-50/50 transition-all cursor-pointer">
+                    📷 {% if faculty.is_face_enrolled %}Re-enroll Face{% else %}Enroll Face ID{% endif %}
+                  </button>
+                  <button type="button" onclick="event.stopPropagation(); openFacultyModal('edit', {{ faculty.pk }})"
+                    style="background-color: #ffffff !important;" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-gray-700 border border-gray-200 rounded-xl shadow-2xs hover:bg-gray-50 transition-all cursor-pointer">
+                    ✏️ Edit Profile
+                  </button>
+                </div>
+                <button type="button" onclick="event.stopPropagation(); toggleFacultyAccordion(event, {{ faculty.pk }})"
+                  class="text-xs text-gray-400 hover:text-gray-600 font-medium px-2 py-1 cursor-pointer">
+                  ✕ Close Details
+                </button>
+              </div>
+
             </div>
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
+
+    <!-- Faculty Table Footer & Apple Pagination Bar -->
+    <div class="px-5 py-3.5 border-t border-gray-200/80 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <!-- Showing entries counter + Per Page Selector -->
+        <div class="flex items-center gap-3 text-gray-500 font-medium">
+            <span>
+                {% if page_obj.paginator %}
+                    Showing <span class="font-bold text-[#1d1d1f]">{{ page_obj.start_index }}</span> to <span class="font-bold text-[#1d1d1f]">{{ page_obj.end_index }}</span> of <span class="font-bold text-[#1d1d1f]">{{ page_obj.paginator.count }}</span> faculty
+                {% else %}
+                    Showing <span class="font-bold text-[#1d1d1f]">{{ faculty_list|length }}</span> faculty
+                {% endif %}
+            </span>
+
+            <!-- Per page dropdown -->
+            <div class="flex items-center gap-1.5 pl-3 border-l border-gray-200">
+                <span class="text-gray-400">Rows:</span>
+                <select onchange="location.href='?page=1&per_page='+this.value+'{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}'"
+                    class="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1 font-semibold text-[#1d1d1f] focus:outline-none focus:ring-1 focus:ring-[#0066cc] cursor-pointer">
+                    <option value="25" {% if per_page == '25' or not per_page %}selected{% endif %}>25</option>
+                    <option value="50" {% if per_page == '50' %}selected{% endif %}>50</option>
+                    <option value="100" {% if per_page == '100' %}selected{% endif %}>100</option>
+                    <option value="all" {% if per_page == 'all' %}selected{% endif %}>All</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if page_obj.has_other_pages %}
+        <nav class="flex items-center gap-1" aria-label="Faculty Pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1">
+                ‹ Prev
+            </a>
+            {% else %}
+            <span class="px-2.5 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
+                ‹ Prev
+            </span>
+            {% endif %}
+
+            <!-- Page Number Pills -->
+            <div class="flex items-center gap-1">
+                {% for p in page_obj.paginator.page_range %}
+                    {% if p == page_obj.number %}
+                        <span class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#0066cc] text-white font-bold text-xs shadow-2xs">
+                            {{ p }}
+                        </span>
+                    {% elif p >= page_obj.number|add:"-2" and p <= page_obj.number|add:"2" %}
+                        <a href="?page={{ p }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}"
+                            class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-blue-50 hover:text-[#0066cc] transition-colors shadow-2xs">
+                            {{ p }}
+                        </a>
+                    {% elif p == 1 or p == page_obj.paginator.num_pages %}
+                        <a href="?page={{ p }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}"
+                            class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-blue-50 hover:text-[#0066cc] transition-colors shadow-2xs">
+                            {{ p }}
+                        </a>
+                    {% elif p == page_obj.number|add:"-3" or p == page_obj.number|add:"3" %}
+                        <span class="w-5 text-center text-gray-400 font-bold text-xs">…</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1">
+                Next ›
+            </a>
+            {% else %}
+            <span class="px-2.5 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
+                Next ›
+            </span>
+            {% endif %}
+        </nav>
+        {% endif %}
+    </div>
     {% else %}
     <!-- Empty State -->
     <div class="empty-state">
@@ -1052,6 +1307,35 @@ document.getElementById('faculty-form').addEventListener('submit', function(e) {
   });
 });
 
+// ── Faculty Accordion Toggle (Single Accordion Rule) ──
+function toggleFacultyAccordion(event, pk) {
+  if (event) event.stopPropagation();
+
+  // Desktop detail row
+  var detailRow = document.getElementById('faculty-detail-row-' + pk);
+  var mainRow = document.getElementById('faculty-row-' + pk);
+
+  // Mobile detail card
+  var mobileDetail = document.getElementById('faculty-mobile-detail-' + pk);
+
+  var isCurrentlyHidden = detailRow ? detailRow.classList.contains('hidden') : (mobileDetail ? mobileDetail.classList.contains('hidden') : true);
+
+  // Auto-close all other open faculty accordions
+  document.querySelectorAll('[id^="faculty-detail-row-"]').forEach(function(el) { el.classList.add('hidden'); });
+  document.querySelectorAll('[id^="faculty-row-"]').forEach(function(el) { el.classList.remove('bg-blue-50/40'); });
+  document.querySelectorAll('[id^="faculty-mobile-detail-"]').forEach(function(el) { el.classList.add('hidden'); });
+
+  if (isCurrentlyHidden) {
+    if (detailRow) {
+      detailRow.classList.remove('hidden');
+      if (mainRow) mainRow.classList.add('bg-blue-50/40');
+    }
+    if (mobileDetail) {
+      mobileDetail.classList.remove('hidden');
+    }
+  }
+}
+
 // ── Toggle Status (AJAX) ──
 function toggleFacultyStatus(facultyId) {
   var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -1102,12 +1386,14 @@ function filterByStatus(status, btn) {
 function applyFilters() {
   var query = (searchInput ? searchInput.value.toLowerCase().trim() : '');
   var dept = (deptFilter ? deptFilter.value : '');
-  var rows = document.querySelectorAll('#faculty-tbody tr');
+  var rows = document.querySelectorAll('#faculty-tbody tr.faculty-main-row');
   var cards = document.querySelectorAll('#faculty-cards-container .faculty-card-item');
   var visibleCount = 0;
 
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
+    var pk = row.getAttribute('data-id');
+    var detailRow = document.getElementById('faculty-detail-row-' + pk);
     var name = row.getAttribute('data-name') || '';
     var email = row.getAttribute('data-email') || '';
     var code = row.getAttribute('data-code') || '';
@@ -1123,11 +1409,14 @@ function applyFilters() {
       visibleCount++;
     } else {
       row.style.display = 'none';
+      if (detailRow) detailRow.classList.add('hidden');
     }
   }
 
   for (var j = 0; j < cards.length; j++) {
     var card = cards[j];
+    var cPk = card.getAttribute('data-id');
+    var cDetail = document.getElementById('faculty-mobile-detail-' + cPk);
     var cName = card.getAttribute('data-name') || '';
     var cEmail = card.getAttribute('data-email') || '';
     var cCode = card.getAttribute('data-code') || '';
@@ -1142,6 +1431,7 @@ function applyFilters() {
       card.style.display = '';
     } else {
       card.style.display = 'none';
+      if (cDetail) cDetail.classList.add('hidden');
     }
   }
 

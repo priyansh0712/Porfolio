@@ -121,6 +121,31 @@ class Faculty(TenantModel):
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
+    @property
+    def initials(self):
+        """Return up to 2-letter uppercase initials for avatar display."""
+        f = (self.first_name or '').strip()
+        l = (self.last_name or '').strip()
+        if f and l:
+            return f"{f[0]}{l[0]}".upper()
+        if f:
+            return f[:2].upper()
+        return "FA"
+
+    @property
+    def current_class_teacher_division(self):
+        """Return current assigned Class Teacher division name if active."""
+        alloc = self.class_teacher_allocations.filter(academic_year__is_current=True).select_related('division__standard').first()
+        if alloc:
+            return f"{alloc.division.standard.name} — {alloc.division.name}"
+        return None
+
+    @property
+    def current_taught_subjects(self):
+        """Return list of subjects taught in current academic year."""
+        allocs = self.subject_teacher_allocations.filter(academic_year__is_current=True).select_related('subject', 'division__standard')
+        return [f"{a.subject.name} ({a.division.standard.name}-{a.division.name})" for a in allocs]
+
 
 class FacultyCustomField(models.Model):
     """

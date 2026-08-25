@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" class="overflow-x-hidden w-full">
+<html lang="en" class="w-full">
 
 <head>
     <meta charset="UTF-8">
@@ -65,7 +65,7 @@
 
         html,
         body {
-            overflow-x: hidden;
+            overflow-x: clip;
             width: 100%;
             margin: 0;
             padding: 0;
@@ -436,7 +436,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 
-<body class="min-h-screen flex flex-col antialiased overflow-x-hidden w-full max-w-full">
+<body class="min-h-screen flex flex-col antialiased w-full max-w-full">
     <!-- Top Premium Scroll Reading Progress Line -->
     <div id="page-scroll-progress"
         class="fixed top-0 left-0 h-[3px] theme-bg-accent z-50 transition-all duration-150 w-0"></div>
@@ -490,7 +490,7 @@
     {% endif %}
 
     <!-- Main Container -->
-    <main class="flex-grow {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% else %}max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% endif %} box-border overflow-x-hidden">
+    <main class="flex-grow {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% else %}max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% endif %} box-border">
         {% include "components/alerts.html" %}
         {% block content %}{% endblock %}
     </main>

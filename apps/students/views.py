@@ -244,9 +244,38 @@ class StudentHubView(SchoolStaffRequiredMixin, TemplateView):
                     Q(roll_number__icontains=search)
                 )
             ctx['search'] = search
-            ctx['students'] = qs
+
+            # Pagination
+            from django.core.paginator import Paginator
+            per_page_param = self.request.GET.get('per_page', '25')
+            total_count = qs.count()
+
+            if per_page_param == 'all':
+                page_obj = qs
+                is_paginated = False
+            else:
+                try:
+                    per_page_val = int(per_page_param)
+                    if per_page_val <= 0:
+                        per_page_val = 25
+                except (ValueError, TypeError):
+                    per_page_val = 25
+                paginator = Paginator(qs, per_page_val)
+                page_number = self.request.GET.get('page', 1)
+                page_obj = paginator.get_page(page_number)
+                is_paginated = page_obj.has_other_pages()
+
+            ctx['students'] = page_obj
+            ctx['page_obj'] = page_obj
+            ctx['is_paginated'] = is_paginated
+            ctx['total_students_count'] = total_count
+            ctx['per_page'] = per_page_param
         else:
             ctx['students'] = Student.objects.none()
+            ctx['page_obj'] = None
+            ctx['is_paginated'] = False
+            ctx['total_students_count'] = 0
+            ctx['per_page'] = '25'
 
         # --- Transfers tab ---
         transfer_qs = StudentTransferRequest.objects.filter(

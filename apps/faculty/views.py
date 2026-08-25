@@ -162,21 +162,56 @@ class FacultyListView(SchoolAdminRequiredMixin, ListView):
     model = Faculty
     template_name = 'faculty/faculty_list.html'
     context_object_name = 'faculty_list'
+    paginate_by = 25
+
+    def get_paginate_by(self, queryset):
+        per_page = self.request.GET.get('per_page', '25')
+        if per_page == 'all':
+            return queryset.count() or 1
+        try:
+            val = int(per_page)
+            return val if val > 0 else 25
+        except (ValueError, TypeError):
+            return 25
 
     def get_queryset(self):
-        """Layer 3: Scope to current tenant."""
-        return Faculty.objects.filter(school=self.request.tenant)
+        """Layer 3: Scope to current tenant with optional filtering."""
+        qs = Faculty.objects.filter(school=self.request.tenant)
+        q = self.request.GET.get('q', '').strip()
+        dept = self.request.GET.get('department', '').strip()
+        status = self.request.GET.get('status', '').strip()
+
+        if q:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(first_name__icontains=q) |
+                Q(last_name__icontains=q) |
+                Q(email__icontains=q) |
+                Q(employee_code__icontains=q)
+            )
+        if dept:
+            qs = qs.filter(department=dept)
+        if status == 'active':
+            qs = qs.filter(is_active=True)
+        elif status == 'inactive':
+            qs = qs.filter(is_active=False)
+
+        return qs.order_by('first_name', 'last_name')
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        qs = self.get_queryset()
+        all_qs = Faculty.objects.filter(school=self.request.tenant)
         ctx['departments'] = sorted(
-            qs.values_list('department', flat=True).distinct()
+            all_qs.values_list('department', flat=True).distinct()
         )
-        ctx['total_count'] = qs.count()
-        ctx['active_count'] = qs.filter(is_active=True).count()
-        ctx['inactive_count'] = qs.filter(is_active=False).count()
+        ctx['total_count'] = all_qs.count()
+        ctx['active_count'] = all_qs.filter(is_active=True).count()
+        ctx['inactive_count'] = all_qs.filter(is_active=False).count()
         ctx['form'] = FacultyForm(tenant=self.request.tenant)
+        ctx['per_page'] = self.request.GET.get('per_page', '25')
+        ctx['q'] = self.request.GET.get('q', '')
+        ctx['selected_dept'] = self.request.GET.get('department', '')
+        ctx['status_filter'] = self.request.GET.get('status', 'all')
 
         # Custom Fields Context
         from apps.faculty.models import FacultyCustomField, FacultyFormFieldConfig
