@@ -13,16 +13,16 @@
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
   }
   .btn-action-blue {
-    background-color: #5A2132;
+    background-color: #0066cc;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .btn-action-blue:hover {
-    background-color: #481A28;
+    background-color: #0071e3;
     transform: scale(1.005);
   }
   .apple-input-focus:focus {
-    border-color: #5A2132 !important;
-    box-shadow: 0 0 0 3px rgba(90, 33, 50, 0.15) !important;
+    border-color: #0066cc !important;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15) !important;
   }
   .pwd-toggle-btn {
     position: absolute;
@@ -53,7 +53,7 @@
       <!-- 2-Column Layout for School with School Image -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
         <!-- School Hero Image Column -->
-        <div class="relative w-full min-h-[440px] h-full rounded-3xl overflow-hidden shadow-sm border border-[#e0e0e0] bg-[#FAF8F8] flex flex-col justify-between p-4 group">
+        <div class="relative w-full min-h-[440px] h-full rounded-3xl overflow-hidden shadow-sm border border-[#e0e0e0] bg-[#fafafc] flex flex-col justify-between p-4 group">
           <!-- Full Cover Background Image -->
           <img src="{{ tenant.school_image.url }}" alt="{{ tenant.name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-102">
           
@@ -67,7 +67,7 @@
                 <img src="{{ tenant.school_logo.url }}" alt="{{ tenant.name }} Logo" class="w-full h-full object-contain rounded-lg">
               </div>
             {% else %}
-              <div class="w-8 h-8 rounded-xl bg-[#5A2132] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+              <div class="w-8 h-8 rounded-xl bg-[#0066cc] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
                 {{ tenant.name|first }}
               </div>
             {% endif %}
@@ -152,7 +152,7 @@
             <img src="{{ tenant.school_logo.url }}" alt="{{ tenant.name }}" class="w-full h-full rounded-xl object-contain">
           </div>
         {% else %}
-          <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#5A2132] shadow-sm mb-4">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#0066cc] shadow-sm mb-4">
             <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
@@ -161,9 +161,9 @@
         {% if tenant %}
           <h1 class="text-2xl font-semibold text-[#1D1D1F] tracking-tight">{{ tenant.name }}</h1>
           <p class="text-xs text-[#86868b] mt-1">School Portal Login</p>
-          <div class="inline-flex items-center mt-2.5 px-3 py-1 rounded-full bg-[#FAF8F8] border border-[#e0e0e0]">
+          <div class="inline-flex items-center mt-2.5 px-3 py-1 rounded-full bg-[#fafafc] border border-[#e0e0e0]">
             <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></div>
-            <span class="text-xs font-medium text-[#5A2132]">{{ tenant.subdomain }}.ourapp.com</span>
+            <span class="text-xs font-medium text-[#0066cc]">{{ tenant.subdomain }}.ourapp.com</span>
           </div>
         {% else %}
           <h1 class="text-2xl font-semibold text-[#1d1d1f] tracking-tight">Platform Login</h1>

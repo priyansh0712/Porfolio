@@ -7,7 +7,7 @@
             <div class="flex items-center space-x-2.5 flex-wrap gap-y-1">
                 <h2 class="text-base sm:text-lg font-bold text-[#1D1D1F] tracking-tight">Curriculum Subjects</h2>
                 {% if selected_year %}
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#5A2132]/8 text-[#5A2132] border border-[#5A2132]/20">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#0066cc]/8 text-[#0066cc] border border-[#0066cc]/20">
                         {{ selected_year.name }}
                     </span>
                 {% endif %}
@@ -30,7 +30,7 @@
             <!-- Primary Action: Add Subject to Class -->
             <button type="button"
                     onclick="openAddCurriculumModal('', '')"
-                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#5A2132] hover:bg-[#481A28] text-white text-xs font-semibold rounded-full shadow-xs transition-colors">
+                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-semibold rounded-full shadow-xs transition-colors">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -45,14 +45,14 @@
     <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
         <span class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider mr-1 flex-shrink-0">Jump to Grade:</span>
         <button type="button" onclick="filterCurriculumGrade('all')" id="pill-grade-all"
-                class="curriculum-grade-pill px-3 py-1 rounded-full font-semibold transition-colors bg-[#5A2132] text-white flex-shrink-0">
+                class="curriculum-grade-pill px-3 py-1 rounded-full font-semibold transition-colors bg-[#0066cc] text-white flex-shrink-0">
             All Grades ({{ curriculum_matrix|length }})
         </button>
         {% for std_data in curriculum_matrix %}
         <button type="button" onclick="filterCurriculumGrade('grade-card-{{ std_data.standard.id }}')" id="pill-grade-{{ std_data.standard.id }}"
                 class="curriculum-grade-pill px-3 py-1 rounded-full font-medium transition-colors bg-white hover:bg-gray-100 text-gray-700 border border-gray-200/80 flex items-center gap-1.5 flex-shrink-0">
             <span>{{ std_data.standard.name }}</span>
-            <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full {% if std_data.subject_count > 0 %}bg-[#5A2132]/8 text-[#5A2132]{% else %}bg-gray-100 text-gray-400{% endif %}">
+            <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full {% if std_data.subject_count > 0 %}bg-[#0066cc]/8 text-[#0066cc]{% else %}bg-gray-100 text-gray-400{% endif %}">
                 {{ std_data.subject_count }}
             </span>
         </button>
@@ -67,7 +67,7 @@
             <!-- Grade Card Header -->
             <div class="p-4 sm:p-5 bg-gray-50/60 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="flex items-center space-x-3">
-                    <div class="w-9 h-9 rounded-xl bg-[#5A2132]/8 border border-[#5A2132]/15 flex items-center justify-center text-[#5A2132] font-bold text-xs flex-shrink-0">
+                    <div class="w-9 h-9 rounded-xl bg-[#0066cc]/8 border border-[#0066cc]/15 flex items-center justify-center text-[#0066cc] font-bold text-xs flex-shrink-0">
                         {{ std_data.standard.name|slice:":2" }}
                     </div>
                     <div>
@@ -86,7 +86,7 @@
                 <!-- Quick Add Subject for this specific grade -->
                 <button type="button"
                         onclick="openAddCurriculumModal('{{ std_data.standard.id }}', '{{ std_data.standard.name|escapejs }}')"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#5A2132] hover:text-[#481A28] bg-[#5A2132]/8 hover:bg-[#5A2132]/15 rounded-full border border-[#5A2132]/20 transition-colors self-start sm:self-auto">
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#0066cc] hover:text-[#0071e3] bg-[#0066cc]/8 hover:bg-[#0066cc]/15 rounded-full border border-[#0066cc]/20 transition-colors self-start sm:self-auto">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -133,7 +133,7 @@
                             <!-- Category -->
                             <td class="py-3 px-4 sm:px-6">
                                 {% if curr.subject.subject_type == 'CORE' %}
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#5A2132]/8 text-[#5A2132] border border-[#5A2132]/20">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#0066cc]/8 text-[#0066cc] border border-[#0066cc]/20">
                                         Core Subject
                                     </span>
                                 {% else %}
@@ -176,7 +176,7 @@
                                     <span class="font-mono text-[10px] text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200/60 font-semibold">{{ curr.subject.code }}</span>
                                 {% endif %}
                                 {% if curr.subject.subject_type == 'CORE' %}
-                                    <span class="text-[10px] font-semibold text-[#5A2132] bg-[#5A2132]/8 px-2 py-0.5 rounded-full">Core</span>
+                                    <span class="text-[10px] font-semibold text-[#0066cc] bg-[#0066cc]/8 px-2 py-0.5 rounded-full">Core</span>
                                 {% else %}
                                     <span class="text-[10px] font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">Elective</span>
                                 {% endif %}
@@ -201,7 +201,7 @@
                 <p class="text-xs text-gray-400">No curriculum subjects configured for {{ std_data.standard.name }} in {{ selected_year.name }}.</p>
                 <button type="button"
                         onclick="openAddCurriculumModal('{{ std_data.standard.id }}', '{{ std_data.standard.name|escapejs }}')"
-                        class="mt-2.5 inline-flex items-center gap-1 px-3 py-1.5 bg-[#5A2132] hover:bg-[#481A28] text-white text-xs font-semibold rounded-full shadow-xs transition-colors">
+                        class="mt-2.5 inline-flex items-center gap-1 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-semibold rounded-full shadow-xs transition-colors">
                     + Add Subject to {{ std_data.standard.name }}
                 </button>
             </div>
@@ -228,7 +228,7 @@
         const pills = document.querySelectorAll('.curriculum-grade-pill');
 
         pills.forEach(p => {
-            p.classList.remove('bg-[#5A2132]', 'text-white');
+            p.classList.remove('bg-[#0066cc]', 'text-white');
             p.classList.add('bg-white', 'text-gray-700');
         });
 
@@ -237,7 +237,7 @@
             const allPill = document.getElementById('pill-grade-all');
             if (allPill) {
                 allPill.classList.remove('bg-white', 'text-gray-700');
-                allPill.classList.add('bg-[#5A2132]', 'text-white');
+                allPill.classList.add('bg-[#0066cc]', 'text-white');
             }
         } else {
             sections.forEach(s => {
@@ -252,7 +252,7 @@
             const activePill = document.getElementById('pill-grade-' + stdId);
             if (activePill) {
                 activePill.classList.remove('bg-white', 'text-gray-700');
-                activePill.classList.add('bg-[#5A2132]', 'text-white');
+                activePill.classList.add('bg-[#0066cc]', 'text-white');
             }
         }
     }

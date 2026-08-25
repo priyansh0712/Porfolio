@@ -6,7 +6,7 @@
             <div class="flex items-center space-x-2.5">
                 <h2 class="text-base sm:text-lg font-bold text-[#1d1d1f] tracking-tight">Teaching Assignments</h2>
                 {% if selected_year %}
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#5A2132]/8 text-[#5A2132] border border-[#5A2132]/20">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#0066cc]/8 text-[#0066cc] border border-[#0066cc]/20">
                         {{ selected_year.name }}
                     </span>
                 {% endif %}
@@ -47,7 +47,7 @@
                                 </span>
                                 <button type="button"
                                         onclick="openAssignClassTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name|escapejs }} - {{ div_data.division.name|escapejs }}', '{{ div_data.class_teacher.id }}')"
-                                        class="text-xs font-semibold text-[#5A2132] hover:underline ml-1 transition-colors">
+                                        class="text-xs font-semibold text-[#0066cc] hover:underline ml-1 transition-colors">
                                     Change
                                 </button>
                             {% else %}
@@ -59,7 +59,7 @@
                                 </span>
                                 <button type="button"
                                         onclick="openAssignClassTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name|escapejs }} - {{ div_data.division.name|escapejs }}', '')"
-                                        class="text-xs font-bold text-[#5A2132] hover:underline ml-1 transition-colors">
+                                        class="text-xs font-bold text-[#0066cc] hover:underline ml-1 transition-colors">
                                     + Assign
                                 </button>
                             {% endif %}
@@ -98,13 +98,13 @@
 
                                     <button type="button"
                                             onclick="openAssignSubjectTeacherModal('{{ selected_year.id }}', '{{ div_data.division.id }}', '{{ std_data.standard.name|escapejs }} - {{ div_data.division.name|escapejs }}', '{{ sub_data.subject.id }}', '{{ sub_data.subject.name|escapejs }}', '')"
-                                            class="text-xs font-semibold text-[#5A2132] hover:text-[#481A28] bg-[#5A2132]/8 hover:bg-[#5A2132]/15 px-3 py-1.5 rounded-full border border-[#5A2132]/20 transition-colors min-h-[34px] flex items-center">
+                                            class="text-xs font-semibold text-[#0066cc] hover:text-[#0071e3] bg-[#0066cc]/8 hover:bg-[#0066cc]/15 px-3 py-1.5 rounded-full border border-[#0066cc]/20 transition-colors min-h-[34px] flex items-center">
                                         {% if sub_data.is_assigned %}+ Add Co-Teacher{% else %}+ Assign Teacher{% endif %}
                                     </button>
                                 </div>
                             </div>
                             {% empty %}
-                            <p class="text-xs text-gray-400 italic py-2">No subjects in this grade's curriculum for {{ selected_year.name }}. <a href="{% url 'academics:hub' %}?tab=subjects{% if selected_year %}&year={{ selected_year.id }}{% endif %}" class="text-[#5A2132] font-semibold hover:underline">Add subjects to curriculum</a> first.</p>
+                            <p class="text-xs text-gray-400 italic py-2">No subjects in this grade's curriculum for {{ selected_year.name }}. <a href="{% url 'academics:hub' %}?tab=subjects{% if selected_year %}&year={{ selected_year.id }}{% endif %}" class="text-[#0066cc] font-semibold hover:underline">Add subjects to curriculum</a> first.</p>
                             {% endfor %}
                         </div>
                     </div>

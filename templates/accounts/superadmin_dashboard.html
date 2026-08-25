@@ -90,7 +90,7 @@
     <div class="flex flex-wrap items-center gap-2.5">
       <!-- Register School CTA -->
       <a href="{% url 'public:register' %}"
-        style="background-color: #5A2132 !important; color: #ffffff !important;"
+        style="background-color: #0066cc !important; color: #ffffff !important;"
         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold shadow-sm hover:opacity-90 transition-all">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
         Register New School
@@ -158,7 +158,7 @@
         <p class="text-[11px] text-[#86868b]">School metadata only &bull; No faculty data</p>
       </div>
       <a href="{% url 'public:register' %}"
-        style="background-color: #5A2132 !important; color: #ffffff !important;"
+        style="background-color: #0066cc !important; color: #ffffff !important;"
         class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-sm hover:opacity-90 transition-all self-start sm:self-auto">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
         Register School
@@ -185,7 +185,7 @@
             <td class="px-4 sm:px-6 py-3.5 text-[#86868b]">{{ forloop.counter }}</td>
             <td class="px-4 sm:px-6 py-3.5 font-medium text-[#1d1d1f]">{{ school.name }}</td>
             <td class="px-4 sm:px-6 py-3.5">
-              <span class="font-mono text-xs bg-[#FAF8F8] text-[#5A2132] px-2 py-0.5 rounded-md border border-[#e0e0e0]">
+              <span class="font-mono text-xs bg-[#fafafc] text-[#0066cc] px-2 py-0.5 rounded-md border border-[#e0e0e0]">
                 {{ school.subdomain }}.ourapp.com
               </span>
             </td>
@@ -232,12 +232,12 @@
         <!-- Header (Fixed top) -->
         <div class="px-6 py-4.5 border-b border-gray-100 flex items-center justify-between flex-shrink-0 bg-white">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-[#5A2132]/10 text-[#5A2132] font-bold text-base flex items-center justify-center border border-[#5A2132]/20 shadow-2xs">
+            <div class="w-10 h-10 rounded-2xl bg-[#0066cc]/10 text-[#0066cc] font-bold text-base flex items-center justify-center border border-[#0066cc]/20 shadow-2xs">
               {{ school.name|first }}
             </div>
             <div class="min-w-0">
               <h3 class="text-sm font-bold text-[#1d1d1f] tracking-tight">Feature Modules</h3>
-              <p class="text-xs text-gray-500 truncate mt-0.5">{{ school.name }} • <span class="font-mono text-[#5A2132]">{{ school.subdomain }}.ourapp.com</span></p>
+              <p class="text-xs text-gray-500 truncate mt-0.5">{{ school.name }} • <span class="font-mono text-[#0066cc]">{{ school.subdomain }}.ourapp.com</span></p>
             </div>
           </div>
           <button onclick="closeModal('modal-features-{{ school.pk }}')" 
@@ -257,7 +257,7 @@
               <div class="flex items-center gap-3 min-w-0">
                 <!-- Sleek Minimalist Icon Box -->
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-2xs
-                  {% if key == 'faculty_attendance' %}bg-rose-50 text-[#5A2132] border border-rose-100
+                  {% if key == 'faculty_attendance' %}bg-rose-50 text-[#0066cc] border border-rose-100
                   {% elif key == 'faculty_leave' %}bg-emerald-50 text-emerald-700 border border-emerald-100
                   {% elif key == 'reports' %}bg-blue-50 text-blue-700 border border-blue-100
                   {% elif key == 'students' %}bg-purple-50 text-purple-700 border border-purple-100

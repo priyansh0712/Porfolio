@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block breadcrumb %}
-    <a href="{% url 'academics:hub' %}?tab=overview{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}" class="hover:text-[#5A2132] transition-colors">Academics</a>
+    <a href="{% url 'academics:hub' %}?tab=overview{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}" class="hover:text-[#0066cc] transition-colors">Academics</a>
     <span class="text-gray-300">/</span>
     <span class="text-[#1D1D1F] font-bold truncate">
         {% if active_tab == 'years' %}Academic Years
@@ -44,7 +44,7 @@
             <span class="text-xs font-semibold text-gray-500">Academic Session:</span>
             <form method="GET" action="{% url 'academics:hub' %}" class="inline-flex items-center">
                 <input type="hidden" name="tab" value="overview">
-                <select name="year" onchange="this.form.submit()" class="text-xs font-bold text-[#5A2132] bg-transparent border-0 focus:ring-0 cursor-pointer pr-6 py-0 focus:outline-none">
+                <select name="year" onchange="this.form.submit()" class="text-xs font-bold text-[#0066cc] bg-transparent border-0 focus:ring-0 cursor-pointer pr-6 py-0 focus:outline-none">
                     {% for y in academic_years %}
                         <option value="{{ y.id }}" {% if selected_year and selected_year.id == y.id %}selected{% endif %}>
                             {{ y.name }}{% if y.is_current %} (Active){% endif %}
@@ -106,77 +106,77 @@
 
             <!-- 1. Academic Years Shortcut -->
             <a href="{% url 'academics:hub' %}?tab=years{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
-               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#5A2132]/40 hover:shadow-sm transition-all group flex items-center justify-between">
+               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#0066cc]/40 hover:shadow-sm transition-all group flex items-center justify-between">
                 <div class="flex items-center gap-3.5 min-w-0">
-                    <div class="w-10 h-10 rounded-xl bg-[#5A2132]/8 border border-[#5A2132]/15 flex items-center justify-center text-[#5A2132] flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <div class="w-10 h-10 rounded-xl bg-[#0066cc]/8 border border-[#0066cc]/15 flex items-center justify-center text-[#0066cc] flex-shrink-0 group-hover:scale-105 transition-transform">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>
                         </svg>
                     </div>
                     <div class="min-w-0">
-                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#5A2132] transition-colors">Academic Years</h3>
+                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#0066cc] transition-colors">Academic Years</h3>
                         <p class="text-xs text-gray-500 truncate">Manage academic sessions and active school years</p>
                     </div>
                 </div>
-                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#5A2132] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#0066cc] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m9 18 6-6-6-6"/>
                 </svg>
             </a>
 
             <!-- 2. Classes & Divisions Shortcut -->
             <a href="{% url 'academics:hub' %}?tab=classes{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
-               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#5A2132]/40 hover:shadow-sm transition-all group flex items-center justify-between">
+               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#0066cc]/40 hover:shadow-sm transition-all group flex items-center justify-between">
                 <div class="flex items-center gap-3.5 min-w-0">
-                    <div class="w-10 h-10 rounded-xl bg-[#5A2132]/8 border border-[#5A2132]/15 flex items-center justify-center text-[#5A2132] flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <div class="w-10 h-10 rounded-xl bg-[#0066cc]/8 border border-[#0066cc]/15 flex items-center justify-center text-[#0066cc] flex-shrink-0 group-hover:scale-105 transition-transform">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.084a1 1 0 0 0 0 1.838l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16c0 1.657 2.686 3 6 3s6-1.343 6-3v-3.5"/>
                         </svg>
                     </div>
                     <div class="min-w-0">
-                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#5A2132] transition-colors">Classes & Divisions</h3>
+                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#0066cc] transition-colors">Classes & Divisions</h3>
                         <p class="text-xs text-gray-500 truncate">Configure grade standards and section divisions</p>
                     </div>
                 </div>
-                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#5A2132] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#0066cc] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m9 18 6-6-6-6"/>
                 </svg>
             </a>
 
             <!-- 3. Subjects Shortcut -->
             <a href="{% url 'academics:hub' %}?tab=subjects{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
-               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#5A2132]/40 hover:shadow-sm transition-all group flex items-center justify-between">
+               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#0066cc]/40 hover:shadow-sm transition-all group flex items-center justify-between">
                 <div class="flex items-center gap-3.5 min-w-0">
-                    <div class="w-10 h-10 rounded-xl bg-[#5A2132]/8 border border-[#5A2132]/15 flex items-center justify-center text-[#5A2132] flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <div class="w-10 h-10 rounded-xl bg-[#0066cc]/8 border border-[#0066cc]/15 flex items-center justify-center text-[#0066cc] flex-shrink-0 group-hover:scale-105 transition-transform">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
                             <path d="M6 6h10"></path><path d="M6 10h10"></path>
                         </svg>
                     </div>
                     <div class="min-w-0">
-                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#5A2132] transition-colors">Subjects</h3>
+                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#0066cc] transition-colors">Subjects</h3>
                         <p class="text-xs text-gray-500 truncate">Manage curriculum subjects and course codes</p>
                     </div>
                 </div>
-                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#5A2132] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#0066cc] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m9 18 6-6-6-6"/>
                 </svg>
             </a>
 
             <!-- 4. Teaching Assignments Shortcut -->
             <a href="{% url 'academics:hub' %}?tab=allocations{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
-               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#5A2132]/40 hover:shadow-sm transition-all group flex items-center justify-between">
+               class="bg-white rounded-2xl border border-gray-200/80 p-4 shadow-xs hover:border-[#0066cc]/40 hover:shadow-sm transition-all group flex items-center justify-between">
                 <div class="flex items-center gap-3.5 min-w-0">
-                    <div class="w-10 h-10 rounded-xl bg-[#5A2132]/8 border border-[#5A2132]/15 flex items-center justify-center text-[#5A2132] flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <div class="w-10 h-10 rounded-xl bg-[#0066cc]/8 border border-[#0066cc]/15 flex items-center justify-center text-[#0066cc] flex-shrink-0 group-hover:scale-105 transition-transform">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                         </svg>
                     </div>
                     <div class="min-w-0">
-                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#5A2132] transition-colors">Teaching Assignments</h3>
+                        <h3 class="text-sm font-bold text-[#1D1D1F] tracking-tight group-hover:text-[#0066cc] transition-colors">Teaching Assignments</h3>
                         <p class="text-xs text-gray-500 truncate">Assign class teachers, subject teachers and co-teachers</p>
                     </div>
                 </div>
-                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#5A2132] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="w-4 h-4 text-gray-400 group-hover:text-[#0066cc] group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m9 18 6-6-6-6"/>
                 </svg>
             </a>
@@ -199,7 +199,7 @@
         <form method="GET" action="{% url 'academics:hub' %}" class="inline-flex items-center bg-white px-3 py-1.5 rounded-xl border border-gray-200/80 shadow-xs">
             <input type="hidden" name="tab" value="{{ active_tab }}">
             <span class="text-xs font-semibold text-gray-500 mr-2">Change Session:</span>
-            <select name="year" onchange="this.form.submit()" class="text-xs font-bold text-[#5A2132] bg-transparent border-0 focus:ring-0 cursor-pointer pr-6 py-0 focus:outline-none">
+            <select name="year" onchange="this.form.submit()" class="text-xs font-bold text-[#0066cc] bg-transparent border-0 focus:ring-0 cursor-pointer pr-6 py-0 focus:outline-none">
                 {% for y in academic_years %}
                     <option value="{{ y.id }}" {% if selected_year and selected_year.id == y.id %}selected{% endif %}>
                         {{ y.name }}{% if y.is_current %} (Active){% endif %}

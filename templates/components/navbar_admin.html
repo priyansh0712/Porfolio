@@ -14,7 +14,7 @@
 <div id="sidebar-backdrop" class="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 hidden transition-opacity duration-300" onclick="closeSidebar()"></div>
 
 <!-- Admin Persistent Left Sidebar (~260px) -->
-<aside id="admin-sidebar" class="fixed top-0 left-0 bottom-0 w-[260px] bg-[var(--apple-sidebar,#faf8f8)] border-r border-[var(--apple-hairline)] z-50 flex flex-col justify-between overflow-y-auto overflow-x-hidden" data-lenis-prevent>
+<aside id="admin-sidebar" class="fixed top-0 left-0 bottom-0 w-[260px] bg-[var(--apple-sidebar,#fafafc)] border-r border-[var(--apple-hairline)] z-50 flex flex-col justify-between overflow-y-auto overflow-x-hidden" data-lenis-prevent>
     <div class="flex flex-col flex-grow">
 
         <!-- Brand Header -->
@@ -23,12 +23,12 @@
                 {% if request.tenant.school_logo or user.school.school_logo %}
                     <img src="{% if request.tenant.school_logo %}{{ request.tenant.school_logo.url }}{% else %}{{ user.school.school_logo.url }}{% endif %}" alt="School Logo" class="w-8 h-8 rounded-xl object-contain bg-white p-0.5 shadow-xs flex-shrink-0 border border-[#e0e0e0]">
                 {% else %}
-                    <div class="w-8 h-8 rounded-xl bg-[#5A2132] flex items-center justify-center text-white font-bold text-sm shadow-xs flex-shrink-0">
+                    <div class="w-8 h-8 rounded-xl bg-[#0066cc] flex items-center justify-center text-white font-bold text-sm shadow-xs flex-shrink-0">
                         {% if request.tenant %}{{ request.tenant.name|first }}{% elif user.school %}{{ user.school.name|first }}{% else %}S{% endif %}
                     </div>
                 {% endif %}
                 <div class="sidebar-brand-text min-w-0">
-                    <div class="text-sm font-bold text-[#1D1D1F] tracking-tight truncate group-hover:text-[#5A2132] transition-colors">
+                    <div class="text-sm font-bold text-[#1D1D1F] tracking-tight truncate group-hover:text-[#0066cc] transition-colors">
                         {% if request.tenant %}{{ request.tenant.name }}{% else %}StudentERP{% endif %}
                     </div>
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-[#86868b]">Admin Panel</div>
@@ -204,7 +204,7 @@
         <div class="border-t border-[var(--apple-hairline)] px-3 py-3 space-y-0.5" style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom));">
             <!-- Search Command Palette Trigger -->
             <button type="button" onclick="closeSidebar(); toggleCmdPalette();" title="Search (Ctrl+K)"
-               class="sidebar-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold erp-nav-default hover:text-[#5A2132] transition-all duration-150 text-left min-h-[44px]">
+               class="sidebar-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold erp-nav-default hover:text-[#0066cc] transition-all duration-150 text-left min-h-[44px]">
                 <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
@@ -233,7 +233,7 @@
             <!-- Kiosk Scanner -->
             {% if school_features.faculty_attendance %}
             <a href="{{ nav_kiosk }}" target="_blank" title="Attendance Kiosk"
-               class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 erp-nav-default hover:text-[#5A2132] min-h-[44px]">
+               class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 erp-nav-default hover:text-[#0066cc] min-h-[44px]">
                 <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/>
                 </svg>

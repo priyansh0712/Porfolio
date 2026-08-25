@@ -116,11 +116,11 @@ class SchoolBrandingForm(forms.ModelForm):
         fields = ['school_image', 'school_logo']
         widgets = {
             'school_image': forms.FileInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#5A2132]/10 file:text-[#5A2132] hover:file:bg-[#5A2132]/20 transition-all',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#0066cc]/10 file:text-[#0066cc] hover:file:bg-[#0066cc]/20 transition-all',
                 'accept': 'image/*'
             }),
             'school_logo': forms.FileInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#5A2132]/10 file:text-[#5A2132] hover:file:bg-[#5A2132]/20 transition-all',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#0066cc]/10 file:text-[#0066cc] hover:file:bg-[#0066cc]/20 transition-all',
                 'accept': 'image/*'
             }),
         }
