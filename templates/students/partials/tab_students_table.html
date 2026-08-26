@@ -73,8 +73,8 @@
                     </td>
 
                     <!-- GR Number -->
-                    <td class="px-4 py-3">
-                        <span class="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-lg border border-gray-200/60">{{ student.gr_number }}</span>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-lg border border-gray-200/60 whitespace-nowrap">{{ student.gr_number }}</span>
                     </td>
 
                     <!-- Actions Column: iOS Toggle Switch + Quick Edit + Delete (Admin) -->
@@ -255,9 +255,9 @@
                             {% endif %}
                         </div>
                         <div class="flex items-center flex-wrap gap-1.5 mt-1">
-                            <span class="text-[11px] text-[#86868b] font-medium mr-0.5">{{ student.standard.name }}-{{ student.division.name }}</span>
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#0066cc]/5 border border-[#0066cc]/10 text-[10px] font-mono font-semibold text-[#0066cc]">Roll: {{ student.roll_number|default:"-" }}</span>
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-gray-100 border border-gray-200/60 text-[10px] font-mono font-medium text-gray-600">GR: {{ student.gr_number }}</span>
+                            <span class="text-xs text-[#86868b] font-medium mr-0.5">{{ student.standard.name }}-{{ student.division.name }}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#0066cc]/5 border border-[#0066cc]/10 text-xs font-mono font-semibold text-[#0066cc]">Roll: {{ student.roll_number|default:"-" }}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-gray-100 border border-gray-200/60 text-xs font-mono font-medium text-gray-600 whitespace-nowrap">GR: {{ student.gr_number }}</span>
                         </div>
                     </div>
                 </div>
@@ -302,15 +302,15 @@
             <div id="student-mobile-detail-{{ student.pk }}" style="background-color: #f5f5f7 !important;" class="hidden pt-3 mt-3 border-t border-gray-200 -mx-3.5 -mb-3.5 p-3.5 border-l-4 border-l-[#0066cc] space-y-3">
                 <div class="grid grid-cols-1 gap-2 text-xs">
                     <div style="background-color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;" class="rounded-xl p-3 border border-gray-200 space-y-1.5">
-                        <span class="font-bold text-[#0066cc] text-[11px] uppercase tracking-wide block pb-1 border-b border-gray-100">Academic Info</span>
-                        <div class="grid grid-cols-2 gap-1.5 text-[11px] pt-0.5">
+                        <span class="font-bold text-[#0066cc] text-xs uppercase tracking-wide block pb-1 border-b border-gray-100">Academic Info</span>
+                        <div class="grid grid-cols-2 gap-1.5 text-xs pt-0.5">
                             <div><span class="text-[#86868b] font-semibold">Class:</span> <span class="font-semibold text-[#1d1d1f]">{{ student.standard.name }} - {{ student.division.name }}</span></div>
                             <div><span class="text-[#86868b] font-semibold">Admission:</span> <span class="font-medium text-[#1d1d1f]">{{ student.admission_date|date:"d M Y"|default:"—" }}</span></div>
                         </div>
                     </div>
                     <div style="background-color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;" class="rounded-xl p-3 border border-gray-200 space-y-1.5">
-                        <span class="font-bold text-[#0066cc] text-[11px] uppercase tracking-wide block pb-1 border-b border-gray-100">Personal & Guardian</span>
-                        <div class="space-y-1 text-[11px] pt-0.5">
+                        <span class="font-bold text-[#0066cc] text-xs uppercase tracking-wide block pb-1 border-b border-gray-100">Personal & Guardian</span>
+                        <div class="space-y-1 text-xs pt-0.5">
                             <div><span class="text-[#86868b] font-semibold">DOB:</span> <span class="text-[#1d1d1f]">{{ student.dob|date:"d M Y"|default:"—" }}{% if student.dob %} ({{ student.age }} yrs){% endif %}</span> • <span class="text-[#1d1d1f]">{{ student.get_gender_display|default:"—" }}</span> • <span class="text-rose-600 font-bold">{{ student.get_blood_group_display|default:"—" }}</span></div>
                             <div><span class="text-[#86868b] font-semibold">Guardian:</span> <span class="font-semibold text-[#1d1d1f]">{{ student.guardian_name|default:"—" }}</span></div>
                             {% if student.guardian_phone %}<div><span class="text-[#86868b] font-semibold">Phone:</span> <a href="tel:{{ student.guardian_phone }}" class="text-[#0066cc] font-mono font-bold">📞 {{ student.guardian_phone }}</a></div>{% endif %}
@@ -347,9 +347,9 @@
     </div>
 
     <!-- Footer Count & Apple Pagination Bar -->
-    <div class="px-5 py-3.5 border-t border-gray-200/80 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+    <div class="px-4 sm:px-5 py-3.5 border-t border-gray-200/80 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs w-full">
         <!-- Showing entries counter + Per Page Selector -->
-        <div class="flex items-center gap-3 text-gray-500 font-medium">
+        <div class="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-3 text-gray-500 font-medium">
             <span>
                 {% if page_obj.paginator %}
                     Showing <span class="font-bold text-[#1d1d1f]">{{ page_obj.start_index }}</span> to <span class="font-bold text-[#1d1d1f]">{{ page_obj.end_index }}</span> of <span class="font-bold text-[#1d1d1f]">{{ page_obj.paginator.count }}</span> students
@@ -372,20 +372,25 @@
 
         <!-- Pagination Controls -->
         {% if page_obj.has_other_pages %}
-        <nav class="flex items-center gap-1" aria-label="Student Pagination">
+        <nav class="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto" aria-label="Student Pagination">
             {% if page_obj.has_previous %}
             <button type="button" onclick="goToStudentPage({{ page_obj.previous_page_number }})"
-                class="px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1 cursor-pointer">
+                class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1 cursor-pointer">
                 ‹ Prev
             </button>
             {% else %}
-            <span class="px-2.5 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
+            <span class="px-3 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
                 ‹ Prev
             </span>
             {% endif %}
 
-            <!-- Page Number Pills -->
-            <div class="flex items-center gap-1">
+            <!-- Mobile Compact Page Indicator -->
+            <div class="flex sm:hidden items-center justify-center px-3 py-1.5 rounded-lg bg-gray-100/90 border border-gray-200/80 text-xs font-bold text-gray-700">
+                {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </div>
+
+            <!-- Desktop Full Page Number Pills -->
+            <div class="hidden sm:flex items-center gap-1">
                 {% for p in page_obj.paginator.page_range %}
                     {% if p == page_obj.number %}
                         <span class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#0066cc] text-white font-bold text-xs shadow-2xs">
@@ -409,11 +414,11 @@
 
             {% if page_obj.has_next %}
             <button type="button" onclick="goToStudentPage({{ page_obj.next_page_number }})"
-                class="px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1 cursor-pointer">
+                class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1 cursor-pointer">
                 Next ›
             </button>
             {% else %}
-            <span class="px-2.5 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
+            <span class="px-3 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
                 Next ›
             </span>
             {% endif %}

@@ -47,6 +47,43 @@
             box-sizing: border-box;
         }
 
+        /* ── Native View Transitions API for Fluid Page Transitions ── */
+        @view-transition {
+            navigation: auto;
+        }
+
+        ::view-transition-old(root) {
+            animation: 120ms cubic-bezier(0.4, 0, 0.2, 1) both fadeOut;
+        }
+        ::view-transition-new(root) {
+            animation: 160ms cubic-bezier(0.16, 1, 0.3, 1) both fadeIn;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0.94; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0.92; transform: translateY(2px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Page Content Entrance Animation ── */
+        main, #main-content {
+            animation: pageEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes pageEnter {
+            from {
+                opacity: 0.88;
+                transform: translateY(3px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         html.lenis,
         html.lenis body {
             height: auto;
@@ -64,12 +101,20 @@
             overflow: hidden;
         }
 
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+
         html,
         body {
-            overflow-x: clip;
-            width: 100%;
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100vw !important;
             margin: 0;
             padding: 0;
+            position: relative;
+            box-sizing: border-box;
         }
 
         body {
@@ -77,7 +122,53 @@
             background-color: var(--apple-canvas);
             color: var(--apple-ink);
             letter-spacing: -0.01em;
+            -webkit-overflow-scrolling: touch;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
             transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Fast touch response without 300ms tap lag */
+        a, button, [role="button"], input, select, textarea, .apple-card {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Subtle Native Mobile Tap Physics */
+        @media (hover: none) and (pointer: coarse) {
+            a:active, button:active, .apple-card:active {
+                transform: scale(0.988);
+                transition: transform 0.08s ease;
+            }
+        }
+
+        /* iOS-style Bottom Navigation Spring Tap & Touch Feedback */
+        .bottom-nav-item {
+            -webkit-tap-highlight-color: transparent !important;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.12s ease !important;
+        }
+        .bottom-nav-item:active {
+            transform: scale(0.86) !important;
+        }
+        .bottom-nav-item svg {
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        .bottom-nav-item:active svg {
+            transform: scale(1.15) !important;
+        }
+
+        /* ── Apple Shimmer Skeleton Loader ── */
+        .skeleton-shimmer {
+            background: linear-gradient(90deg, #ececf1 0%, #dedee6 50%, #ececf1 100%);
+            background-size: 200% 100%;
+            animation: skeletonWave 1.3s ease-in-out infinite;
+        }
+
+        @keyframes skeletonWave {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
         /* Custom Premium Minimalist Scrollbar */
@@ -399,30 +490,44 @@
             display: flex;
             flex-direction: column;
             width: calc(100% - 260px);
-            max-width: 100%;
+            max-width: calc(100% - 260px);
+            box-sizing: border-box;
+            overflow-x: hidden;
             transition: margin-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #main-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         /* Mobile drawer */
         @media (max-width: 767px) {
             #admin-sidebar {
                 transform: translateX(-100%);
-                width: 270px;
-                z-index: 55;
+                width: 275px;
+                max-width: 85vw;
+                z-index: 60 !important;
                 box-shadow: none;
                 visibility: hidden;
                 pointer-events: none;
             }
             #admin-sidebar.sidebar-open {
                 transform: translateX(0);
-                box-shadow: 16px 0 40px rgba(0, 0, 0, 0.15);
+                box-shadow: 16px 0 48px rgba(0, 0, 0, 0.5) !important;
                 visibility: visible;
                 pointer-events: auto;
+            }
+            #sidebar-backdrop {
+                z-index: 55 !important;
             }
             #erp-main-wrapper {
                 margin-left: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                overflow-x: hidden !important;
             }
         }
 
@@ -446,23 +551,17 @@
     <div id="page-scroll-progress"
         class="fixed top-0 left-0 h-[3px] theme-bg-accent z-50 transition-all duration-150 w-0"></div>
 
-    {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}
-    <!-- ═══ School Admin ERP Layout Shell (Sidebar + Main Workspace) ═══ -->
+    {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' or user.is_authenticated and user.role == 'FACULTY' %}
+    <!-- ═══ Unified ERP Layout Shell (Sidebar + Main Workspace) ═══ -->
     {% include "components/navbar.html" %}
 
     <div id="erp-main-wrapper">
-        <!-- Top Utility Header for Admin -->
+        <!-- Top Utility Header for Admin & Faculty -->
         <header id="admin-topbar" class="sticky top-0 z-30 border-b border-gray-200/80 px-4 sm:px-6 h-14 flex items-center justify-between bg-white/90 backdrop-blur-md">
             <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <!-- Hamburger for mobile -->
-                <button type="button" onclick="toggleSidebar()" class="md:hidden text-[#1D1D1F] hover:bg-gray-200/70 w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100/90 border border-gray-200/70 focus:outline-none focus:ring-2 focus:ring-[#0066cc]/20 flex-shrink-0 transition-all shadow-2xs" aria-label="Open Navigation">
-                    <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
                 <div class="text-xs sm:text-sm font-semibold text-gray-500 tracking-tight flex items-center gap-1.5 min-w-0">
                     {% block breadcrumb %}
-                    <span class="text-[#1d1d1f] font-bold truncate">{% block page_title %}School Overview{% endblock %}</span>
+                    <span class="text-[#1d1d1f] font-bold truncate">{% block page_title %}{% if user.role == 'FACULTY' %}Faculty Dashboard{% else %}School Overview{% endif %}{% endblock %}</span>
                     <span class="text-gray-300 hidden sm:inline">/</span>
                     <span class="text-gray-400 font-medium hidden sm:inline truncate">{% if request.tenant %}{{ request.tenant.name }}{% else %}School ERP{% endif %}</span>
                     {% endblock %}
@@ -471,6 +570,7 @@
 
             <!-- Top Header Right Actions -->
             <div class="flex items-center gap-2 flex-shrink-0">
+                {% if school_features.notifications %}
                 <a href="{% url 'notifications:notification_list' %}" class="relative w-8 h-8 flex items-center justify-center rounded-full bg-gray-100/90 hover:bg-gray-200/70 text-[#1D1D1F] hover:text-[#0066cc] border border-gray-200/70 transition-all focus:outline-none focus:ring-2 focus:ring-[#0066cc]/20 shadow-2xs" title="Notifications" aria-label="Notifications">
                     <svg class="w-4 h-4 text-gray-700 hover:text-[#0066cc]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
@@ -479,7 +579,16 @@
                     <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
                     {% endif %}
                 </a>
-                {% if school_features.faculty_attendance %}
+                {% endif %}
+
+                {% if user.role == 'FACULTY' %}
+                <a href="{% url 'accounts:password_change' %}" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100/90 hover:bg-gray-200/70 text-[#1D1D1F] hover:text-[#0066cc] border border-gray-200/70 transition-all focus:outline-none shadow-2xs" title="Security & Password">
+                    <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </a>
+                {% elif user.role == 'SCHOOL_ADMIN' and school_features.faculty_attendance %}
                 <a href="{% url 'attendance:kiosk' %}" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#0066cc] bg-[#0066cc]/8 hover:bg-[#0066cc]/14 border border-[#0066cc]/20 rounded-full px-3.5 py-1.5 transition-colors shadow-2xs">
                     <svg class="w-3.5 h-3.5 text-[#0066cc]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
@@ -490,158 +599,181 @@
             </div>
         </header>
     {% else %}
-    <!-- ═══ Standard Layout for Faculty, Student, and Public ═══ -->
+    <!-- ═══ Standard Layout for Student, and Public ═══ -->
     {% include "components/navbar.html" %}
     {% endif %}
 
+    <!-- ═══ Universal Apple Shimmer Skeleton Screen (Zero-Freeze Transition) ═══ -->
+    <div id="global-page-skeleton" class="hidden {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' or user.is_authenticated and user.role == 'FACULTY' %}w-full max-w-full px-4 sm:px-6 lg:px-8 pt-5 sm:pt-6 pb-20 md:pb-8{% else %}max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-8{% endif %} space-y-5">
+        <!-- Skeleton Header Bar -->
+        <div class="flex items-center justify-between gap-4">
+            <div class="space-y-2">
+                <div class="skeleton-shimmer h-7 w-48 sm:w-64 rounded-xl"></div>
+                <div class="skeleton-shimmer h-3.5 w-28 rounded-lg"></div>
+            </div>
+            <div class="skeleton-shimmer h-9 w-28 rounded-full hidden sm:block"></div>
+        </div>
+
+        <!-- Skeleton 4 KPI Cards Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+            <div class="apple-card p-4 sm:p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="skeleton-shimmer h-3.5 w-16 rounded-md"></div>
+                    <div class="skeleton-shimmer h-7 w-7 rounded-xl"></div>
+                </div>
+                <div class="skeleton-shimmer h-7 w-20 rounded-xl"></div>
+                <div class="skeleton-shimmer h-3 w-28 rounded-md"></div>
+            </div>
+            <div class="apple-card p-4 sm:p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="skeleton-shimmer h-3.5 w-16 rounded-md"></div>
+                    <div class="skeleton-shimmer h-7 w-7 rounded-xl"></div>
+                </div>
+                <div class="skeleton-shimmer h-7 w-20 rounded-xl"></div>
+                <div class="skeleton-shimmer h-3 w-28 rounded-md"></div>
+            </div>
+            <div class="apple-card p-4 sm:p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="skeleton-shimmer h-3.5 w-16 rounded-md"></div>
+                    <div class="skeleton-shimmer h-7 w-7 rounded-xl"></div>
+                </div>
+                <div class="skeleton-shimmer h-7 w-20 rounded-xl"></div>
+                <div class="skeleton-shimmer h-3 w-28 rounded-md"></div>
+            </div>
+            <div class="apple-card p-4 sm:p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="skeleton-shimmer h-3.5 w-16 rounded-md"></div>
+                    <div class="skeleton-shimmer h-7 w-7 rounded-xl"></div>
+                </div>
+                <div class="skeleton-shimmer h-7 w-20 rounded-xl"></div>
+                <div class="skeleton-shimmer h-3 w-28 rounded-md"></div>
+            </div>
+        </div>
+
+        <!-- Skeleton Content / Table Card -->
+        <div class="apple-card p-4 sm:p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                <div class="skeleton-shimmer h-4 w-36 rounded-lg"></div>
+                <div class="skeleton-shimmer h-4 w-20 rounded-lg"></div>
+            </div>
+            <div class="space-y-3">
+                <div class="skeleton-shimmer h-12 w-full rounded-xl"></div>
+                <div class="skeleton-shimmer h-12 w-full rounded-xl"></div>
+                <div class="skeleton-shimmer h-12 w-full rounded-xl"></div>
+                <div class="skeleton-shimmer h-12 w-full rounded-xl"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Container -->
-    <main class="flex-grow {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}w-full max-w-full px-4 sm:px-6 lg:px-8 pt-5 sm:pt-6 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% else %}max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% endif %} box-border">
+    <main id="main-content" class="flex-grow {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' or user.is_authenticated and user.role == 'FACULTY' %}w-full max-w-full px-4 sm:px-6 lg:px-8 pt-5 sm:pt-6 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% else %}max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:pb-8{% endif %} box-border">
         {% include "components/alerts.html" %}
         {% block content %}{% endblock %}
     </main>
 
-    {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' %}
+    {% if user.is_authenticated and user.role == 'SCHOOL_ADMIN' or user.is_authenticated and user.role == 'FACULTY' %}
     <!-- Mobile Fixed Bottom Primary Navigation (< 768px) -->
     <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-[var(--apple-hairline)] px-2 shadow-lg"
          style="padding-bottom: env(safe-area-inset-bottom, 0px);" aria-label="Mobile Primary Navigation">
         <div class="flex items-center justify-around h-14 max-w-lg mx-auto">
-            <!-- 1. Dashboard -->
+            <!-- 1. Sidebar Menu Button (Opens Full Sidebar Drawer) -->
+            <button type="button" onclick="toggleSidebar()"
+               class="bottom-nav-item flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors text-gray-500 hover:text-[#0066cc] font-medium focus:outline-none cursor-pointer"
+               aria-label="Open Sidebar Menu">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" x2="20" y1="6" y2="6"/>
+                    <line x1="4" x2="20" y1="12" y2="12"/>
+                    <line x1="4" x2="20" y1="18" y2="18"/>
+                </svg>
+                <span class="text-[11px] tracking-tight">Menu</span>
+            </button>
+
+            {% if user.role == 'SCHOOL_ADMIN' %}
+            <!-- ── ADMIN PRIMARY TABS ── -->
+            <!-- 2. Dashboard -->
             <a href="{% url 'reports:dashboard' %}"
                {% if request.path == '/' or '/dashboard/' in request.path or request.path == '/reports/dashboard/' %}aria-current="page"{% endif %}
-               class="flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if request.path == '/' or '/dashboard/' in request.path or request.path == '/reports/dashboard/' %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
+               class="bottom-nav-item flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if request.path == '/' or '/dashboard/' in request.path or request.path == '/reports/dashboard/' %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
                 <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{% if request.path == '/' or '/dashboard/' in request.path or request.path == '/reports/dashboard/' %}2.2{% else %}1.8{% endif %}" stroke-linecap="round" stroke-linejoin="round">
                     <rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>
                 </svg>
-                <span class="text-[10px] tracking-tight">Dashboard</span>
+                <span class="text-[11px] tracking-tight">Dashboard</span>
             </a>
 
-            <!-- 2. Faculty -->
+            <!-- 3. Faculty -->
             <a href="{% url 'faculty:list' %}"
-               {% if '/faculty/' in request.path %}aria-current="page"{% endif %}
-               class="flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if '/faculty/' in request.path %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
-                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{% if '/faculty/' in request.path %}2.2{% else %}1.8{% endif %}" stroke-linecap="round" stroke-linejoin="round">
+               {% if '/faculty/' in request.path and not '/my-' in request.path %}aria-current="page"{% endif %}
+               class="bottom-nav-item flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if '/faculty/' in request.path and not '/my-' in request.path %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{% if '/faculty/' in request.path and not '/my-' in request.path %}2.2{% else %}1.8{% endif %}" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
-                <span class="text-[10px] tracking-tight">Faculty</span>
+                <span class="text-[11px] tracking-tight">Faculty</span>
             </a>
 
-            <!-- 3. Students -->
+            <!-- 4. Students -->
             <a href="{% url 'students:hub' %}"
                {% if '/students/' in request.path %}aria-current="page"{% endif %}
-               class="flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if '/students/' in request.path %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
+               class="bottom-nav-item flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if '/students/' in request.path %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
                 <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{% if '/students/' in request.path %}2.2{% else %}1.8{% endif %}" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>
                 </svg>
-                <span class="text-[10px] tracking-tight">Students</span>
+                <span class="text-[11px] tracking-tight">Students</span>
             </a>
 
-            <!-- 4. Academics -->
+            <!-- 5. Academics -->
             <a href="{% url 'academics:hub' %}"
                {% if '/academics/' in request.path %}aria-current="page"{% endif %}
-               class="flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if '/academics/' in request.path %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
+               class="bottom-nav-item flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if '/academics/' in request.path %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
                 <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{% if '/academics/' in request.path %}2.2{% else %}1.8{% endif %}" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.084a1 1 0 0 0 0 1.838l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16c0 1.657 2.686 3 6 3s6-1.343 6-3v-3.5"/>
                 </svg>
-                <span class="text-[10px] tracking-tight">Academics</span>
+                <span class="text-[11px] tracking-tight">Academics</span>
             </a>
 
-            <!-- 5. More (Opens Bottom Sheet) -->
-            <button type="button" onclick="toggleMoreSheet()"
-               class="flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors text-gray-500 hover:text-gray-900 font-medium focus:outline-none"
-               aria-label="Open More options" aria-haspopup="dialog" id="btn-mobile-more">
-                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+            {% elif user.role == 'FACULTY' %}
+            <!-- ── FACULTY PRIMARY TABS ── -->
+            <!-- 2. Dashboard -->
+            <a href="{% url 'accounts:dashboard' %}"
+               {% if request.path == '/accounts/dashboard/' or request.path == '/leaves/faculty-dashboard/' %}aria-current="page"{% endif %}
+               class="bottom-nav-item flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if request.path == '/accounts/dashboard/' or request.path == '/leaves/faculty-dashboard/' %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{% if request.path == '/accounts/dashboard/' or request.path == '/leaves/faculty-dashboard/' %}2.2{% else %}1.8{% endif %}" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>
                 </svg>
-                <span class="text-[10px] tracking-tight">More</span>
-            </button>
+                <span class="text-[11px] tracking-tight">Dashboard</span>
+            </a>
+
+            <!-- 3. My Class -->
+            <a href="{% url 'faculty:my_class' %}"
+               {% if '/my-class/' in request.path %}aria-current="page"{% endif %}
+               class="bottom-nav-item flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if '/my-class/' in request.path %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{% if '/my-class/' in request.path %}2.2{% else %}1.8{% endif %}" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span class="text-[11px] tracking-tight">My Class</span>
+            </a>
+
+            <!-- 4. My Subjects -->
+            <a href="{% url 'faculty:my_subjects' %}"
+               {% if '/my-subjects/' in request.path %}aria-current="page"{% endif %}
+               class="bottom-nav-item flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if '/my-subjects/' in request.path %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{% if '/my-subjects/' in request.path %}2.2{% else %}1.8{% endif %}" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+                <span class="text-[11px] tracking-tight">My Subjects</span>
+            </a>
+
+            <!-- 5. Apply Leave -->
+            <a href="{% url 'leaves:apply_leave' %}"
+               {% if '/apply-leave/' in request.path or '/leaves/apply/' in request.path %}aria-current="page"{% endif %}
+               class="bottom-nav-item flex flex-col items-center justify-center flex-1 h-full min-h-[44px] py-1 transition-colors {% if '/apply-leave/' in request.path or '/leaves/apply/' in request.path %}text-[#0066cc] font-bold{% else %}text-gray-500 hover:text-gray-900 font-medium{% endif %}">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{% if '/apply-leave/' in request.path or '/leaves/apply/' in request.path %}2.2{% else %}1.8{% endif %}" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                <span class="text-[11px] tracking-tight">Apply Leave</span>
+            </a>
+            {% endif %}
         </div>
     </nav>
-
-    <!-- iOS-Style Mobile "More" Bottom Sheet Modal -->
-    <div id="mobile-more-sheet" class="hidden md:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/40 backdrop-blur-xs transition-opacity duration-200" onclick="closeMoreSheet(event)" role="dialog" aria-modal="true" aria-label="More Navigation">
-        <div class="bg-white rounded-t-3xl border-t border-[var(--apple-hairline)] shadow-2xl p-5 w-full max-h-[85dvh] overflow-y-auto transform transition-transform duration-300"
-             style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem));" onclick="event.stopPropagation()">
-            <!-- Grab Handle Indicator -->
-            <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
-
-            <!-- Sheet Header -->
-            <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
-                <div>
-                    <h3 class="text-base font-bold text-[#1D1D1F] tracking-tight">More Menu</h3>
-                    <p class="text-xs text-gray-500 mt-0.5">{% if request.tenant %}{{ request.tenant.name }}{% else %}School Admin{% endif %}</p>
-                </div>
-                <button type="button" onclick="closeMoreSheet()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center focus:outline-none" aria-label="Close More Menu">✕</button>
-            </div>
-
-            <!-- Sheet Sections -->
-            <div class="space-y-4">
-                <!-- Operations -->
-                <div>
-                    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 px-1">Operations</div>
-                    <div class="space-y-1">
-                        <a href="{% url 'leaves:admin_requests' %}" class="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 text-xs font-semibold text-[#1D1D1F] border border-transparent hover:border-gray-200 min-h-[44px]">
-                            <div class="flex items-center gap-3">
-                                <span class="w-8 h-8 rounded-xl bg-[#0066cc]/8 text-[#0066cc] flex items-center justify-center">🌴</span>
-                                <span>Leaves Management</span>
-                            </div>
-                            <span class="text-gray-400">&rsaquo;</span>
-                        </a>
-                        <a href="{% url 'reports:report-list' %}" class="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 text-xs font-semibold text-[#1D1D1F] border border-transparent hover:border-gray-200 min-h-[44px]">
-                            <div class="flex items-center gap-3">
-                                <span class="w-8 h-8 rounded-xl bg-[#0066cc]/8 text-[#0066cc] flex items-center justify-center">📊</span>
-                                <span>Attendance Reports & CSV</span>
-                            </div>
-                            <span class="text-gray-400">&rsaquo;</span>
-                        </a>
-                        <a href="{% url 'schedules:settings' %}" class="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 text-xs font-semibold text-[#1D1D1F] border border-transparent hover:border-gray-200 min-h-[44px]">
-                            <div class="flex items-center gap-3">
-                                <span class="w-8 h-8 rounded-xl bg-[#0066cc]/8 text-[#0066cc] flex items-center justify-center">⏰</span>
-                                <span>Schedules, Shifts & Holidays</span>
-                            </div>
-                            <span class="text-gray-400">&rsaquo;</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Tools & Utilities -->
-                <div>
-                    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 px-1">Tools & Utilities</div>
-                    <div class="space-y-1">
-                        {% if school_features.faculty_attendance %}
-                        <a href="{% url 'attendance:kiosk' %}" target="_blank" class="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 text-xs font-semibold text-[#0066cc] bg-[#0066cc]/5 border border-[#0066cc]/15 min-h-[44px]">
-                            <div class="flex items-center gap-3">
-                                <span class="w-8 h-8 rounded-xl bg-[#0066cc] text-white flex items-center justify-center">📷</span>
-                                <span>Launch Attendance Kiosk</span>
-                            </div>
-                            <span class="text-xs bg-white text-[#0066cc] px-2 py-0.5 rounded-full border border-[#0066cc]/20 font-bold">Live</span>
-                        </a>
-                        {% endif %}
-                        <a href="{% url 'notifications:notification_list' %}" class="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 text-xs font-semibold text-[#1D1D1F] border border-transparent hover:border-gray-200 min-h-[44px]">
-                            <div class="flex items-center gap-3">
-                                <span class="w-8 h-8 rounded-xl bg-gray-100 text-gray-700 flex items-center justify-center">🔔</span>
-                                <span>Notifications Center</span>
-                            </div>
-                            {% if unread_notifications_count > 0 %}
-                            <span class="px-2 py-0.5 text-[10px] font-bold leading-none text-white bg-red-500 rounded-full">{{ unread_notifications_count }}</span>
-                            {% else %}
-                            <span class="text-gray-400">&rsaquo;</span>
-                            {% endif %}
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Account & Sign Out -->
-                <div class="pt-2 border-t border-gray-100">
-                    <form method="post" action="{% url 'accounts:logout' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="flex items-center justify-center w-full py-3 rounded-2xl text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors min-h-[44px]">
-                            Sign Out
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
     {% endif %}
 
     <!-- Page Footer -->
@@ -870,6 +1002,101 @@
             }
         }
 
+        // ── Smooth Page-to-Page Navigation Progress & Shimmer Skeleton ──
+        (function () {
+            const pBar = document.getElementById('page-scroll-progress');
+            const skeleton = document.getElementById('global-page-skeleton');
+            const mainContent = document.getElementById('main-content');
+
+            document.addEventListener('click', function (e) {
+                if (e.defaultPrevented) return;
+                const link = e.target.closest('a');
+                if (!link) return;
+                if (e.defaultPrevented || link.dataset.noSkeleton === 'true' || link.getAttribute('onclick')) return;
+                const href = link.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('tel:') || href.startsWith('mailto:') || link.target === '_blank' || link.hasAttribute('download')) return;
+                
+                // Show instant top progress bar animation on page change
+                if (pBar) {
+                    pBar.style.transition = 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease';
+                    pBar.style.opacity = '1';
+                    pBar.style.width = '40%';
+                    setTimeout(function () {
+                        if (pBar) pBar.style.width = '80%';
+                    }, 80);
+                }
+
+                // Show shimmer skeleton to prevent screen freezing only on full page navigation
+                if (skeleton && mainContent) {
+                    setTimeout(function () {
+                        if (!e.defaultPrevented) {
+                            mainContent.classList.add('hidden');
+                            skeleton.classList.remove('hidden');
+                        }
+                    }, 60);
+                }
+            });
+
+            window.addEventListener('pageshow', function () {
+                if (pBar) {
+                    pBar.style.width = '100%';
+                    setTimeout(function () {
+                        pBar.style.opacity = '0';
+                        setTimeout(function () {
+                            pBar.style.width = '0%';
+                            pBar.style.opacity = '1';
+                        }, 200);
+                    }, 120);
+                }
+                if (skeleton && mainContent) {
+                    skeleton.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                }
+            });
+        })();
+
+        // ── Instant Mobile Bottom Nav Feedback & Smart Prefetch ──
+        (function () {
+            const nav = document.getElementById('mobile-bottom-nav');
+            if (!nav) return;
+
+            const items = nav.querySelectorAll('.bottom-nav-item');
+
+            // Idle link prefetch for instant 0ms tab transitions
+            if ('requestIdleCallback' in window) {
+                window.requestIdleCallback(function () {
+                    items.forEach(function (link) {
+                        if (link.tagName === 'A' && link.href && !link.href.includes('#')) {
+                            const prefetchLink = document.createElement('link');
+                            prefetchLink.rel = 'prefetch';
+                            prefetchLink.href = link.href;
+                            document.head.appendChild(prefetchLink);
+                        }
+                    });
+                });
+            }
+
+            // Zero-latency active highlight on touch/click
+            items.forEach(function (item) {
+                item.addEventListener('pointerdown', function () {
+                    if (this.tagName === 'A') {
+                        items.forEach(function (el) {
+                            if (el !== item) {
+                                el.classList.remove('text-[#0066cc]', 'font-bold');
+                                el.classList.add('text-gray-500', 'font-medium');
+                                const svg = el.querySelector('svg');
+                                if (svg) svg.setAttribute('stroke-width', '1.8');
+                            }
+                        });
+                        this.classList.remove('text-gray-500', 'font-medium');
+                        this.classList.add('text-[#0066cc]', 'font-bold');
+                        const svg = this.querySelector('svg');
+                        if (svg) svg.setAttribute('stroke-width', '2.2');
+                    }
+                });
+            });
+        })();
+
         // Quick Drawer Logic
         function toggleQuickDrawer() {
             const drawer = document.getElementById('quick-action-drawer');
@@ -912,34 +1139,8 @@
             document.body.style.overflow = '';
         }
 
-        // ── Mobile "More" Bottom Sheet Logic ──
-        function toggleMoreSheet() {
-            var sheet = document.getElementById('mobile-more-sheet');
-            if (!sheet) return;
-            if (sheet.classList.contains('hidden')) {
-                sheet.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            } else {
-                closeMoreSheet();
-            }
-        }
-
-        function closeMoreSheet(e) {
-            var sheet = document.getElementById('mobile-more-sheet');
-            if (sheet) {
-                sheet.classList.add('hidden');
-                document.body.style.overflow = '';
-            }
-        }
-
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
-                // Close mobile "More" bottom sheet if open
-                var moreSheet = document.getElementById('mobile-more-sheet');
-                if (moreSheet && !moreSheet.classList.contains('hidden')) {
-                    closeMoreSheet();
-                    return;
-                }
                 // Close mobile sidebar drawer if open
                 var sidebar = document.getElementById('admin-sidebar');
                 if (sidebar && sidebar.classList.contains('sidebar-open')) {
@@ -1029,6 +1230,143 @@
                 `;
             }
         });
+        /**
+         * Universal In-Place AJAX Table Updater (Zero-Jump, Smooth Pagination & Live Search)
+         */
+        const ajaxTableAbortControllers = {};
+        function fetchAjaxTable(containerId, url, options = {}) {
+            const container = document.getElementById(containerId);
+            if (!container) {
+                window.location.href = url;
+                return;
+            }
+
+            if (ajaxTableAbortControllers[containerId]) {
+                ajaxTableAbortControllers[containerId].abort();
+            }
+            ajaxTableAbortControllers[containerId] = new AbortController();
+
+            // Save active input focus & cursor state if input is inside this container
+            const activeEl = document.activeElement;
+            let activeInputInfo = null;
+            if (activeEl && container.contains(activeEl) && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+                activeInputInfo = {
+                    name: activeEl.getAttribute('name'),
+                    id: activeEl.id,
+                    selectionStart: activeEl.selectionStart,
+                    selectionEnd: activeEl.selectionEnd
+                };
+            }
+
+            container.style.transition = 'opacity 0.15s ease';
+            container.style.opacity = '0.55';
+            if (!options.isLiveSearch) {
+                container.style.pointerEvents = 'none';
+            }
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                signal: ajaxTableAbortControllers[containerId].signal
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Network error');
+                return res.text();
+            })
+            .then(htmlText => {
+                const skeleton = document.getElementById('global-page-skeleton');
+                const mainContent = document.getElementById('main-content');
+                if (skeleton && mainContent) {
+                    skeleton.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                }
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+                const newContainer = doc.getElementById(containerId);
+
+                if (newContainer) {
+                    container.innerHTML = newContainer.innerHTML;
+                } else {
+                    container.innerHTML = htmlText;
+                }
+
+                try {
+                    window.history.pushState(null, '', url);
+                } catch (e) {}
+
+                container.style.opacity = '1';
+                container.style.pointerEvents = 'auto';
+
+                // Restore focus & cursor position if live typing
+                if (activeInputInfo) {
+                    let restoredInput = null;
+                    if (activeInputInfo.id) {
+                        try { restoredInput = container.querySelector('#' + CSS.escape(activeInputInfo.id)); } catch(e) {}
+                    }
+                    if (!restoredInput && activeInputInfo.name) {
+                        try { restoredInput = container.querySelector('input[name="' + CSS.escape(activeInputInfo.name) + '"]'); } catch(e) {}
+                    }
+                    if (restoredInput) {
+                        restoredInput.focus();
+                        try {
+                            restoredInput.setSelectionRange(activeInputInfo.selectionStart, activeInputInfo.selectionEnd);
+                        } catch (e) {}
+                    }
+                }
+
+                // Smoothly scroll screen to Table Card top ONLY if not live typing
+                if (!options.isLiveSearch) {
+                    if (window.lenisInstance) {
+                        window.lenisInstance.scrollTo(container, { offset: -76, immediate: false });
+                    } else {
+                        const yOffset = -76;
+                        const y = container.getBoundingClientRect().top + (window.pageYOffset || window.scrollY || 0) + yOffset;
+                        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+                    }
+                }
+
+                if (typeof initAppleDatePickers === 'function') {
+                    initAppleDatePickers(container);
+                }
+
+                if (options.callback && typeof options.callback === 'function') {
+                    options.callback(container);
+                }
+            })
+            .catch(err => {
+                if (err.name === 'AbortError') return;
+                const skeleton = document.getElementById('global-page-skeleton');
+                const mainContent = document.getElementById('main-content');
+                if (skeleton && mainContent) {
+                    skeleton.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                }
+                container.style.opacity = '1';
+                container.style.pointerEvents = 'auto';
+                console.error('AJAX table fetch failed, falling back:', err);
+                window.location.href = url;
+            });
+        }
+
+        let globalLiveSearchTimers = {};
+        function handleLiveSearch(input, containerId, baseUrl, queryParam = 'q', extraParams = {}) {
+            if (globalLiveSearchTimers[containerId]) {
+                clearTimeout(globalLiveSearchTimers[containerId]);
+            }
+
+            globalLiveSearchTimers[containerId] = setTimeout(() => {
+                const query = encodeURIComponent(input.value.trim());
+                let url = baseUrl + (baseUrl.includes('?') ? '&' : '?') + queryParam + '=' + query;
+                for (const [k, v] of Object.entries(extraParams)) {
+                    if (v !== undefined && v !== null && v !== '') {
+                        url += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(v);
+                    }
+                }
+                fetchAjaxTable(containerId, url, { isLiveSearch: true });
+            }, 300);
+        }
     </script>
     {% block extra_js %}{% endblock %}
 </body>

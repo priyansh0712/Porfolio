@@ -11,10 +11,10 @@
 {% url 'accounts:dashboard' as nav_brand %}
 
 <!-- Mobile Sidebar Backdrop -->
-<div id="sidebar-backdrop" class="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 hidden transition-opacity duration-300" onclick="closeSidebar()"></div>
+<div id="sidebar-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[55] hidden transition-opacity duration-300" onclick="closeSidebar()"></div>
 
 <!-- Admin Persistent Left Sidebar (~260px) -->
-<aside id="admin-sidebar" class="fixed top-0 left-0 bottom-0 w-[260px] border-r border-white/10 z-50 flex flex-col justify-between overflow-y-auto overflow-x-hidden" style="background: linear-gradient(180deg, #0d3b66 0%, #06192d 100%) !important;" data-lenis-prevent>
+<aside id="admin-sidebar" class="fixed top-0 left-0 bottom-0 w-[260px] border-r border-white/10 z-[60] flex flex-col justify-between overflow-y-auto overflow-x-hidden" style="background: linear-gradient(180deg, #0d3b66 0%, #06192d 100%) !important;" data-lenis-prevent>
     <div class="flex flex-col flex-grow">
 
         <!-- Brand Header -->
@@ -201,7 +201,7 @@
         </nav>
 
         <!-- BOTTOM UTILITIES -->
-        <div class="border-t border-white/10 px-3 py-3 space-y-0.5" style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom));">
+        <div class="border-t border-white/10 px-3 py-3 space-y-0.5 flex-shrink-0" style="padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem));">
             <!-- Notifications -->
             {% if school_features.notifications %}
             <a href="{{ nav_notifications }}" title="Notifications"

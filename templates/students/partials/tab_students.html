@@ -59,6 +59,18 @@
             <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All</option>
         </select>
 
+        {% if can_edit_students %}
+        <!-- Select Mode Toggle Button (Inline with Filters) -->
+        <button type="button" id="toggle-select-mode-btn" onclick="toggleStudentSelectionMode()"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1d1d1f] bg-white hover:bg-gray-50 border border-gray-300 rounded-xl px-3.5 py-2 transition-all shadow-2xs cursor-pointer h-[40px] whitespace-nowrap">
+            <svg id="toggle-select-mode-icon" class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect width="18" height="18" x="3" y="3" rx="4" stroke-width="2"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 12 2 2 4-4"/>
+            </svg>
+            <span id="toggle-select-mode-text">Select</span>
+        </button>
+        {% endif %}
+
         <!-- Clear / Reset Filter Link -->
         <div id="student-reset-btn-wrapper" style="{% if not search and not request.GET.standard and not request.GET.division and status_filter != 'inactive' and status_filter != 'all' and not show_inactive %}display: none;{% endif %}">
             <button type="button" onclick="resetStudentFilters()"
@@ -123,6 +135,6 @@
 {% endif %}
 
 <!-- Students Table Live AJAX Container -->
-<div id="students-table-container">
+<div id="students-table-container" class="scroll-mt-20">
     {% include 'students/partials/tab_students_table.html' %}
 </div>

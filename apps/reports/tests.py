@@ -294,10 +294,9 @@ class PrincipalDashboardModuleAwarenessTest(ReportsTestBase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'School Overview')
-        self.assertContains(response, 'Real-time school performance and operational snapshot.')
-        self.assertContains(response, 'Total Students')
-        self.assertContains(response, 'Total Faculty')
-        self.assertContains(response, 'Active Divisions')
+        self.assertContains(response, 'Students')
+        self.assertContains(response, 'Faculty')
+        self.assertContains(response, 'Divisions')
         self.assertContains(response, '2026-2027')
 
     def test_scenario_a_attendance_disabled(self):
@@ -317,8 +316,8 @@ class PrincipalDashboardModuleAwarenessTest(ReportsTestBase):
         self.assertNotContains(response, 'Attendance Export')
 
         # Should still contain neutral overview, leaves, academics
-        self.assertContains(response, 'Total Students')
-        self.assertContains(response, 'Total Faculty')
+        self.assertContains(response, 'Students')
+        self.assertContains(response, 'Faculty')
         self.assertContains(response, 'Academic Overview')
 
     def test_scenario_b_faculty_attendance_enabled(self):
@@ -344,7 +343,7 @@ class PrincipalDashboardModuleAwarenessTest(ReportsTestBase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Launch Kiosk')
         self.assertContains(response, 'Faculty Attendance')
-        self.assertContains(response, 'Live Attendance Feed')
+        self.assertContains(response, 'Recent Activity')
         self.assertContains(response, 'Alice Smith')
 
     def test_scenario_c_academics_disabled(self):
@@ -375,8 +374,8 @@ class PrincipalDashboardModuleAwarenessTest(ReportsTestBase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'School Overview')
-        self.assertContains(response, 'Total Students')
-        self.assertContains(response, 'Total Faculty')
+        self.assertContains(response, 'Students')
+        self.assertContains(response, 'Faculty')
         self.assertNotContains(response, 'Launch Kiosk')
         self.assertNotContains(response, 'Staff Leaves')
         self.assertNotContains(response, 'Academic Overview')

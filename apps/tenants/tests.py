@@ -115,6 +115,25 @@ class PublicViewsTest(TestCase):
         self.assertContains(response, "StudentERP")
         self.assertContains(response, "Sign In to Portal")
 
+    def test_tenant_subdomain_unauthenticated_redirects_to_login(self):
+        school = School.objects.create(name='St. Xavier', subdomain='st-xavier')
+        response = self.client.get(reverse('public:landing'), HTTP_HOST='st-xavier.localhost:8000')
+        self.assertRedirects(response, reverse('accounts:login'))
+
+    def test_tenant_subdomain_authenticated_redirects_to_dashboard(self):
+        school = School.objects.create(name='St. Xavier', subdomain='st-xavier')
+        from apps.accounts.models import User
+        school_admin = User.objects.create_user(
+            username='admin@stxavier.edu',
+            email='admin@stxavier.edu',
+            password='AdminPassword123!',
+            role=User.Role.SCHOOL_ADMIN,
+            school=school,
+        )
+        self.client.force_login(school_admin)
+        response = self.client.get(reverse('public:landing'), HTTP_HOST='st-xavier.localhost:8000')
+        self.assertRedirects(response, reverse('accounts:dashboard'))
+
     def test_registration_flow(self):
         self.client.force_login(self.super_admin)
         response = self.client.post(reverse('public:register'), {

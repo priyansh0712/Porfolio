@@ -404,9 +404,6 @@
       <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight">
         Faculty Directory
       </h1>
-      <p class="text-xs sm:text-sm text-[#86868b] mt-1">
-        Manage {{ total_count }} faculty member{{ total_count|pluralize }} for {% if tenant %}{{ tenant.name }}{% else %}your school{% endif %}
-      </p>
     </div>
     <div class="flex items-center gap-2 sm:gap-2.5 self-start sm:self-auto">
       <button class="apple-btn-primary px-4 py-2 sm:px-5 sm:py-2.5 inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold shadow-xs" onclick="openFacultyModal('create')" id="btn-add-faculty">
@@ -468,6 +465,7 @@
     </div>
   </div>
 
+  <div id="faculty-list-content-container" class="scroll-mt-20">
   <!-- Digital ID Cards / Mobile Cards View (Single Clean List) -->
   <div id="faculty-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8 md:hidden">
     {% for faculty in faculty_list %}
@@ -494,8 +492,8 @@
                 {% endif %}
               </div>
               <div class="flex items-center flex-wrap gap-1.5 mt-0.5">
-                <span class="text-[11px] text-[#86868b] font-medium">{{ faculty.department }}</span>
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-gray-100 border border-gray-200/60 text-[10px] font-mono font-medium text-gray-600">Code: {{ faculty.employee_code }}</span>
+                <span class="text-xs text-[#86868b] font-medium">{{ faculty.department }}</span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-gray-100 border border-gray-200/60 text-xs font-mono font-medium text-gray-600">Code: {{ faculty.employee_code }}</span>
               </div>
             </div>
           </div>
@@ -521,16 +519,16 @@
         <div id="faculty-mobile-detail-{{ faculty.pk }}" style="background-color: #f5f5f7 !important;" class="hidden pt-3 mt-3 border-t border-gray-200 -mx-3.5 -mb-3.5 p-3.5 border-l-4 border-l-[#0066cc] space-y-3">
           <div class="grid grid-cols-1 gap-2 text-xs">
             <div style="background-color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;" class="rounded-xl p-3 border border-gray-200 space-y-1.5">
-              <span class="font-bold text-[#0066cc] text-[11px] uppercase tracking-wide block pb-1 border-b border-gray-100">Professional Info</span>
-              <div class="space-y-1 text-[11px] pt-0.5">
+              <span class="font-bold text-[#0066cc] text-xs uppercase tracking-wide block pb-1 border-b border-gray-100">Professional Info</span>
+              <div class="space-y-1 text-xs pt-0.5">
                 <div><span class="text-[#86868b] font-semibold">Department:</span> <span class="font-bold text-[#1d1d1f]">{{ faculty.department }}</span></div>
                 <div><span class="text-[#86868b] font-semibold">Designation:</span> <span class="font-semibold text-[#1d1d1f]">{{ faculty.designation|default:"Faculty Member" }}</span></div>
                 <div><span class="text-[#86868b] font-semibold">Code:</span> <span class="font-mono font-bold text-gray-700">{{ faculty.employee_code }}</span></div>
               </div>
             </div>
             <div style="background-color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;" class="rounded-xl p-3 border border-gray-200 space-y-1.5">
-              <span class="font-bold text-[#0066cc] text-[11px] uppercase tracking-wide block pb-1 border-b border-gray-100">Contact & Face ID</span>
-              <div class="space-y-1 text-[11px] pt-0.5">
+              <span class="font-bold text-[#0066cc] text-xs uppercase tracking-wide block pb-1 border-b border-gray-100">Contact & Face ID</span>
+              <div class="space-y-1 text-xs pt-0.5">
                 <div><span class="text-[#86868b] font-semibold">Email:</span> <span class="font-semibold text-[#1d1d1f] select-all">{{ faculty.email }}</span></div>
                 {% if faculty.phone_number %}<div><span class="text-[#86868b] font-semibold">Phone:</span> <a href="tel:{{ faculty.phone_number }}" class="text-[#0066cc] font-mono font-bold">📞 {{ faculty.phone_number }}</a></div>{% endif %}
                 <div><span class="text-[#86868b] font-semibold">Face ID:</span> {% if faculty.is_face_enrolled %}<span class="text-emerald-600 font-bold">● Enrolled</span>{% else %}<span class="text-amber-600 font-bold">○ Pending</span>{% endif %}</div>
@@ -774,7 +772,7 @@
             <!-- Per page dropdown -->
             <div class="flex items-center gap-1.5 pl-3 border-l border-gray-200">
                 <span class="text-gray-400">Rows:</span>
-                <select onchange="location.href='?page=1&per_page='+this.value+'{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}'"
+                <select onchange="fetchAjaxTable('faculty-list-content-container', '?page=1&per_page='+this.value+'{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}')"
                     class="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1 font-semibold text-[#1d1d1f] focus:outline-none focus:ring-1 focus:ring-[#0066cc] cursor-pointer">
                     <option value="10" {% if per_page == '10' or not per_page %}selected{% endif %}>10</option>
                     <option value="25" {% if per_page == '25' %}selected{% endif %}>25</option>
@@ -786,35 +784,43 @@
 
         <!-- Pagination Controls -->
         {% if page_obj.has_other_pages %}
-        <nav class="flex items-center gap-1" aria-label="Faculty Pagination">
+        <nav class="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto" aria-label="Faculty Pagination">
             {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}"
-                class="px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1">
+            <button type="button" data-no-skeleton="true"
+                onclick="fetchAjaxTable('faculty-list-content-container', '?page={{ page_obj.previous_page_number }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}');"
+                class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1 cursor-pointer">
                 ‹ Prev
-            </a>
+            </button>
             {% else %}
-            <span class="px-2.5 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
+            <span class="px-3 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
                 ‹ Prev
             </span>
             {% endif %}
 
-            <!-- Page Number Pills -->
-            <div class="flex items-center gap-1">
+            <!-- Mobile Compact Page Indicator -->
+            <div class="flex sm:hidden items-center justify-center px-3 py-1.5 rounded-lg bg-gray-100/90 border border-gray-200/80 text-xs font-bold text-gray-700">
+                {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </div>
+
+            <!-- Desktop Full Page Number Pills -->
+            <div class="hidden sm:flex items-center gap-1">
                 {% for p in page_obj.paginator.page_range %}
                     {% if p == page_obj.number %}
                         <span class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#0066cc] text-white font-bold text-xs shadow-2xs">
                             {{ p }}
                         </span>
                     {% elif p >= page_obj.number|add:"-2" and p <= page_obj.number|add:"2" %}
-                        <a href="?page={{ p }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}"
-                            class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-blue-50 hover:text-[#0066cc] transition-colors shadow-2xs">
+                        <button type="button" data-no-skeleton="true"
+                            onclick="fetchAjaxTable('faculty-list-content-container', '?page={{ p }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}');"
+                            class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-blue-50 hover:text-[#0066cc] transition-colors shadow-2xs cursor-pointer">
                             {{ p }}
-                        </a>
+                        </button>
                     {% elif p == 1 or p == page_obj.paginator.num_pages %}
-                        <a href="?page={{ p }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}"
-                            class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-blue-50 hover:text-[#0066cc] transition-colors shadow-2xs">
+                        <button type="button" data-no-skeleton="true"
+                            onclick="fetchAjaxTable('faculty-list-content-container', '?page={{ p }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}');"
+                            class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-blue-50 hover:text-[#0066cc] transition-colors shadow-2xs cursor-pointer">
                             {{ p }}
-                        </a>
+                        </button>
                     {% elif p == page_obj.number|add:"-3" or p == page_obj.number|add:"3" %}
                         <span class="w-5 text-center text-gray-400 font-bold text-xs">…</span>
                     {% endif %}
@@ -822,12 +828,13 @@
             </div>
 
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}"
-                class="px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1">
+            <button type="button" data-no-skeleton="true"
+                onclick="fetchAjaxTable('faculty-list-content-container', '?page={{ page_obj.next_page_number }}&per_page={{ per_page }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_dept %}&department={{ selected_dept|urlencode }}{% endif %}{% if status_filter and status_filter != 'all' %}&status={{ status_filter }}{% endif %}');"
+                class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-100 hover:text-[#0066cc] transition-colors shadow-2xs flex items-center gap-1 cursor-pointer">
                 Next ›
-            </a>
+            </button>
             {% else %}
-            <span class="px-2.5 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
+            <span class="px-3 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-gray-300 font-semibold cursor-not-allowed">
                 Next ›
             </span>
             {% endif %}
@@ -858,6 +865,7 @@
       </button>
     </div>
     {% endif %}
+  </div>
   </div>
   {% endif %}
 </div>

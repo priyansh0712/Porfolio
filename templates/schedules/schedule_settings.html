@@ -9,7 +9,6 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight">Working Schedules & Rules</h1>
-            <p class="text-xs sm:text-sm text-[#86868b] mt-1">Configure daily shift hours, grace periods, automated punctuality rules, and holiday exceptions.</p>
         </div>
         <a href="{% url 'reports:dashboard' %}" class="self-start sm:self-auto px-4 py-2 bg-gray-100 hover:bg-gray-200 text-[#1D1D1F] rounded-full text-xs font-semibold transition-all">
             &larr; Back to Dashboard
@@ -52,7 +51,6 @@
                             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-[#e0e0e0]">
                                 <div>
                                     <div class="font-semibold text-[#1D1D1F]">{{ sched.get_day_of_week_display }} Schedule</div>
-                                    <div class="text-xs text-[#86868b]">Set working status and shift parameters</div>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" name="is_working_day" class="sr-only peer" {% if sched.is_working_day %}checked{% endif %}>

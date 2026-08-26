@@ -10,9 +10,17 @@ from apps.accounts.permissions import SuperAdminRequiredMixin
 
 class LandingPageView(TemplateView):
     """
-    Renders the main public marketing landing page for StudentERP.
+    Renders the main public marketing landing page for StudentERP on root domain,
+    or redirects directly to dashboard/login if accessed on a school tenant subdomain.
     """
     template_name = 'public/landing.html'
+
+    def get(self, request, *args, **kwargs):
+        if getattr(request, 'tenant', None):
+            if request.user.is_authenticated:
+                return redirect('accounts:dashboard')
+            return redirect('accounts:login')
+        return super().get(request, *args, **kwargs)
 
 
 class SchoolRegistrationView(SuperAdminRequiredMixin, FormView):
