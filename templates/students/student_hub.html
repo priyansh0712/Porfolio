@@ -3,6 +3,150 @@
 {% block title %}Students — {% if request.tenant %}{{ request.tenant.name }}{% else %}StudentERP{% endif %}{% endblock %}
 {% block page_title %}Student Management{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* Shared Apple Design System — Filter Toolbar (matches Faculty Directory) */
+  .filter-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+    padding: 12px 16px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+  }
+  .search-input-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+  }
+  .search-input-wrapper svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #86868b;
+    pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    background: #f5f5f7;
+    font-size: 0.8rem;
+    color: #1d1d1f;
+    outline: none;
+    transition: all 0.2s;
+  }
+  .search-input:focus {
+    border-color: #0066cc;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+  }
+  .search-input::placeholder { color: #86868b; }
+
+  .filter-select {
+    padding: 8px 32px 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    background: #f5f5f7;
+    font-size: 0.8rem;
+    color: #1d1d1f;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    transition: all 0.2s;
+  }
+  .filter-select:focus {
+    border-color: #0066cc;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+  }
+
+  /* Status Pills */
+  .status-pills {
+    display: flex;
+    gap: 4px;
+    background: #f5f5f7;
+    border-radius: 10px;
+    padding: 3px;
+    border: 1px solid #e0e0e0;
+  }
+  .status-pill {
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #86868b;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .status-pill.active {
+    background: #ffffff;
+    color: #1d1d1f;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .status-pill:hover:not(.active) {
+    color: #1d1d1f;
+  }
+
+  /* Mobile responsive overrides (Matching Faculty Directory) */
+  @media (max-width: 768px) {
+    .filter-toolbar {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      padding: 14px;
+    }
+    .search-input-wrapper {
+      width: 100%;
+      min-width: 0;
+    }
+    .search-input {
+      min-height: 42px;
+      font-size: 0.85rem;
+    }
+    .filter-select {
+      width: 100%;
+      min-height: 42px;
+    }
+    .status-pills {
+      width: 100%;
+      display: flex;
+    }
+    .status-pill {
+      flex: 1;
+      text-align: center;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .toolbar-actions-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    .toolbar-actions-group button {
+      flex: 1;
+      min-height: 38px;
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="space-y-6">
 
@@ -92,8 +236,11 @@
 
 <script>
     function openModal(id) {
-        const modal = document.getElementById(id);
+        const modal = typeof id === 'string' ? document.getElementById(id) : id;
         if (modal) {
+            if (modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             document.body.style.overflow = 'hidden';
@@ -318,12 +465,12 @@
         const btnText = document.getElementById('toggle-select-mode-text');
         const btnIcon = document.getElementById('toggle-select-mode-icon');
         if (btn) {
-            btn.style.setProperty('background-color', '#ffffff', 'important');
+            btn.style.setProperty('background-color', '#f5f5f7', 'important');
             btn.style.setProperty('color', '#1d1d1f', 'important');
-            btn.style.setProperty('border-color', '#d1d5db', 'important');
+            btn.style.setProperty('border-color', '#e0e0e0', 'important');
         }
         if (btnIcon) {
-            btnIcon.style.setProperty('color', '#6b7280', 'important');
+            btnIcon.style.setProperty('color', '#86868b', 'important');
         }
         if (btnText) {
             btnText.style.setProperty('color', '#1d1d1f', 'important');
@@ -686,24 +833,24 @@
         const qInput = document.getElementById('student-search-input');
         const stdSelect = filterForm.querySelector('[name=standard]');
         const divSelect = filterForm.querySelector('[name=division]');
-        const statusSelect = filterForm.querySelector('[name=status]');
-        const resetWrapper = document.getElementById('student-reset-btn-wrapper');
+        const statusInput = filterForm.querySelector('[name=status]') || document.getElementById('student-filter-status');
+        const resetBtn = document.getElementById('student-reset-btn') || document.getElementById('student-reset-btn-wrapper');
         const clearSearchBtn = document.getElementById('student-clear-search-btn');
 
         const q = qInput ? qInput.value.trim() : '';
         const std = stdSelect ? stdSelect.value : '';
         const div = divSelect ? divSelect.value : '';
-        const status = statusSelect ? statusSelect.value : 'active';
+        const status = statusInput ? statusInput.value : 'active';
 
         // Show/hide Clear Search (X) button
         if (clearSearchBtn) {
             clearSearchBtn.style.display = q ? 'flex' : 'none';
         }
 
-        // Show/hide Reset button
+        // Show/hide Reset/Clear button
         const isFiltered = (q !== '' || std !== '' || div !== '' || (status !== 'active' && status !== ''));
-        if (resetWrapper) {
-            resetWrapper.style.display = isFiltered ? 'flex' : 'none';
+        if (resetBtn) {
+            resetBtn.style.display = isFiltered ? 'inline-flex' : 'none';
         }
 
         // Build URL query params
@@ -851,6 +998,20 @@
         triggerLiveStudentFilter();
     }
 
+    function setStudentStatusFilter(filterVal, btn) {
+        const hiddenInput = document.getElementById('student-filter-status');
+        if (hiddenInput) hiddenInput.value = filterVal;
+
+        const container = btn.closest('.status-pills');
+        if (container) {
+            container.querySelectorAll('.status-pill').forEach(el => {
+                el.classList.remove('active');
+            });
+            btn.classList.add('active');
+        }
+        triggerLiveStudentFilter();
+    }
+
     function resetStudentFilters() {
         const filterForm = document.getElementById('student-filter-form');
         if (!filterForm) return;
@@ -861,8 +1022,17 @@
         if (stdSelect) stdSelect.value = '';
         const divSelect = filterForm.querySelector('[name=division]');
         if (divSelect) divSelect.value = '';
-        const statusSelect = filterForm.querySelector('[name=status]');
-        if (statusSelect) statusSelect.value = 'active';
+        const statusInput = document.getElementById('student-filter-status');
+        if (statusInput) statusInput.value = 'active';
+
+        // Reset pill UI to Active
+        document.querySelectorAll('.status-pills .status-pill').forEach(el => {
+            if (el.getAttribute('data-filter') === 'active') {
+                el.classList.add('active');
+            } else {
+                el.classList.remove('active');
+            }
+        });
 
         updateDivisionFilterOptions('', false);
         triggerLiveStudentFilter();

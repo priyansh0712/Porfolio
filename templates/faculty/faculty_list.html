@@ -514,12 +514,17 @@
 
   <!-- Filter Toolbar -->
   <div class="filter-toolbar">
-    <div class="search-input-wrapper">
+    <div class="search-input-wrapper" style="position: relative;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input type="text" class="search-input" id="faculty-search" placeholder="Search by name, email, or code..." autocomplete="off">
+      <input type="text" class="search-input" id="faculty-search" placeholder="Search by name, email, or code..." autocomplete="off" style="padding-right: 32px;">
+      <button type="button" id="faculty-clear-search-btn" onclick="clearFacultySearch()"
+          style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; border: none; background: transparent; padding: 0; display: none; align-items: center; justify-content: center;"
+          title="Clear search">
+          <span class="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-200 text-[10px] font-bold" style="background-color: #f3f4f6; color: #6b7280;">✕</span>
+      </button>
     </div>
 
     <select class="filter-select" id="dept-filter">
@@ -531,8 +536,8 @@
 
     <div class="status-pills">
       <button class="status-pill active" data-filter="all" onclick="filterByStatus('all', this)">All</button>
-      <button class="status-pill" data-filter="active" onclick="filterByStatus('active', this)">Active <span class="ml-1 text-[11px] opacity-75">({{ active_count }})</span></button>
-      <button class="status-pill" data-filter="inactive" onclick="filterByStatus('inactive', this)">Inactive <span class="ml-1 text-[11px] opacity-75">({{ inactive_count }})</span></button>
+      <button class="status-pill" data-filter="active" onclick="filterByStatus('active', this)">Active</button>
+      <button class="status-pill" data-filter="inactive" onclick="filterByStatus('inactive', this)">Inactive</button>
     </div>
   </div>
 
@@ -573,7 +578,10 @@
           <div class="flex items-center gap-2 flex-shrink-0" onclick="event.stopPropagation()">
             <!-- iOS Toggle Switch -->
             <button type="button"
-                onclick="event.stopPropagation(); toggleFacultyStatus({{ faculty.pk }})"
+                data-id="{{ faculty.pk }}"
+                data-name="{{ faculty.full_name }}"
+                data-active="{% if faculty.is_active %}1{% else %}0{% endif %}"
+                onclick="event.stopPropagation(); handleFacultyStatusToggle(this)"
                 style="background-color: {% if faculty.is_active %}#16a34a{% else %}#d1d5db{% endif %} !important; width: 36px; height: 20px; border-radius: 9999px; position: relative; display: inline-flex; align-items: center; padding: 2px; cursor: pointer; border: none; transition: background-color 0.2s;"
                 role="switch" aria-checked="{% if faculty.is_active %}true{% else %}false{% endif %}"
                 title="{% if faculty.is_active %}Active: Click to Deactivate{% else %}Inactive: Click to Activate{% endif %}">
@@ -683,7 +691,10 @@
             <div class="flex items-center justify-end gap-2.5">
               <!-- iOS Active / Inactive Toggle Switch -->
               <button type="button"
-                  onclick="event.stopPropagation(); toggleFacultyStatus({{ faculty.pk }})"
+                  data-id="{{ faculty.pk }}"
+                  data-name="{{ faculty.full_name }}"
+                  data-active="{% if faculty.is_active %}1{% else %}0{% endif %}"
+                  onclick="event.stopPropagation(); handleFacultyStatusToggle(this)"
                   style="background-color: {% if faculty.is_active %}#16a34a{% else %}#d1d5db{% endif %} !important; width: 36px; height: 20px; border-radius: 9999px; position: relative; display: inline-flex; align-items: center; padding: 2px; cursor: pointer; border: none; transition: background-color 0.2s;"
                   role="switch" aria-checked="{% if faculty.is_active %}true{% else %}false{% endif %}"
                   title="{% if faculty.is_active %}Active: Click to Deactivate{% else %}Inactive: Click to Activate{% endif %}">
@@ -1101,13 +1112,81 @@
     <button type="button" class="btn-submit" id="btn-confirm-delete" style="background: #dc2626;" onclick="confirmDeleteFaculty()">Delete Permanently</button>
   </div>
 </div>
+
+<!-- {# ── FACULTY STATUS TOGGLE CONFIRMATION MODAL (Minimal Apple UX) ──── #} -->
+<div id="modal-confirm-status" class="modal-dialog hidden fixed inset-0 z-50 items-center justify-center p-4" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.4);" data-lenis-prevent>
+    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-sm w-full p-5 text-left my-auto animate-scale-in" data-lenis-prevent>
+        
+        <!-- Header with Icon & Close -->
+        <div class="flex items-center justify-between mb-3">
+            <div id="status-modal-icon-bg" class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 border border-amber-200/80">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <button type="button" onclick="closeModal('modal-confirm-status')" class="text-gray-400 hover:text-gray-600 w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-sm font-medium transition-colors">✕</button>
+        </div>
+
+        <!-- Title & Minimal Message -->
+        <div class="space-y-1.5 mb-5">
+            <h3 class="text-base font-bold text-[#1D1D1F]" id="status-modal-title">Deactivate Faculty?</h3>
+            <p class="text-xs text-gray-500 leading-relaxed" id="status-modal-desc">
+                Are you sure you want to deactivate <strong class="text-[#1d1d1f] font-semibold" id="status-modal-faculty-name">Faculty Member</strong>? Their attendance and login access will be restricted.
+            </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-2.5">
+            <button type="button" onclick="closeModal('modal-confirm-status')"
+                style="background-color: #f5f5f7 !important; color: #1d1d1f !important; border: 1px solid #e5e5e7 !important;"
+                class="flex-1 py-2 rounded-xl text-xs font-semibold hover:bg-gray-200 transition-all cursor-pointer">
+                Cancel
+            </button>
+            <button type="button" id="btn-confirm-status-submit" onclick="executeFacultyStatusToggle()"
+                style="background-color: #d97706 !important; color: #ffffff !important; border: none !important;"
+                class="flex-1 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer">
+                Deactivate
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// ── Core Teleporting Modal Helpers ──
+function openModal(id) {
+    const modal = typeof id === 'string' ? document.getElementById(id) : id;
+    if (modal) {
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        if (window.lenisInstance) {
+            window.lenisInstance.stop();
+        }
+    }
+}
+
+function closeModal(id) {
+    const modal = typeof id === 'string' ? document.getElementById(id) : id;
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        if (window.lenisInstance) {
+            window.lenisInstance.start();
+        }
+    }
+}
+
 // ── Modal Management ──
-let currentMode = 'create';
-let currentEditId = null;
+var currentMode = 'create';
+var currentEditId = null;
 
 function openFacultyModal(mode, facultyId) {
   currentMode = mode;
@@ -1168,17 +1247,21 @@ function openFacultyModal(mode, facultyId) {
   }, 100);
 }
 
-// ── Custom Field Modal Management ──
-function openModal(id) {
-    const m = document.getElementById(id);
-    if (m) m.classList.remove('hidden');
-}
-function closeModal(id) {
-    const m = document.getElementById(id);
-    if (m) m.classList.add('hidden');
-}
+// ── Custom Field Modal Management ── (Uses global window.openModal and window.closeModal from base.html)
 
 function openManageFacultyCustomFieldModal(pk, label, fieldName, fieldType, fieldTypeDisplay, options, isRequired, isActive) {
+    const title = document.getElementById('edit-faculty-cf-title');
+    if (title) title.textContent = 'Manage ' + label;
+    const badge = document.getElementById('edit-faculty-cf-status-badge');
+    if (badge) {
+        badge.textContent = isActive ? 'Active' : 'Disabled';
+        badge.className = isActive 
+            ? 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-50 text-green-700 border border-green-200' 
+            : 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-500 border border-gray-200';
+    }
+    const meta = document.getElementById('edit-faculty-cf-meta');
+    if (meta) meta.textContent = 'key: ' + fieldName + ' • Type: ' + (fieldTypeDisplay || fieldType);
+
     document.getElementById('edit-faculty-cf-label').value = label;
     document.getElementById('edit-faculty-cf-type').value = fieldType;
     document.getElementById('edit-faculty-cf-options').value = options;
@@ -1196,7 +1279,7 @@ function openManageFacultyCustomFieldModal(pk, label, fieldName, fieldType, fiel
 
     const btnToggle = document.getElementById('btn-toggle-faculty-cf');
     if (btnToggle) {
-        btnToggle.textContent = isActive ? 'Deactivate Field' : 'Activate Field';
+        btnToggle.textContent = isActive ? 'Disable Field' : 'Enable Field';
     }
 
     openModal('modal-manage-faculty-custom-field');
@@ -1246,56 +1329,68 @@ function clearErrors() {
 }
 
 // ── Form Submission (AJAX) ──
-document.getElementById('faculty-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  var form = this;
-  var submitBtn = document.getElementById('btn-submit');
-  var originalText = submitBtn.textContent;
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Saving...';
-  clearErrors();
+var facultyForm = document.getElementById('faculty-form');
+if (facultyForm) {
+  facultyForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var submitBtn = document.getElementById('btn-submit');
+    var originalText = submitBtn ? submitBtn.textContent : 'Save';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+    }
+    clearErrors();
 
-  var formData = new FormData(form);
+    var formData = new FormData(form);
 
-  fetch(form.action, {
-    method: 'POST',
-    body: formData,
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-  })
-  .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
-  .then(function(result) {
-    submitBtn.disabled = false;
-    submitBtn.textContent = originalText;
+    fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+    .then(function(result) {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
 
-    if (result.data.success) {
-      closeFacultyModal();
-      // Spawn a toast
-      spawnToast(result.data.message || 'Faculty saved.', 'success');
-      // Reload page to reflect changes
-      setTimeout(function() { location.reload(); }, 800);
-    } else {
-      // Show field errors
-      if (result.data.errors) {
-        for (var field in result.data.errors) {
-          var errDiv = document.getElementById('err-' + field);
-          if (errDiv) {
-            errDiv.textContent = result.data.errors[field].join(' ');
+      if (result.data.success) {
+        closeFacultyModal();
+        // Spawn a toast
+        spawnToast(result.data.message || 'Faculty saved.', 'success');
+        // Reload page to reflect changes
+        setTimeout(function() { location.reload(); }, 800);
+      } else {
+        // Show field errors
+        if (result.data.errors) {
+          for (var field in result.data.errors) {
+            var errDiv = document.getElementById('err-' + field);
+            if (errDiv) {
+              errDiv.textContent = result.data.errors[field].join(' ');
+            }
+          }
+        }
+        if (result.data.error) {
+          var errContainer = document.getElementById('form-errors-container');
+          if (errContainer) {
+            errContainer.innerHTML =
+              '<div style="padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; font-size: 0.78rem; color: #dc2626; margin-bottom: 12px;">' +
+              result.data.error + '</div>';
           }
         }
       }
-      if (result.data.error) {
-        document.getElementById('form-errors-container').innerHTML =
-          '<div style="padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; font-size: 0.78rem; color: #dc2626; margin-bottom: 12px;">' +
-          result.data.error + '</div>';
+    })
+    .catch(function(err) {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
       }
-    }
-  })
-  .catch(function(err) {
-    submitBtn.disabled = false;
-    submitBtn.textContent = originalText;
-    spawnToast('Network error. Please try again.', 'error');
+      spawnToast('Network error. Please try again.', 'error');
+    });
   });
-});
+}
 
 // ── Faculty Accordion Toggle (Single Accordion Rule) ──
 function toggleFacultyAccordion(event, pk) {
@@ -1326,29 +1421,112 @@ function toggleFacultyAccordion(event, pk) {
   }
 }
 
-// ── Toggle Status (AJAX) ──
-function toggleFacultyStatus(facultyId) {
-  var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+// ── Toggle Status Confirmation Modal Management ──
+var targetStatusFacultyId = null;
 
-  fetch('/faculty/' + facultyId + '/toggle-status/', {
-    method: 'POST',
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-      'X-CSRFToken': csrfToken,
-    },
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data.success) {
-      spawnToast(data.message || 'Status toggled.', 'success');
-      setTimeout(function() { location.reload(); }, 800);
+function handleFacultyStatusToggle(btn) {
+    if (!btn) return;
+    const facultyId = btn.getAttribute('data-id');
+    const name = btn.getAttribute('data-name');
+    const isActiveVal = btn.getAttribute('data-active');
+    const isActive = (isActiveVal === '1' || isActiveVal === 'true' || isActiveVal === true);
+    openStatusToggleModal(facultyId, name, isActive);
+}
+
+function openStatusToggleModal(facultyId, name, isCurrentActive) {
+    targetStatusFacultyId = facultyId;
+
+    const nameEl = document.getElementById('status-modal-faculty-name');
+    const facultyName = name || 'Faculty Member';
+    const titleEl = document.getElementById('status-modal-title');
+    const descEl = document.getElementById('status-modal-desc');
+    const iconBgEl = document.getElementById('status-modal-icon-bg');
+    const btnSubmitEl = document.getElementById('btn-confirm-status-submit');
+
+    const isActiveBool = (isCurrentActive === true || isCurrentActive === 'true' || isCurrentActive === 1 || isCurrentActive === '1');
+
+    if (isActiveBool) {
+        if (titleEl) titleEl.textContent = 'Deactivate Faculty?';
+        if (descEl) {
+            descEl.innerHTML = 'Are you sure you want to deactivate <strong class="text-[#1d1d1f] font-semibold">' + facultyName + '</strong>? Their attendance and login access will be restricted.';
+        }
+        if (iconBgEl) {
+            iconBgEl.className = 'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border';
+            iconBgEl.style.backgroundColor = '#fffbeb';
+            iconBgEl.style.color = '#d97706';
+            iconBgEl.style.borderColor = '#fde68a';
+            iconBgEl.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
+        }
+        if (btnSubmitEl) {
+            btnSubmitEl.style.backgroundColor = '#d97706';
+            btnSubmitEl.style.color = '#ffffff';
+            btnSubmitEl.style.border = 'none';
+            btnSubmitEl.textContent = 'Deactivate';
+        }
     } else {
-      spawnToast('Error toggling status.', 'error');
+        if (titleEl) titleEl.textContent = 'Activate Faculty?';
+        if (descEl) {
+            descEl.innerHTML = 'Are you sure you want to activate <strong class="text-[#1d1d1f] font-semibold">' + facultyName + '</strong>? Their attendance and login access will be restored.';
+        }
+        if (iconBgEl) {
+            iconBgEl.className = 'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border';
+            iconBgEl.style.backgroundColor = '#ecfdf5';
+            iconBgEl.style.color = '#16a34a';
+            iconBgEl.style.borderColor = '#bbf7d0';
+            iconBgEl.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+        }
+        if (btnSubmitEl) {
+            btnSubmitEl.style.backgroundColor = '#0066cc';
+            btnSubmitEl.style.color = '#ffffff';
+            btnSubmitEl.style.border = 'none';
+            btnSubmitEl.textContent = 'Activate';
+        }
     }
-  })
-  .catch(function() {
-    spawnToast('Network error.', 'error');
-  });
+
+    openModal('modal-confirm-status');
+}
+
+function toggleFacultyStatus(facultyId, name, isCurrentActive) {
+    if (typeof facultyId === 'object' && facultyId !== null) {
+        handleFacultyStatusToggle(facultyId);
+    } else if (name !== undefined) {
+        openStatusToggleModal(facultyId, name, isCurrentActive);
+    } else {
+        openStatusToggleModal(facultyId, 'Faculty Member', true);
+    }
+}
+
+function executeFacultyStatusToggle() {
+    if (!targetStatusFacultyId) return;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const btn = document.getElementById('btn-confirm-status-submit');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Updating...';
+    }
+
+    fetch('/faculty/' + targetStatusFacultyId + '/toggle-status/', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken,
+        },
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (btn) btn.disabled = false;
+        if (data.success) {
+            closeModal('modal-confirm-status');
+            spawnToast(data.message || 'Status updated successfully.', 'success');
+            setTimeout(function() { location.reload(); }, 800);
+        } else {
+            spawnToast(data.error || 'Error updating faculty status.', 'error');
+        }
+    })
+    .catch(function() {
+        if (btn) btn.disabled = false;
+        spawnToast('Network error during status update.', 'error');
+    });
 }
 
 // ── Search & Filter ──
@@ -1363,9 +1541,19 @@ if (deptFilter) {
   deptFilter.addEventListener('change', applyFilters);
 }
 
+function clearFacultySearch() {
+  if (searchInput) {
+    searchInput.value = '';
+    var clearBtn = document.getElementById('faculty-clear-search-btn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    searchInput.focus();
+    applyFilters();
+  }
+}
+
 function filterByStatus(status, btn) {
   activeStatusFilter = status;
-  var pills = document.querySelectorAll('.status-pill');
+  var pills = document.querySelectorAll('.status-pills .status-pill');
   for (var i = 0; i < pills.length; i++) {
     pills[i].classList.remove('active');
   }
@@ -1376,6 +1564,10 @@ function filterByStatus(status, btn) {
 function applyFilters() {
   var query = (searchInput ? searchInput.value.toLowerCase().trim() : '');
   var dept = (deptFilter ? deptFilter.value : '');
+  var clearBtn = document.getElementById('faculty-clear-search-btn');
+  if (clearBtn) {
+    clearBtn.style.display = query ? 'flex' : 'none';
+  }
   var rows = document.querySelectorAll('#faculty-tbody tr.faculty-main-row');
   var cards = document.querySelectorAll('#faculty-cards-container .faculty-card-item');
   var visibleCount = 0;
@@ -1494,46 +1686,58 @@ function onCSVFileSelected(input) {
   }
 }
 
-document.getElementById('csv-upload-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  var form = this;
-  var submitBtn = document.getElementById('btn-csv-submit');
-  var originalText = submitBtn.textContent;
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Importing...';
-  document.getElementById('csv-messages').innerHTML = '';
-
-  var formData = new FormData(form);
-
-  fetch(form.action, {
-    method: 'POST',
-    body: formData,
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    submitBtn.disabled = false;
-    submitBtn.textContent = originalText;
-
-    if (data.success) {
-      spawnToast(data.message || 'Import complete.', 'success');
-      closeCSVModal();
-      setTimeout(function() { location.reload(); }, 900);
-    } else {
-      document.getElementById('csv-messages').innerHTML =
-        '<div style="padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; font-size: 0.78rem; color: #dc2626; margin-bottom: 12px;">' +
-        (data.error || 'Failed to import CSV.') + '</div>';
+var csvForm = document.getElementById('csv-upload-form');
+if (csvForm) {
+  csvForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var submitBtn = document.getElementById('btn-csv-submit');
+    var originalText = submitBtn ? submitBtn.textContent : 'Upload';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Importing...';
     }
-  })
-  .catch(function() {
-    submitBtn.disabled = false;
-    submitBtn.textContent = originalText;
-    spawnToast('Network error during CSV upload.', 'error');
+    var csvMsg = document.getElementById('csv-messages');
+    if (csvMsg) csvMsg.innerHTML = '';
+
+    var formData = new FormData(form);
+
+    fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+
+      if (data.success) {
+        spawnToast(data.message || 'Import complete.', 'success');
+        closeCSVModal();
+        setTimeout(function() { location.reload(); }, 900);
+      } else {
+        if (csvMsg) {
+          csvMsg.innerHTML =
+            '<div style="padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; font-size: 0.78rem; color: #dc2626; margin-bottom: 12px;">' +
+            (data.error || 'Failed to import CSV.') + '</div>';
+        }
+      }
+    })
+    .catch(function() {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+      spawnToast('Network error during CSV upload.', 'error');
+    });
   });
-});
+}
 
 // ── Profile Card Modal Management ──
-let activeProfileId = null;
+var activeProfileId = null;
 
 function openProfileModal(facultyId) {
   activeProfileId = facultyId;
@@ -1612,7 +1816,7 @@ function closeProfileModal() {
 }
 
 // ── Delete Confirmation Modal Management ──
-let targetDeleteId = null;
+var targetDeleteId = null;
 
 function openDeleteModal(facultyId, name) {
   targetDeleteId = facultyId;
@@ -1665,6 +1869,7 @@ function confirmDeleteFaculty() {
 // Escape key closes modals
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
+    closeModal('modal-confirm-status');
     closeFacultyModal();
     closeCSVModal();
     closeProfileModal();

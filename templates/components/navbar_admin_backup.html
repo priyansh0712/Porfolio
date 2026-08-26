@@ -45,7 +45,7 @@
 
             <!-- MAIN GROUP -->
             <div>
-                <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">Main</div>
+                <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Main</div>
                 <div class="space-y-0.5">
                     <!-- Dashboard -->
                     <a href="{{ nav_dashboard }}" title="Dashboard"
@@ -61,7 +61,7 @@
 
             <!-- PEOPLE GROUP -->
             <div>
-                <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">People</div>
+                <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#86868b]">People</div>
                 <div class="space-y-0.5">
                     <!-- Faculty -->
                     <a href="{{ nav_faculty }}" title="Faculty Directory"
@@ -87,7 +87,7 @@
 
             <!-- ACADEMICS GROUP -->
             <div>
-                <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">Academics</div>
+                <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Academics</div>
                 <div class="space-y-0.5">
                     <!-- Academics (Main Hub Link) -->
                     <a href="{{ nav_academics }}" title="Academic Management"
@@ -101,7 +101,7 @@
 
                     <!-- Contextual Sub-Navigation for Academics (Visible when inside /academics/) -->
                     {% if '/academics/' in request.path %}
-                    <div class="sidebar-subnav pl-6 pr-1 pt-1 pb-1 space-y-1 border-l-2 border-white/20 ml-5 my-1">
+                    <div class="sidebar-subnav pl-6 pr-1 pt-1 pb-1 space-y-1 border-l-2 border-gray-200/70 ml-5 my-1">
                         <!-- 1. Overview -->
                         <a href="{{ nav_academics }}?tab=overview{% if selected_year and selected_year.id %}&year={{ selected_year.id }}{% endif %}"
                            class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px]
@@ -148,7 +148,7 @@
 
             <!-- OPERATIONS GROUP -->
             <div>
-                <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">Operations</div>
+                <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Operations</div>
                 <div class="space-y-0.5">
                     <!-- Leaves -->
                     {% if school_features.faculty_leave %}
@@ -198,11 +198,11 @@
 
     </nav>
 
-    <!-- BOTTOM UTILITIES & UNIFIED PROFILE CAPSULE (Always Pinned at Bottom) -->
-    <div class="border-t border-white/10 p-3 space-y-2 flex-shrink-0 bg-black/15">
+    <!-- BOTTOM UTILITIES & SIGN OUT (Always Pinned at Bottom) -->
+    <div class="border-t border-white/10 p-3 space-y-1.5 flex-shrink-0 bg-black/15">
         <!-- Optional Utilities: Notifications & Kiosk -->
         {% if school_features.notifications or school_features.faculty_attendance %}
-        <div class="space-y-0.5">
+        <div class="space-y-0.5 mb-1">
             {% if school_features.notifications %}
             <a href="{{ nav_notifications }}" title="Notifications"
                class="sidebar-nav-item flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[34px]
@@ -233,29 +233,28 @@
         </div>
         {% endif %}
 
-        <!-- Unified Apple User Profile & Sign Out Capsule -->
-        <div class="flex items-center justify-between gap-2 p-2 rounded-2xl bg-white/6 border border-white/10 hover:border-white/20 transition-all shadow-2xs">
-            <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                <div class="w-8 h-8 rounded-xl bg-[#0066cc] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-xs border border-white/20">
-                    {{ user.first_name|first|default:user.username|first|upper }}
-                </div>
-                <div class="min-w-0 flex-1">
-                    <div class="text-xs font-semibold text-white truncate" title="{{ user.get_full_name|default:user.username }}">{{ user.get_full_name|default:user.username }}</div>
-                    <div class="text-[10px] font-medium truncate" style="color: #94a3b8 !important;">Administrator</div>
-                </div>
+        <!-- User Profile Pill -->
+        <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10">
+            <div class="w-7 h-7 rounded-full bg-[#0066cc] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-2xs">
+                {{ user.first_name|first|default:user.username|first|upper }}
             </div>
-
-            <!-- Sleek Sign Out Icon Button (Clean Transparent with Crisp Red Icon) -->
-            <form method="post" action="{{ nav_logout }}" class="flex-shrink-0">
-                {% csrf_token %}
-                <button type="submit" title="Sign Out"
-                   class="w-8 h-8 flex items-center justify-center rounded-xl bg-transparent hover:bg-white/10 transition-all cursor-pointer group"
-                   style="border: none !important; background: transparent !important;">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ff4d4f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-115 transition-transform" style="stroke: #ff4d4f !important;">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
-                    </svg>
-                </button>
-            </form>
+            <div class="min-w-0 flex-1">
+                <div class="text-xs font-semibold text-white truncate">{{ user.get_full_name|default:user.username }}</div>
+                <div class="text-[10px] text-gray-400 truncate">Administrator</div>
+            </div>
         </div>
+
+        <!-- Sign Out Button Form (Reliable POST/GET Logout) -->
+        <form method="post" action="{{ nav_logout }}" class="w-full pt-0.5">
+            {% csrf_token %}
+            <button type="submit" title="Sign Out"
+               style="background-color: rgba(225, 29, 72, 0.18) !important; color: #ffffff !important; border: 1px solid rgba(244, 63, 94, 0.35) !important;"
+               class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold hover:bg-rose-600 hover:border-rose-600 transition-all cursor-pointer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fca5a5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
+                </svg>
+                <span style="color: #ffffff !important; font-weight: 600;">Sign Out</span>
+            </button>
+        </form>
     </div>
 </aside>

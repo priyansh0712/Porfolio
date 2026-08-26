@@ -212,6 +212,20 @@ class StudentHubView(SchoolStaffRequiredMixin, TemplateView):
                     qs = Student.objects.none()
 
             # Filters from GET params
+            std_filter = self.request.GET.get('standard')
+            div_filter = self.request.GET.get('division')
+
+            # Calculate counts for Status Pills (scoped to standard/division if selected)
+            base_count_qs = qs
+            if std_filter and is_admin:
+                base_count_qs = base_count_qs.filter(standard_id=std_filter)
+            if div_filter and is_admin:
+                base_count_qs = base_count_qs.filter(division_id=div_filter)
+
+            ctx['active_students_count'] = base_count_qs.filter(is_active=True).count()
+            ctx['inactive_students_count'] = base_count_qs.filter(is_active=False).count()
+            ctx['total_students_count'] = base_count_qs.count()
+
             status_param = self.request.GET.get('status')
             inactive_param = self.request.GET.get('inactive')
 

@@ -389,8 +389,11 @@
     }
 
     function openModal(id) {
-        const modal = document.getElementById(id);
+        const modal = typeof id === 'string' ? document.getElementById(id) : id;
         if (modal) {
+            if (modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             document.body.style.overflow = 'hidden';
