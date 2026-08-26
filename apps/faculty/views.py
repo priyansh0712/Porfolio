@@ -323,17 +323,25 @@ class FacultyListView(SchoolAdminRequiredMixin, ListView):
 
 class FacultyCreateView(SchoolAdminRequiredMixin, CreateView):
     """
-    Handles both modal AJAX and standard POST faculty creation.
+    Dedicated view for faculty creation with Apple Design System form layout.
     Delegates to FacultyService for atomic User + Faculty creation.
     """
     model = Faculty
     form_class = FacultyForm
-    template_name = 'faculty/faculty_list.html'
+    template_name = 'faculty/faculty_form.html'
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['tenant'] = self.request.tenant
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        from apps.faculty.models import FacultyCustomField
+        ctx['page_title'] = 'Add Faculty'
+        ctx['is_edit'] = False
+        ctx['active_custom_fields'] = list(FacultyCustomField.objects.filter(school=self.request.tenant, is_active=True).order_by('order_index', 'created_at'))
+        return ctx
 
     def form_valid(self, form):
         try:
@@ -365,7 +373,7 @@ class FacultyCreateView(SchoolAdminRequiredMixin, CreateView):
             if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'error': str(e)}, status=400)
             messages.error(self.request, f'Error creating faculty: {e}')
-            return redirect('faculty:list')
+            return self.form_invalid(form)
 
     def form_invalid(self, form):
         if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -374,17 +382,17 @@ class FacultyCreateView(SchoolAdminRequiredMixin, CreateView):
                 'errors': form.errors,
             }, status=400)
         messages.error(self.request, 'Please correct the errors below.')
-        return redirect('faculty:list')
+        return super().form_invalid(form)
 
 
 class FacultyUpdateView(SchoolAdminRequiredMixin, UpdateView):
     """
-    Handles faculty edit via modal/AJAX.
+    Dedicated view for faculty edit with Apple Design System form layout.
     Layer 3: queryset scoped to tenant.
     """
     model = Faculty
     form_class = FacultyForm
-    template_name = 'faculty/faculty_list.html'
+    template_name = 'faculty/faculty_form.html'
 
     def get_queryset(self):
         """Layer 3: Only allow editing within own tenant."""
@@ -394,6 +402,15 @@ class FacultyUpdateView(SchoolAdminRequiredMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs['tenant'] = self.request.tenant
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        from apps.faculty.models import FacultyCustomField
+        ctx['page_title'] = f'Edit Faculty — {self.object.full_name}'
+        ctx['is_edit'] = True
+        ctx['faculty'] = self.object
+        ctx['active_custom_fields'] = list(FacultyCustomField.objects.filter(school=self.request.tenant, is_active=True).order_by('order_index', 'created_at'))
+        return ctx
 
     def form_valid(self, form):
         try:
@@ -412,7 +429,7 @@ class FacultyUpdateView(SchoolAdminRequiredMixin, UpdateView):
             if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'error': str(e)}, status=400)
             messages.error(self.request, f'Error updating faculty: {e}')
-            return redirect('faculty:list')
+            return self.form_invalid(form)
 
     def form_invalid(self, form):
         if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -421,7 +438,7 @@ class FacultyUpdateView(SchoolAdminRequiredMixin, UpdateView):
                 'errors': form.errors,
             }, status=400)
         messages.error(self.request, 'Please correct the errors below.')
-        return redirect('faculty:list')
+        return super().form_invalid(form)
 
 
 class FacultyToggleStatusView(SchoolAdminRequiredMixin, View):

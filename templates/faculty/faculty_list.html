@@ -224,7 +224,78 @@
     justify-content: center;
   }
 
-  /* Modal Backdrop + Drawer */
+  /* Apple Centered Card Modal */
+  .center-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+  }
+  .center-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .center-modal-card {
+    position: relative;
+    width: 100%;
+    max-width: 620px;
+    max-height: 90vh;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 24px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18), 0 0 1px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .center-modal-overlay.active .center-modal-card {
+    transform: scale(1);
+  }
+  .center-modal-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fafafc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .center-modal-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    letter-spacing: -0.02em;
+  }
+  .center-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .center-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafc;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Modal Backdrop + Drawer (for CSV and other drawers) */
   .modal-backdrop {
     position: fixed;
     inset: 0;
@@ -399,20 +470,20 @@
 <div class="w-full max-w-6xl mx-auto">
 
   <!-- Page Header -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 sm:pt-3 pb-1 mb-5 sm:mb-6">
     <div>
       <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight">
         Faculty Directory
       </h1>
     </div>
     <div class="flex items-center gap-2 sm:gap-2.5 self-start sm:self-auto">
-      <button class="apple-btn-primary px-4 py-2 sm:px-5 sm:py-2.5 inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold shadow-xs" onclick="openFacultyModal('create')" id="btn-add-faculty">
+      <a href="{% url 'faculty:create' %}" class="apple-btn-primary px-4 py-2 sm:px-5 sm:py-2.5 inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold shadow-xs cursor-pointer" id="btn-add-faculty">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
         <span>Add Faculty</span>
-      </button>
+      </a>
       <a href="{% url 'faculty:export_csv' %}" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-white border border-gray-200 text-xs sm:text-sm font-semibold text-[#1D1D1F] hover:bg-gray-50 transition-all shadow-xs">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -509,9 +580,9 @@
                 <span style="display: inline-block; width: 16px; height: 16px; border-radius: 9999px; background-color: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: transform 0.2s; {% if faculty.is_active %}transform: translateX(16px);{% else %}transform: translateX(0px);{% endif %}"></span>
             </button>
             <!-- Quick Edit Button -->
-            <button type="button" onclick="event.stopPropagation(); openFacultyModal('edit', {{ faculty.pk }})" class="p-1.5 rounded-xl text-gray-500 hover:text-[#0066cc] hover:bg-gray-100 cursor-pointer">
+            <a href="{% url 'faculty:edit' faculty.pk %}" onclick="event.stopPropagation()" class="p-1.5 rounded-xl text-gray-500 hover:text-[#0066cc] hover:bg-gray-100 cursor-pointer" title="Edit Faculty">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-            </button>
+            </a>
           </div>
         </div>
 
@@ -537,7 +608,7 @@
           </div>
           <div class="flex items-center gap-2 pt-1">
             <button type="button" onclick="event.stopPropagation(); openEnrollFaceModal({{ faculty.pk }}, '{{ faculty.full_name|escapejs }}', '{{ faculty.employee_code|escapejs }}', {{ faculty.is_face_enrolled|yesno:'true,false' }})" style="background-color: #ffffff !important;" class="flex-1 py-2 text-center text-xs font-semibold text-[#0066cc] border border-blue-200 rounded-xl shadow-2xs cursor-pointer">📷 Enroll Face</button>
-            <button type="button" onclick="event.stopPropagation(); openFacultyModal('edit', {{ faculty.pk }})" style="background-color: #ffffff !important;" class="flex-1 py-2 text-center text-xs font-semibold text-gray-700 border border-gray-200 rounded-xl shadow-2xs cursor-pointer">✏️ Edit Profile</button>
+            <a href="{% url 'faculty:edit' faculty.pk %}" onclick="event.stopPropagation()" style="background-color: #ffffff !important;" class="flex-1 py-2 text-center text-xs font-semibold text-gray-700 border border-gray-200 rounded-xl shadow-2xs cursor-pointer">✏️ Edit Profile</a>
           </div>
         </div>
       </div>
@@ -628,11 +699,11 @@
               </button>
 
               <!-- Quick Edit Button (Pencil Icon) -->
-              <button type="button" onclick="event.stopPropagation(); openFacultyModal('edit', {{ faculty.pk }})"
+              <a href="{% url 'faculty:edit' faculty.pk %}" onclick="event.stopPropagation()"
                   class="p-1.5 rounded-xl text-gray-500 hover:text-[#0066cc] hover:bg-[#0066cc]/10 transition-all cursor-pointer"
                   title="Edit Faculty Details">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-              </button>
+              </a>
 
               <!-- Delete Button (Trash Icon) -->
               <button type="button" onclick="event.stopPropagation(); openDeleteModal({{ faculty.pk }}, '{{ faculty.full_name|escapejs }}')"
@@ -739,10 +810,10 @@
                     style="background-color: #ffffff !important;" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#0066cc] border border-blue-200 rounded-xl shadow-2xs hover:bg-blue-50/50 transition-all cursor-pointer">
                     📷 {% if faculty.is_face_enrolled %}Re-enroll Face{% else %}Enroll Face ID{% endif %}
                   </button>
-                  <button type="button" onclick="event.stopPropagation(); openFacultyModal('edit', {{ faculty.pk }})"
+                  <a href="{% url 'faculty:edit' faculty.pk %}" onclick="event.stopPropagation()"
                     style="background-color: #ffffff !important;" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-gray-700 border border-gray-200 rounded-xl shadow-2xs hover:bg-gray-50 transition-all cursor-pointer">
                     ✏️ Edit Profile
-                  </button>
+                  </a>
                 </div>
                 <button type="button" onclick="event.stopPropagation(); toggleFacultyAccordion(event, {{ faculty.pk }})"
                   class="text-xs text-gray-400 hover:text-gray-600 font-medium px-2 py-1 cursor-pointer">
@@ -856,115 +927,18 @@
       <p style="font-size: 0.82rem; color: #86868b; max-width: 340px; margin: 0 auto 16px;">
         Start building your team by adding the first faculty member to your directory.
       </p>
-      <button class="btn-add-faculty" onclick="openFacultyModal('create')">
+      <a href="{% url 'faculty:create' %}" class="btn-add-faculty inline-flex items-center gap-1.5 justify-center">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        Add First Faculty
-      </button>
+        <span>Add First Faculty</span>
+      </a>
     </div>
     {% endif %}
   </div>
   </div>
   {% endif %}
-</div>
-
-<!-- ===== Modal Drawer ===== -->
-<div class="modal-backdrop" id="modal-backdrop" onclick="closeFacultyModal()"></div>
-<div class="modal-drawer" id="modal-drawer">
-  <div class="modal-header">
-    <h2 id="modal-title">Add Faculty</h2>
-    <button class="modal-close-btn" onclick="closeFacultyModal()" aria-label="Close">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
-  </div>
-  <form id="faculty-form" method="post" action="{% url 'faculty:create' %}">
-    {% csrf_token %}
-    <div class="modal-body">
-      <div id="form-general-error" class="form-error mb-4"></div>
-
-      <!-- Name Row -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div class="form-group">
-          <label class="form-label" for="id_first_name">First Name *</label>
-          {{ form.first_name }}
-          <div class="form-error" id="err-first_name"></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="id_last_name">Last Name *</label>
-          {{ form.last_name }}
-          <div class="form-error" id="err-last_name"></div>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="id_email">Email Address *</label>
-        {{ form.email }}
-        <div class="form-hint">Must be globally unique. A linked account will be created automatically.</div>
-        <div class="form-error" id="err-email"></div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="id_phone_number">Phone Number</label>
-        {{ form.phone_number }}
-        <div class="form-error" id="err-phone_number"></div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="id_employee_code">Employee Code</label>
-        {{ form.employee_code }}
-        <div class="form-hint">Leave blank to auto-generate (e.g. GREENWOOD-FAC-001).</div>
-        <div class="form-error" id="err-employee_code"></div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div class="form-group">
-          <label class="form-label" for="id_department">Department *</label>
-          {{ form.department }}
-          <div class="form-error" id="err-department"></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="id_designation">Designation (Optional)</label>
-          {{ form.designation }}
-          <div class="form-error" id="err-designation"></div>
-        </div>
-      </div>
-
-      {% if active_custom_fields %}
-      <!-- Dynamic Custom Fields Section -->
-      <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #f0f0f0;">
-        <div style="font-size: 0.72rem; font-weight: 700; color: #1d1d1f; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">Additional Custom Fields</div>
-        {% for cf in active_custom_fields %}
-        <div class="form-group">
-          <label class="form-label" for="id_custom_{{ cf.field_name }}">{{ cf.label }}{% if cf.is_required %} *{% endif %}</label>
-          {% if cf.field_type == 'TEXT' %}
-            <input type="text" name="custom_{{ cf.field_name }}" id="id_custom_{{ cf.field_name }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc]" placeholder="Enter {{ cf.label }}">
-          {% elif cf.field_type == 'NUMBER' %}
-            <input type="number" name="custom_{{ cf.field_name }}" id="id_custom_{{ cf.field_name }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc]" placeholder="Enter {{ cf.label }}">
-          {% elif cf.field_type == 'DATE' %}
-            <input type="date" name="custom_{{ cf.field_name }}" id="id_custom_{{ cf.field_name }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc]">
-          {% elif cf.field_type == 'SELECT' %}
-            <select name="custom_{{ cf.field_name }}" id="id_custom_{{ cf.field_name }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200/80 bg-white text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066cc]/30 focus:border-[#0066cc]">
-              <option value="">-- Select {{ cf.label }} --</option>
-              {% for opt in cf.options.split %}
-                <option value="{{ opt }}">{{ opt }}</option>
-              {% endfor %}
-            </select>
-          {% endif %}
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-cancel" onclick="closeFacultyModal()">Cancel</button>
-      <button type="submit" class="btn-submit" id="btn-submit">Add Faculty</button>
-    </div>
-  </form>
 </div>
 
 <!-- ===== CSV Import Modal Drawer ===== -->
@@ -1138,9 +1112,9 @@ let currentEditId = null;
 function openFacultyModal(mode, facultyId) {
   currentMode = mode;
   currentEditId = facultyId || null;
-  var drawer = document.getElementById('modal-drawer');
-  var backdrop = document.getElementById('modal-backdrop');
+  var overlay = document.getElementById('faculty-modal-overlay');
   var title = document.getElementById('modal-title');
+  var subtitle = document.getElementById('modal-subtitle');
   var submitBtn = document.getElementById('btn-submit');
   var form = document.getElementById('faculty-form');
 
@@ -1149,7 +1123,8 @@ function openFacultyModal(mode, facultyId) {
   clearErrors();
 
   if (mode === 'edit' && facultyId) {
-    title.textContent = 'Edit Faculty';
+    title.textContent = 'Edit Faculty Profile';
+    if (subtitle) subtitle.textContent = 'Update profile details, contact information, and role assignments.';
     submitBtn.textContent = 'Save Changes';
     form.action = '/faculty/' + facultyId + '/edit/';
 
@@ -1178,18 +1153,19 @@ function openFacultyModal(mode, facultyId) {
     .catch(function(err) { console.error('Error fetching faculty:', err); });
   } else {
     title.textContent = 'Add Faculty';
+    if (subtitle) subtitle.textContent = 'Enter faculty profile details and role assignment.';
     submitBtn.textContent = 'Add Faculty';
     form.action = '{% url "faculty:create" %}';
   }
 
-  backdrop.classList.add('active');
-  drawer.classList.add('active');
+  if (overlay) overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
 
-  // Focus first input after animation
+  // Focus first input
   setTimeout(function() {
-    document.getElementById('id_first_name').focus();
-  }, 350);
+    var fn = document.getElementById('id_first_name');
+    if (fn) fn.focus();
+  }, 100);
 }
 
 // ── Custom Field Modal Management ──
@@ -1253,17 +1229,20 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function closeFacultyModal() {
-  document.getElementById('modal-backdrop').classList.remove('active');
-  document.getElementById('modal-drawer').classList.remove('active');
+  var overlay = document.getElementById('faculty-modal-overlay');
+  if (overlay) overlay.classList.remove('active');
   document.body.style.overflow = '';
 }
 
 function clearErrors() {
-  var errDivs = document.querySelectorAll('.form-error');
+  var errDivs = document.querySelectorAll('#faculty-form .form-error');
   for (var i = 0; i < errDivs.length; i++) {
     errDivs[i].textContent = '';
   }
-  document.getElementById('form-errors-container').innerHTML = '';
+  var errContainer = document.getElementById('form-errors-container');
+  if (errContainer) errContainer.innerHTML = '';
+  var genError = document.getElementById('form-general-error');
+  if (genError) genError.textContent = '';
 }
 
 // ── Form Submission (AJAX) ──

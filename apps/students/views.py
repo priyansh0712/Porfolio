@@ -362,7 +362,39 @@ class StudentHubView(SchoolStaffRequiredMixin, TemplateView):
 
 
 class StudentCreateView(SchoolStaffRequiredMixin, View):
-    """POST: create a new student via StudentService."""
+    """GET: dedicated Add Student page. POST: create via StudentService."""
+
+    def _build_context(self, request, form=None):
+        tenant = request.tenant
+        user = request.user
+        is_admin = user.role == User.Role.SCHOOL_ADMIN
+        academic_year = AcademicService.get_current_academic_year(tenant)
+        ct_division = None
+        if not is_admin and academic_year:
+            ct_division = _get_class_teacher_division(user, tenant, academic_year)
+        if form is None:
+            form = StudentForm(
+                tenant=tenant,
+                academic_year=academic_year,
+                allow_gr_edit=is_admin,
+                locked_division=ct_division if not is_admin else None,
+            )
+        from apps.students.models import StudentFormFieldConfig
+        return {
+            'form': form,
+            'form_config': StudentFormFieldConfig.get_for_school(tenant),
+            'is_edit': False,
+            'is_admin': is_admin,
+            'ct_division': ct_division,
+            'academic_year': academic_year,
+            'standards': Standard.objects.filter(school=tenant).order_by('order_index', 'name'),
+            'divisions': Division.objects.filter(school=tenant).order_by('standard__order_index', 'name'),
+            'page_title': 'Add New Student',
+        }
+
+    def get(self, request):
+        from django.shortcuts import render
+        return render(request, 'students/student_form.html', self._build_context(request))
 
     def post(self, request):
         tenant = request.tenant
@@ -377,7 +409,7 @@ class StudentCreateView(SchoolStaffRequiredMixin, View):
                 return redirect('/students/')
             ct_division = _get_class_teacher_division(user, tenant, academic_year)
             if ct_division is None:
-                return HttpResponseForbidden('Access denied: Subject teachers cannot add students. Only Class Teachers and School Administrators can add students.')
+                return HttpResponseForbidden('Access denied: Subject teachers cannot add students.')
 
         form = StudentForm(
             request.POST,
@@ -388,16 +420,13 @@ class StudentCreateView(SchoolStaffRequiredMixin, View):
         )
 
         if not form.is_valid():
-            err_list = [f"{f}: {', '.join([str(e) for e in errs])}" for f, errs in form.errors.items()]
-            messages.error(request, f"Please correct: {'; '.join(err_list)}")
-            return redirect(request.META.get('HTTP_REFERER', '/students/'))
+            from django.shortcuts import render
+            return render(request, 'students/student_form.html', self._build_context(request, form=form))
 
         data = form.cleaned_data
         try:
-            # If class teacher — enforce their division regardless of form value
             division = ct_division if ct_division else data['division']
             standard = division.standard if ct_division else data['standard']
-
             StudentService.create_student(
                 school=tenant,
                 academic_year=academic_year,
@@ -423,16 +452,83 @@ class StudentCreateView(SchoolStaffRequiredMixin, View):
 
 
 class StudentUpdateView(SchoolStaffRequiredMixin, View):
-    """POST: update an existing student."""
+    """GET: dedicated Edit Student page. POST: update an existing student."""
+
+    def _build_context(self, request, student, form=None):
+        tenant = request.tenant
+        user = request.user
+        is_admin = user.role == User.Role.SCHOOL_ADMIN
+        academic_year = AcademicService.get_current_academic_year(tenant)
+        ct_division = None
+        if not is_admin and academic_year:
+            ct_division = _get_class_teacher_division(user, tenant, academic_year)
+
+        initial = {
+            'full_name': student.full_name,
+            'gr_number': student.gr_number,
+            'roll_number': student.roll_number,
+            'gender': student.gender,
+            'blood_group': student.blood_group or '',
+            'dob': student.dob,
+            'standard': student.standard_id,
+            'division': student.division_id,
+            'admission_date': student.admission_date,
+            'guardian_name': student.guardian_name or '',
+            'guardian_phone': student.guardian_phone or '',
+            'emergency_contact': student.emergency_contact or '',
+            'address': student.address or '',
+        }
+        if student.custom_fields:
+            from apps.students.models import StudentCustomField
+            for cf in StudentCustomField.objects.filter(school=tenant, is_active=True):
+                key = f'cf_{cf.field_name}'
+                if cf.field_name in student.custom_fields:
+                    initial[key] = student.custom_fields[cf.field_name]
+
+        if form is None:
+            form = StudentForm(
+                initial=initial,
+                tenant=tenant,
+                is_edit=True,
+                allow_gr_edit=is_admin,
+                locked_division=ct_division if not is_admin else None,
+            )
+
+        from apps.students.models import StudentFormFieldConfig
+        return {
+            'form': form,
+            'form_config': StudentFormFieldConfig.get_for_school(tenant),
+            'is_edit': True,
+            'is_admin': is_admin,
+            'ct_division': ct_division,
+            'academic_year': academic_year,
+            'student': student,
+            'standards': Standard.objects.filter(school=tenant).order_by('order_index', 'name'),
+            'divisions': Division.objects.filter(school=tenant).order_by('standard__order_index', 'name'),
+            'page_title': f'Edit Student — {student.full_name}',
+        }
+
+    def get(self, request, pk):
+        tenant = request.tenant
+        user = request.user
+        is_admin = user.role == User.Role.SCHOOL_ADMIN
+        student = get_object_or_404(Student, pk=pk, school=tenant)
+        if not is_admin:
+            academic_year = AcademicService.get_current_academic_year(tenant)
+            ct_division = _get_class_teacher_division(user, tenant, academic_year)
+            if ct_division is None:
+                return HttpResponseForbidden('Access denied: Subject teachers have read-only access.')
+            if student.division != ct_division:
+                return HttpResponseForbidden('Access denied: Class teachers can only edit students in their assigned division.')
+        from django.shortcuts import render
+        return render(request, 'students/student_form.html', self._build_context(request, student))
 
     def post(self, request, pk):
         tenant = request.tenant
         user = request.user
         is_admin = user.role == User.Role.SCHOOL_ADMIN
-
         student = get_object_or_404(Student, pk=pk, school=tenant)
 
-        # Subject Teachers CANNOT edit students
         if not is_admin:
             academic_year = AcademicService.get_current_academic_year(tenant)
             ct_division = _get_class_teacher_division(user, tenant, academic_year)
@@ -449,9 +545,8 @@ class StudentUpdateView(SchoolStaffRequiredMixin, View):
         )
 
         if not form.is_valid():
-            err_list = [f"{f}: {', '.join([str(e) for e in errs])}" for f, errs in form.errors.items()]
-            messages.error(request, f"Please correct: {'; '.join(err_list)}")
-            return redirect('/students/')
+            from django.shortcuts import render
+            return render(request, 'students/student_form.html', self._build_context(request, student, form=form))
 
         data = form.cleaned_data
         update_fields = {
@@ -465,20 +560,15 @@ class StudentUpdateView(SchoolStaffRequiredMixin, View):
             'address': data.get('address', ''),
             'roll_number': data.get('roll_number'),
         }
-
-        # Merge custom fields
         if 'custom_fields' in data and data['custom_fields']:
             existing_custom = student.custom_fields or {}
             existing_custom.update(data['custom_fields'])
             update_fields['custom_fields'] = existing_custom
-
-        # Admin can also update standard/division
         if is_admin:
             if data.get('standard'):
                 update_fields['standard'] = data['standard']
             if data.get('division'):
                 update_fields['division'] = data['division']
-
         try:
             StudentService.update_student(student, allow_gr_edit=is_admin, **update_fields)
             messages.success(request, f"Student '{student.full_name}' updated successfully.")

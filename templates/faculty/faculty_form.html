@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit Faculty — {{ faculty.full_name }}{% else %}Add Faculty{% endif %} — {% if tenant %}{{ tenant.name }}{% else %}School{% endif %}{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-4xl mx-auto space-y-6 pb-16">
+
+    <!-- Top Breadcrumbs & Back Navigation -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 sm:pt-3">
+        <div class="space-y-1">
+            <a href="{% url 'faculty:list' %}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0066cc] hover:text-[#0071e3] transition-colors mb-1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span>Back to Faculty Directory</span>
+            </a>
+            <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight">
+                {% if is_edit %}Edit Faculty Profile{% else %}Add New Faculty Member{% endif %}
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500">
+                {% if is_edit %}Update details, assigned department, and credentials for {{ faculty.full_name }}.{% else %}Enter personal information, institutional role, and login account setup.{% endif %}
+            </p>
+        </div>
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+            <a href="{% url 'faculty:list' %}" class="px-4 py-2 rounded-full bg-white border border-gray-200 text-xs font-semibold text-[#1D1D1F] hover:bg-gray-50 transition-all shadow-xs">
+                Cancel
+            </a>
+            <button type="submit" form="faculty-dedicated-form" class="apple-btn-primary px-5 py-2 inline-flex items-center gap-1.5 text-xs font-semibold shadow-xs cursor-pointer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>{% if is_edit %}Save Changes{% else %}Create Faculty{% endif %}</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Form Container -->
+    <form id="faculty-dedicated-form" method="post" action="{% if is_edit %}{% url 'faculty:edit' faculty.pk %}{% else %}{% url 'faculty:create' %}{% endif %}" class="space-y-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-700 space-y-1">
+            <div class="font-bold flex items-center gap-1.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span>Please correct the following errors:</span>
+            </div>
+            {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Section 1: Personal & Contact Information -->
+        <div class="apple-card p-6 sm:p-7 space-y-5 bg-white">
+            <div class="flex items-center gap-2.5 border-b border-gray-100 pb-3.5">
+                <div class="w-8 h-8 rounded-xl bg-blue-50 text-[#0066cc] flex items-center justify-center font-bold text-xs border border-blue-100">
+                    1
+                </div>
+                <div>
+                    <h2 class="text-sm sm:text-base font-bold text-[#1D1D1F] tracking-tight">Personal & Contact Details</h2>
+                    <p class="text-xs text-gray-400">Basic identification and communication information</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <!-- First Name -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-gray-700" for="id_first_name">First Name <span class="text-rose-500">*</span></label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                    <div class="text-xs text-rose-500 mt-1 font-medium">{{ form.first_name.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Last Name -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-gray-700" for="id_last_name">Last Name <span class="text-rose-500">*</span></label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                    <div class="text-xs text-rose-500 mt-1 font-medium">{{ form.last_name.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <!-- Email Address -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-gray-700" for="id_email">Email Address <span class="text-rose-500">*</span></label>
+                    {{ form.email }}
+                    <p class="text-[11px] text-gray-400">Must be globally unique. Used for web portal login.</p>
+                    {% if form.email.errors %}
+                    <div class="text-xs text-rose-500 mt-1 font-medium">{{ form.email.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Phone Number -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-gray-700" for="id_phone_number">Phone Number</label>
+                    {{ form.phone_number }}
+                    <p class="text-[11px] text-gray-400">Primary phone number for official records.</p>
+                    {% if form.phone_number.errors %}
+                    <div class="text-xs text-rose-500 mt-1 font-medium">{{ form.phone_number.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Institutional & Academic Role -->
+        <div class="apple-card p-6 sm:p-7 space-y-5 bg-white">
+            <div class="flex items-center gap-2.5 border-b border-gray-100 pb-3.5">
+                <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xs border border-purple-100">
+                    2
+                </div>
+                <div>
+                    <h2 class="text-sm sm:text-base font-bold text-[#1D1D1F] tracking-tight">Institutional & Academic Role</h2>
+                    <p class="text-xs text-gray-400">Employee identifier, department assignment, and designation</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <!-- Employee Code -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-gray-700" for="id_employee_code">Employee Code</label>
+                    {{ form.employee_code }}
+                    <p class="text-[11px] text-gray-400">Leave blank to auto-generate.</p>
+                    {% if form.employee_code.errors %}
+                    <div class="text-xs text-rose-500 mt-1 font-medium">{{ form.employee_code.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Department -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-gray-700" for="id_department">Department <span class="text-rose-500">*</span></label>
+                    {{ form.department }}
+                    <p class="text-[11px] text-gray-400">e.g. Science, Mathematics, English</p>
+                    {% if form.department.errors %}
+                    <div class="text-xs text-rose-500 mt-1 font-medium">{{ form.department.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Designation -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-gray-700" for="id_designation">Designation</label>
+                    {{ form.designation }}
+                    <p class="text-[11px] text-gray-400">e.g. Senior Lecturer, HOD</p>
+                    {% if form.designation.errors %}
+                    <div class="text-xs text-rose-500 mt-1 font-medium">{{ form.designation.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Optional Initial Password -->
+            {% if form.password %}
+            <div class="pt-3 border-t border-gray-100">
+                <div class="space-y-1.5 max-w-md">
+                    <label class="block text-xs font-semibold text-gray-700" for="id_password">Login Password (Optional)</label>
+                    {{ form.password }}
+                    <p class="text-[11px] text-gray-400">Optional. If set, faculty can log into their faculty portal.</p>
+                    {% if form.password.errors %}
+                    <div class="text-xs text-rose-500 mt-1 font-medium">{{ form.password.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if form.custom_field_defs %}
+        <!-- Section 3: Custom Fields -->
+        <div class="apple-card p-6 sm:p-7 space-y-5 bg-white">
+            <div class="flex items-center gap-2.5 border-b border-gray-100 pb-3.5">
+                <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xs border border-amber-100">
+                    3
+                </div>
+                <div>
+                    <h2 class="text-sm sm:text-base font-bold text-[#1D1D1F] tracking-tight">Custom School Attributes</h2>
+                    <p class="text-xs text-gray-400">Additional dynamic fields configured for your school</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {% for cf in form.custom_field_defs %}
+                {% for field in form %}
+                    {% if field.name == "custom_"|add:cf.field_name %}
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-semibold text-gray-700" for="{{ field.id_for_label }}">
+                            {{ cf.label }}{% if cf.is_required %} <span class="text-rose-500">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-xs text-rose-500 mt-1 font-medium">{{ field.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Bottom Action Sticky Bar -->
+        <div class="flex items-center justify-between pt-4 border-t border-gray-200/80">
+            <a href="{% url 'faculty:list' %}" class="px-5 py-2.5 rounded-full bg-white border border-gray-200 text-xs sm:text-sm font-semibold text-[#1D1D1F] hover:bg-gray-50 transition-all shadow-xs">
+                Cancel
+            </a>
+            <div class="flex items-center gap-3">
+                <button type="submit" class="apple-btn-primary px-6 py-2.5 inline-flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-sm cursor-pointer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>{% if is_edit %}Save Changes{% else %}Add Faculty Member{% endif %}</span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
