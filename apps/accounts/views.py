@@ -9,7 +9,7 @@ from apps.accounts.models import User
 from apps.core.ratelimit import rate_limit
 
 
-@method_decorator(rate_limit(key_prefix='login', limit=5, period_seconds=60), name='dispatch')
+@method_decorator(rate_limit(key_prefix='login', limit=5, period_seconds=60, methods=['POST']), name='dispatch')
 class TenantLoginView(LoginView):
     """
     Login view for tenant subdomains and root domain.

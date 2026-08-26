@@ -19,7 +19,7 @@ def get_client_ip(request):
     return request.META.get('REMOTE_ADDR', '127.0.0.1')
 
 
-def rate_limit(key_prefix='rl', limit=10, period_seconds=60):
+def rate_limit(key_prefix='rl', limit=10, period_seconds=60, methods=None):
     """
     Decorator for views to enforce rate limits per client IP.
 
@@ -27,10 +27,18 @@ def rate_limit(key_prefix='rl', limit=10, period_seconds=60):
         key_prefix: String prefix for cache key isolation.
         limit: Max allowed requests within period_seconds.
         period_seconds: Time window in seconds (default 60s).
+        methods: Optional list/tuple of HTTP methods (e.g. ['POST']) to apply rate limit to.
+                 If provided, requests with other methods will not be rate-limited.
     """
+    target_methods = {m.upper() for m in methods} if methods else None
+
     def decorator(view_func):
         @functools.wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
+            # If methods filter is specified and current request method is not in it, bypass rate limit
+            if target_methods and request.method.upper() not in target_methods:
+                return view_func(request, *args, **kwargs)
+
             client_ip = get_client_ip(request)
             cache_key = f"ratelimit:{key_prefix}:{client_ip}"
             now = time.time()

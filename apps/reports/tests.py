@@ -343,7 +343,7 @@ class PrincipalDashboardModuleAwarenessTest(ReportsTestBase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Launch Kiosk')
         self.assertContains(response, 'Faculty Attendance')
-        self.assertContains(response, 'Recent Activity')
+        self.assertContains(response, 'Live Attendance Feed')
         self.assertContains(response, 'Alice Smith')
 
     def test_scenario_c_academics_disabled(self):

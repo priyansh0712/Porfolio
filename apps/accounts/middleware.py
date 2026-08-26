@@ -16,6 +16,7 @@ Blocked paths:
   - Tenant users (School Admin / Faculty) on: /superadmin/
 """
 from django.http import HttpResponseForbidden
+from django.utils.cache import add_never_cache_headers
 
 from apps.accounts.models import User
 
@@ -29,6 +30,9 @@ TENANT_SCOPED_PREFIXES = (
     '/leaves/',
     '/academics/',
     '/students/',
+    '/settings/',
+    '/onboarding/',
+    '/notifications/',
 )
 
 # Paths that tenant users must NEVER access
@@ -48,6 +52,8 @@ class TenantRoleAccessMiddleware:
       - Unauthenticated requests are passed through (handled by LoginRequiredMixin at view level).
       - Super Admin attempting to access tenant-scoped paths → HTTP 403 immediately.
       - Tenant users attempting to access superadmin paths → HTTP 403 immediately.
+      - Sets strict No-Cache headers on all authenticated and private pages to prevent
+        browser Back-Forward Cache (bfcache) from exposing protected screens on logout.
     """
 
     def __init__(self, get_response):
@@ -77,4 +83,11 @@ class TenantRoleAccessMiddleware:
                         'to Platform Super Admin only.'
                     )
 
-        return self.get_response(request)
+        response = self.get_response(request)
+
+        # Prevent browser back-forward caching of authenticated & sensitive routes
+        if user.is_authenticated or any(request.path_info.startswith(prefix) for prefix in TENANT_SCOPED_PREFIXES) or any(request.path_info.startswith(prefix) for prefix in SUPERADMIN_PREFIXES):
+            add_never_cache_headers(response)
+
+        return response
+

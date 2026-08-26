@@ -1367,6 +1367,14 @@
                 fetchAjaxTable(containerId, url, { isLiveSearch: true });
             }, 300);
         }
+
+        // Back-Forward Cache (bfcache) Reload Guard:
+        // If an authenticated page was restored from browser back/forward history cache, force fresh check from server
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        });
     </script>
     {% block extra_js %}{% endblock %}
 </body>
