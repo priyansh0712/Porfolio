@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}School Announcements — Student Portal | StudentERP{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6 pb-12">
+
+  <!-- Header Card -->
+  <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+    <div>
+      <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+        Student Portal
+      </span>
+      <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight mt-2">School Announcements</h1>
+      <p class="text-xs text-[#86868b] mt-1">
+        Official broadcast notices, event updates, and news from school administration.
+      </p>
+    </div>
+  </div>
+
+  <!-- Announcements List -->
+  {% if not announcements %}
+  <div class="bg-white rounded-3xl p-12 text-center border border-gray-200/80 shadow-xs text-gray-500 text-xs font-medium">
+    No active school announcements at this time.
+  </div>
+  {% else %}
+  <div class="space-y-4">
+    {% for ann in announcements %}
+    <div class="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-3">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#0066cc]"></span>
+          <h2 class="text-base font-bold text-[#1d1d1f] tracking-tight">{{ ann.title }}</h2>
+        </div>
+        <span class="text-[11px] font-mono text-gray-400">{{ ann.published_at|date:"d M Y, H:i" }}</span>
+      </div>
+      <p class="text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line bg-[#f5f5f7] p-4 rounded-2xl border border-gray-200/60">
+        {{ ann.content }}
+      </p>
+      <div class="text-[11px] text-gray-400 font-medium text-right pt-1">
+        Published by {{ ann.author.get_full_name|default:ann.author.username }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

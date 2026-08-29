@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load static %}
+{% load tenant_tags %}
+
+{% block title %}Class Timetable Management — {{ school.name }} | StudentERP{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+
+  <!-- Header Card & Division Filter -->
+  <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200 uppercase tracking-wider">
+        School Admin Portal
+      </span>
+      <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight mt-2">Class Timetable Management</h1>
+      <p class="text-xs text-[#86868b] mt-1">
+        Configure weekly period schedule and teacher assignments for class divisions.
+      </p>
+    </div>
+
+    {% if divisions %}
+    <form method="GET" class="flex items-center gap-2 bg-[#f5f5f7] p-2 rounded-2xl border border-gray-200/80">
+      <label for="div_select" class="text-xs font-semibold text-gray-600 pl-1">Class Division:</label>
+      <select id="div_select" name="division_id" onchange="this.form.submit()" class="px-3 py-1.5 bg-white border border-gray-300 rounded-xl text-xs font-bold text-[#1d1d1f]">
+        {% for div in divisions %}
+        <option value="{{ div.pk }}" {% if selected_division and selected_division.pk == div.pk %}selected{% endif %}>
+          {{ div.standard.name }} - {{ div.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if not selected_division %}
+  <div class="bg-white rounded-3xl p-12 text-center border border-gray-200/80 text-gray-500 text-xs font-medium">
+    No active divisions found. Please set up standards and divisions in Academic Setup first.
+  </div>
+  {% else %}
+
+  <!-- Timetable Weekly Grid -->
+  <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+      <h2 class="text-base font-bold text-[#1d1d1f]">
+        Weekly Schedule Grid — {{ selected_division.standard.name }} ({{ selected_division.name }})
+      </h2>
+      <span class="text-xs font-semibold text-gray-500">Academic Year: {{ academic_year.name }}</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-gray-200 text-[11px] font-bold uppercase tracking-wider text-[#86868b] bg-gray-50/80">
+            <th class="py-3 px-4 w-28 border-r border-gray-200">Day / Period</th>
+            {% for p in periods %}
+            <th class="py-3 px-3 text-center border-r border-gray-200 min-w-[130px]">Period {{ p }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 text-xs">
+          {% for day_val, day_name in days %}
+          <tr class="hover:bg-gray-50/50 transition-colors">
+            <td class="py-4 px-4 font-bold text-[#1d1d1f] bg-gray-50/40 border-r border-gray-200">
+              {{ day_name }}
+            </td>
+
+            {% for p in periods %}
+            {% with slot=grid|get_item:day_val|get_item:p %}
+            <td class="py-3 px-2 border-r border-gray-200 align-top">
+              {% if slot %}
+              <div class="bg-blue-50/60 p-2.5 rounded-xl border border-blue-200/80 space-y-1">
+                <div class="font-bold text-[#0066cc] text-xs">{{ slot.subject.name }}</div>
+                {% if slot.faculty %}
+                <div class="text-[11px] text-gray-600 truncate">{{ slot.faculty.full_name }}</div>
+                {% endif %}
+                {% if slot.start_time %}
+                <div class="text-[10px] text-gray-400 font-mono">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</div>
+                {% endif %}
+                <button type="button" onclick="editSlot('{{ day_val }}', '{{ p }}', '{{ slot.subject.pk }}', '{% if slot.faculty %}{{ slot.faculty.pk }}{% endif %}', '{% if slot.start_time %}{{ slot.start_time|time:"H:i" }}{% endif %}', '{% if slot.end_time %}{{ slot.end_time|time:"H:i" }}{% endif %}')"
+                  class="text-[10px] font-bold text-gray-500 hover:text-blue-700 underline pt-1 block">
+                  Edit Slot
+                </button>
+              </div>
+              {% else %}
+              <button type="button" onclick="editSlot('{{ day_val }}', '{{ p }}', '', '', '', '')"
+                class="w-full h-16 border-2 border-dashed border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50/30 text-gray-400 hover:text-blue-600 text-[11px] font-semibold transition-all flex items-center justify-center">
+                + Add Period {{ p }}
+              </button>
+              {% endif %}
+            </td>
+            {% endwith %}
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Slot Edit Modal -->
+<div id="slot-modal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-gray-200 space-y-4" data-lenis-prevent>
+    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+      <h2 class="text-base font-bold text-[#1d1d1f]" id="modal-title">Configure Period Slot</h2>
+      <button type="button" onclick="document.getElementById('slot-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-lg font-bold">&times;</button>
+    </div>
+
+    <form method="POST" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="division_id" value="{{ selected_division.pk }}" />
+      <input type="hidden" id="modal_day" name="day_of_week" />
+      <input type="hidden" id="modal_period" name="period_number" />
+
+      <div>
+        <label class="block text-xs font-bold text-[#1d1d1f] mb-1">Subject</label>
+        <select id="modal_subject" name="subject_id" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-[#0066cc]">
+          <option value="">-- Clear / Empty Period --</option>
+          {% for sub in subjects %}
+          <option value="{{ sub.pk }}">{{ sub.name }} ({{ sub.code }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-[#1d1d1f] mb-1">Teacher (Faculty)</label>
+        <select id="modal_faculty" name="faculty_id" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-[#0066cc]">
+          <option value="">-- Unassigned --</option>
+          {% for f in faculties %}
+          <option value="{{ f.pk }}">{{ f.full_name }} ({{ f.designation }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-[#1d1d1f] mb-1">Start Time</label>
+          <input type="time" id="modal_start" name="start_time" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-[#1d1d1f] mb-1">End Time</label>
+          <input type="time" id="modal_end" name="end_time" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold" />
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-3">
+        <button type="button" onclick="document.getElementById('slot-modal').classList.add('hidden')" class="px-4 py-2 text-xs font-semibold text-gray-500 hover:text-gray-800">
+          Cancel
+        </button>
+        <button type="submit" class="px-5 py-2 bg-[#0066cc] text-white text-xs font-bold rounded-full hover:bg-blue-700 shadow-xs transition-colors">
+          Save Slot
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function editSlot(day, period, subId, facultyId, startTime, endTime) {
+    document.getElementById('modal_day').value = day;
+    document.getElementById('modal_period').value = period;
+    document.getElementById('modal_subject').value = subId;
+    document.getElementById('modal_faculty').value = facultyId;
+    document.getElementById('modal_start').value = startTime;
+    document.getElementById('modal_end').value = endTime;
+    document.getElementById('modal-title').innerText = `Configure Day ${day} — Period ${period}`;
+    document.getElementById('slot-modal').classList.remove('hidden');
+  }
+</script>
+{% endblock %}

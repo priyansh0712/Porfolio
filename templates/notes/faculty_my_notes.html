@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Uploaded Notes — {{ school.name }} | StudentERP{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6 pb-12">
+
+  <!-- Header Card -->
+  <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+    <div>
+      <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-[#5A2132]/10 text-[#5A2132] uppercase tracking-wider">
+        Subject Faculty Portal
+      </span>
+      <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight mt-2">My Uploaded Notes</h1>
+      <p class="text-xs text-[#86868b] mt-1">
+        Track approval status of notes uploaded by you for your subject classes.
+      </p>
+    </div>
+    <a href="{% url 'notes:upload' %}" class="px-5 py-2.5 bg-[#5A2132] text-white text-xs font-bold rounded-full hover:bg-[#481a28] shadow-xs transition-colors inline-flex items-center gap-1.5">
+      <span>+ Upload New Note</span>
+    </a>
+  </div>
+
+  <!-- Notes List Table -->
+  <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+      <h2 class="text-base font-bold text-[#1d1d1f]">Uploaded Notes Directory</h2>
+      <span class="text-xs font-semibold text-gray-500">Total Uploads: {{ notes|length }}</span>
+    </div>
+
+    {% if not notes %}
+    <div class="p-12 text-center text-gray-500 text-xs font-medium">
+      You haven't uploaded any notes yet. Click "+ Upload New Note" above to add your first study material.
+    </div>
+    {% else %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-[#86868b] bg-gray-50/50">
+            <th class="py-3.5 px-6">Class / Subject</th>
+            <th class="py-3.5 px-4">Title & Description</th>
+            <th class="py-3.5 px-4">Upload Date</th>
+            <th class="py-3.5 px-6 text-center">Status</th>
+            <th class="py-3.5 px-6 text-right">File</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 text-xs">
+          {% for note in notes %}
+          <tr class="hover:bg-gray-50/80 transition-colors">
+            <td class="py-4 px-6">
+              <div class="font-bold text-[#1d1d1f]">{{ note.division.standard.name }} - {{ note.division.name }}</div>
+              <div class="text-[11px] text-[#5A2132] font-semibold mt-0.5">{{ note.subject.name }}</div>
+            </td>
+            <td class="py-4 px-4 max-w-xs">
+              <div class="font-bold text-[#1d1d1f]">{{ note.title }}</div>
+              {% if note.description %}<div class="text-[11px] text-gray-500 truncate mt-0.5">{{ note.description }}</div>{% endif %}
+              {% if note.status == 'REJECTED' and note.rejection_reason %}
+              <div class="mt-1 text-[11px] text-rose-600 font-semibold bg-rose-50 p-2 rounded-xl border border-rose-200">
+                Reason: {{ note.rejection_reason }}
+              </div>
+              {% endif %}
+            </td>
+            <td class="py-4 px-4 text-gray-500 font-mono">
+              {{ note.created_at|date:"d M Y, H:i" }}
+            </td>
+            <td class="py-4 px-6 text-center">
+              {% if note.status == 'APPROVED' %}
+              <span class="px-3 py-1 text-[11px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Approved
+              </span>
+              {% elif note.status == 'REJECTED' %}
+              <span class="px-3 py-1 text-[11px] font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                Rejected
+              </span>
+              {% else %}
+              <span class="px-3 py-1 text-[11px] font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                Pending Approval
+              </span>
+              {% endif %}
+            </td>
+            <td class="py-4 px-6 text-right">
+              {% if note.file %}
+              <a href="{{ note.file.url }}" target="_blank" class="px-3 py-1.5 bg-blue-50 text-[#0066cc] font-semibold rounded-xl border border-blue-200 hover:bg-blue-100 transition-colors inline-flex items-center gap-1">
+                <span>View File</span>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

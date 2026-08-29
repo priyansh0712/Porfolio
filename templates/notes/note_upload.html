@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Upload Subject Note — {{ school.name }} | StudentERP{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6 pb-12">
+
+  <!-- Header Card -->
+  <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+    <div>
+      <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-[#5A2132]/10 text-[#5A2132] uppercase tracking-wider">
+        Subject Faculty Portal
+      </span>
+      <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight mt-2">Upload Subject Note</h1>
+      <p class="text-xs text-[#86868b] mt-1">
+        Upload study material documents for your assigned classes. Uploads will be sent for Class Teacher review before publishing to students.
+      </p>
+    </div>
+    <a href="{% url 'notes:my_uploads' %}" class="px-4 py-2 text-xs font-semibold rounded-full bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] border border-gray-200/80 transition-colors">
+      My Uploads &rarr;
+    </a>
+  </div>
+
+  <!-- Upload Form -->
+  <form method="POST" enctype="multipart/form-data" class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs space-y-5">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="id_division" class="block text-xs font-bold text-[#1d1d1f] mb-1.5">Class / Division <span class="text-rose-500">*</span></label>
+        {{ form.division }}
+        {% if form.division.errors %}<p class="text-[11px] text-rose-600 mt-1">{{ form.division.errors.0 }}</p>{% endif %}
+      </div>
+      <div>
+        <label for="id_subject" class="block text-xs font-bold text-[#1d1d1f] mb-1.5">Subject <span class="text-rose-500">*</span></label>
+        {{ form.subject }}
+        {% if form.subject.errors %}<p class="text-[11px] text-rose-600 mt-1">{{ form.subject.errors.0 }}</p>{% endif %}
+      </div>
+    </div>
+
+    <div>
+      <label for="id_title" class="block text-xs font-bold text-[#1d1d1f] mb-1.5">Note Title / Chapter Name <span class="text-rose-500">*</span></label>
+      {{ form.title }}
+      {% if form.title.errors %}<p class="text-[11px] text-rose-600 mt-1">{{ form.title.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div>
+      <label for="id_description" class="block text-xs font-bold text-[#1d1d1f] mb-1.5">Description / Instructions (Optional)</label>
+      {{ form.description }}
+      {% if form.description.errors %}<p class="text-[11px] text-rose-600 mt-1">{{ form.description.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div>
+      <label for="id_file" class="block text-xs font-bold text-[#1d1d1f] mb-1.5">Attach Document File <span class="text-rose-500">*</span></label>
+      {{ form.file }}
+      <p class="text-[11px] text-gray-500 mt-1">Allowed formats: PDF, DOC, DOCX, PPT, PPTX, PNG, JPG, JPEG (Max 25MB)</p>
+      {% if form.file.errors %}<p class="text-[11px] text-rose-600 mt-1">{{ form.file.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+      <a href="{% url 'notes:my_uploads' %}" class="text-xs font-semibold text-gray-500 hover:text-gray-800">Cancel</a>
+      <button type="submit" class="px-6 py-2.5 bg-[#5A2132] text-white text-xs font-bold rounded-full hover:bg-[#481a28] shadow-xs transition-colors">
+        Submit Note for Approval
+      </button>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

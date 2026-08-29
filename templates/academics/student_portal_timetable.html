@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+{% load tenant_tags %}
+
+{% block title %}Class Timetable — Student Portal | StudentERP{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+
+  <!-- Header Card -->
+  <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+          Student Portal
+        </span>
+        {% if student %}
+        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+          {{ student.division.standard.name }} - {{ student.division.name }}
+        </span>
+        {% endif %}
+      </div>
+      <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight mt-2">Class Timetable</h1>
+      <p class="text-xs text-[#86868b] mt-1">
+        Weekly period schedule and daily class breakdown.
+      </p>
+    </div>
+  </div>
+
+  <!-- Today's Schedule Card -->
+  {% if today_slots %}
+  <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 sm:p-8 rounded-3xl shadow-md space-y-4">
+    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+        <h2 class="text-base font-bold tracking-tight">Today's Class Schedule</h2>
+      </div>
+      <span class="text-xs text-blue-200 font-semibold">{% now "l, d F Y" %}</span>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+      {% for slot in today_slots %}
+      <div class="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/15 space-y-1">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-blue-200">Period {{ slot.period_number }}</div>
+        <div class="font-bold text-sm truncate">{{ slot.subject.name }}</div>
+        {% if slot.faculty %}<div class="text-[11px] text-blue-100 truncate">{{ slot.faculty.full_name }}</div>{% endif %}
+        {% if slot.start_time %}<div class="text-[10px] font-mono text-blue-200">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Full Weekly Timetable Grid -->
+  <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+      <h2 class="text-base font-bold text-[#1d1d1f]">Weekly Timetable Schedule Grid</h2>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-gray-200 text-[11px] font-bold uppercase tracking-wider text-[#86868b] bg-gray-50/80">
+            <th class="py-3 px-4 w-28 border-r border-gray-200">Day / Period</th>
+            {% for p in periods %}
+            <th class="py-3 px-3 text-center border-r border-gray-200 min-w-[120px]">Period {{ p }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 text-xs">
+          {% for day_val, day_name in days %}
+          <tr class="{% if day_val == today_weekday %}bg-blue-50/40{% else %}hover:bg-gray-50/50{% endif %} transition-colors">
+            <td class="py-4 px-4 font-bold border-r border-gray-200 {% if day_val == today_weekday %}text-[#0066cc] bg-blue-100/40{% else %}text-[#1d1d1f] bg-gray-50/40{% endif %}">
+              {{ day_name }}
+              {% if day_val == today_weekday %}<span class="block text-[10px] font-extrabold text-[#0066cc] uppercase">Today</span>{% endif %}
+            </td>
+
+            {% for p in periods %}
+            {% with slot=grid|get_item:day_val|get_item:p %}
+            <td class="py-3 px-2 border-r border-gray-200 align-top">
+              {% if slot %}
+              <div class="bg-white p-2.5 rounded-xl border border-gray-200/80 shadow-2xs space-y-1">
+                <div class="font-bold text-[#1d1d1f] text-xs">{{ slot.subject.name }}</div>
+                {% if slot.faculty %}
+                <div class="text-[11px] text-gray-500 truncate">{{ slot.faculty.full_name }}</div>
+                {% endif %}
+                {% if slot.start_time %}
+                <div class="text-[10px] text-gray-400 font-mono">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</div>
+                {% endif %}
+              </div>
+              {% else %}
+              <div class="h-14 flex items-center justify-center text-gray-300 text-[11px] font-mono">--</div>
+              {% endif %}
+            </td>
+            {% endwith %}
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

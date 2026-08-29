@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% load static %}
+{% load tenant_tags %}
+
+{% block title %}Class Student Attendance — {{ school.name }} | StudentERP{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+
+  <!-- Header Banner -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-[#5A2132]/10 text-[#5A2132] uppercase tracking-wider">
+          Class Teacher Portal
+        </span>
+        {% if division %}
+        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+          {{ division.standard.name }} - {{ division.name }}
+        </span>
+        {% endif %}
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight mt-2">Student Attendance Marking</h1>
+      <p class="text-xs sm:text-sm text-[#86868b] mt-1">
+        Record daily attendance for students of your assigned class division.
+      </p>
+    </div>
+
+    <!-- Date Picker & Filter Form -->
+    <form method="GET" class="flex items-center gap-3 bg-[#f5f5f7] p-2 rounded-2xl border border-gray-200/80">
+      {% if request.user.role == 'SCHOOL_ADMIN' and not is_class_teacher %}
+      <select name="division_id" onchange="this.form.submit()" class="px-3 py-2 bg-white border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0066cc]">
+        {% for div in school.divisions.all %}
+        <option value="{{ div.pk }}" {% if division and division.pk == div.pk %}selected{% endif %}>
+          {{ div.standard.name }} - {{ div.name }}
+        </option>
+        {% endfor %}
+      </select>
+      {% endif %}
+      <div class="flex items-center gap-2">
+        <label for="attn_date" class="text-xs font-semibold text-gray-600 pl-1">Date:</label>
+        <input type="date" id="attn_date" name="date" value="{{ selected_date|date:'Y-m-d' }}" onchange="this.form.submit()"
+          class="px-3 py-1.5 bg-white border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" />
+      </div>
+      <button type="submit" class="px-3.5 py-1.5 bg-[#1d1d1f] text-white text-xs font-semibold rounded-xl hover:bg-black transition-colors">
+        Go
+      </button>
+    </form>
+  </div>
+
+  {% if not division %}
+  <!-- Warning if not assigned as Class Teacher -->
+  <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center text-amber-800">
+    <svg class="w-10 h-10 mx-auto text-amber-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+    </svg>
+    <h3 class="text-base font-bold text-amber-900">No Class Assigned</h3>
+    <p class="text-xs text-amber-700 mt-1 max-w-md mx-auto">
+      You are not currently allocated as Class Teacher for an active division in the current academic session. Contact your School Admin for class allocation.
+    </p>
+  </div>
+  {% else %}
+
+  <!-- Quick Summary Chips -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+    <div class="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+      <div class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Present</div>
+      <div class="text-2xl font-bold text-[#1d1d1f] mt-1">{{ present_count }}</div>
+    </div>
+    <div class="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+      <div class="text-[11px] font-bold text-rose-600 uppercase tracking-wider">Absent</div>
+      <div class="text-2xl font-bold text-[#1d1d1f] mt-1">{{ absent_count }}</div>
+    </div>
+    <div class="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+      <div class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Half Day</div>
+      <div class="text-2xl font-bold text-[#1d1d1f] mt-1">{{ half_day_count }}</div>
+    </div>
+    <div class="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+      <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Pending / Unmarked</div>
+      <div class="text-2xl font-bold text-[#1d1d1f] mt-1">{{ unmarked_count }}</div>
+    </div>
+  </div>
+
+  <!-- Main Roster Form -->
+  <form method="POST" class="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden">
+    {% csrf_token %}
+    <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}" />
+    {% if request.user.role == 'SCHOOL_ADMIN' %}
+    <input type="hidden" name="division_id" value="{{ division.pk }}" />
+    {% endif %}
+
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+      <div class="flex items-center gap-2">
+        <h2 class="text-base font-bold text-[#1d1d1f]">Class Roster</h2>
+        <span class="text-xs text-gray-500">({{ students|length }} Active Students)</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="markAll('PRESENT')" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors">
+          Mark All Present
+        </button>
+        <button type="submit" class="px-5 py-2 text-xs font-bold rounded-full bg-[#5A2132] text-white hover:bg-[#481a28] shadow-xs transition-colors">
+          Save Attendance
+        </button>
+      </div>
+    </div>
+
+    {% if not students %}
+    <div class="p-12 text-center text-gray-500 text-xs font-medium">
+      No active students enrolled in {{ division.standard.name }} - {{ division.name }} for {{ academic_year.name }}.
+    </div>
+    {% else %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-[#86868b] bg-gray-50/50">
+            <th class="py-3 px-6">Roll No</th>
+            <th class="py-3 px-4">GR Number</th>
+            <th class="py-3 px-4">Student Name</th>
+            <th class="py-3 px-6 text-center">Status</th>
+            <th class="py-3 px-6">Remarks / Note</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 text-xs">
+          {% for student in students %}
+          {% with existing_log=logs_map|get_item:student.pk %}
+          <tr class="hover:bg-gray-50/80 transition-colors">
+            <td class="py-3.5 px-6 font-mono font-bold text-gray-700">
+              {% if student.roll_number %}{{ student.roll_number }}{% else %}--{% endif %}
+            </td>
+            <td class="py-3.5 px-4 font-mono text-gray-500">
+              {{ student.gr_number }}
+            </td>
+            <td class="py-3.5 px-4 font-bold text-[#1d1d1f]">
+              {{ student.full_name }}
+            </td>
+            <td class="py-3.5 px-6">
+              <div class="flex items-center justify-center gap-2">
+                <label class="cursor-pointer inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200 hover:bg-emerald-50 has-[:checked]:bg-emerald-100 has-[:checked]:border-emerald-400 has-[:checked]:text-emerald-800 text-gray-700 font-semibold transition-all">
+                  <input type="radio" name="status_{{ student.pk }}" value="PRESENT" class="status-radio sr-only"
+                    {% if existing_log %}{% if existing_log.status == 'PRESENT' %}checked{% endif %}{% else %}checked{% endif %}>
+                  <span>Present</span>
+                </label>
+                <label class="cursor-pointer inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200 hover:bg-rose-50 has-[:checked]:bg-rose-100 has-[:checked]:border-rose-400 has-[:checked]:text-rose-800 text-gray-700 font-semibold transition-all">
+                  <input type="radio" name="status_{{ student.pk }}" value="ABSENT" class="status-radio sr-only"
+                    {% if existing_log and existing_log.status == 'ABSENT' %}checked{% endif %}>
+                  <span>Absent</span>
+                </label>
+                <label class="cursor-pointer inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200 hover:bg-amber-50 has-[:checked]:bg-amber-100 has-[:checked]:border-amber-400 has-[:checked]:text-amber-800 text-gray-700 font-semibold transition-all">
+                  <input type="radio" name="status_{{ student.pk }}" value="HALF_DAY" class="status-radio sr-only"
+                    {% if existing_log and existing_log.status == 'HALF_DAY' %}checked{% endif %}>
+                  <span>Half Day</span>
+                </label>
+              </div>
+            </td>
+            <td class="py-3.5 px-6">
+              <input type="text" name="remarks_{{ student.pk }}" value="{% if existing_log %}{{ existing_log.remarks }}{% endif %}" placeholder="Optional remark..."
+                class="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#0066cc]" />
+            </td>
+          </tr>
+          {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
+      <span class="text-xs text-gray-500">Marks are saved instantly to tenant records.</span>
+      <button type="submit" class="px-6 py-2.5 text-xs font-bold rounded-full bg-[#5A2132] text-white hover:bg-[#481a28] shadow-xs transition-colors">
+        Save Attendance
+      </button>
+    </div>
+  </form>
+  {% endif %}
+
+</div>
+
+<script>
+  function markAll(statusVal) {
+    const radios = document.querySelectorAll(`input[type="radio"][value="${statusVal}"]`);
+    radios.forEach(r => {
+      r.checked = true;
+      r.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+</script>
+{% endblock %}
