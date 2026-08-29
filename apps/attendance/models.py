@@ -129,3 +129,69 @@ class AttendanceLog(TenantModel):
             return f"{minutes}m {seconds}s"
         else:
             return f"{seconds}s"
+
+
+class StudentAttendanceLog(TenantModel):
+    """
+    Daily attendance record for a student within a school tenant and division.
+
+    Marked by the assigned Class Teacher for a given date.
+    Supports: PRESENT, ABSENT, HALF_DAY statuses.
+    """
+
+    class Status(models.TextChoices):
+        PRESENT = 'PRESENT', 'Present'
+        ABSENT = 'ABSENT', 'Absent'
+        HALF_DAY = 'HALF_DAY', 'Half Day'
+
+    student = models.ForeignKey(
+        'students.Student',
+        on_delete=models.CASCADE,
+        related_name='student_attendance_logs',
+        help_text='Student this attendance record belongs to',
+    )
+    division = models.ForeignKey(
+        'academics.Division',
+        on_delete=models.PROTECT,
+        related_name='student_attendance_logs',
+        help_text='Division of the student at the time of marking',
+    )
+    date = models.DateField(
+        default=timezone.now,
+        help_text='Calendar date of attendance',
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PRESENT,
+        help_text='Attendance status marked by class teacher',
+    )
+    marked_by = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='marked_student_attendances',
+        help_text='Class teacher user who recorded or updated this attendance',
+    )
+    remarks = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        help_text='Optional remarks for absence or half day',
+    )
+
+    class Meta:
+        ordering = ['-date', 'student__roll_number', 'student__full_name']
+        verbose_name = 'Student Attendance Log'
+        verbose_name_plural = 'Student Attendance Logs'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['school', 'student', 'date'],
+                name='unique_student_attendance_per_day',
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.student} - {self.date}: {self.get_status_display()}"
+

@@ -2,7 +2,7 @@
 URL Configuration for apps.academics.
 """
 from django.urls import path
-from apps.academics import views
+from apps.academics import views, views_timetable
 
 app_name = 'academics'
 
@@ -38,6 +38,11 @@ urlpatterns = [
     # Allocations
     path('allocations/class-teacher/', views.ClassTeacherAssignView.as_view(), name='assign_class_teacher'),
     path('allocations/subject-teacher/', views.SubjectTeacherAssignView.as_view(), name='assign_subject_teacher'),
+
+    # Timetables
+    path('timetable/manage/', views_timetable.AdminTimetableManageView.as_view(), name='timetable_manage'),
+    path('timetable/student/', views_timetable.StudentPortalTimetableView.as_view(), name='student_timetable'),
+
     path('allocations/<int:pk>/edit-subject-teacher/', views.SubjectTeacherUpdateView.as_view(), name='edit_subject_teacher'),
     path('allocations/<int:pk>/delete-subject-teacher/', views.SubjectTeacherDeleteView.as_view(), name='delete_subject_teacher'),
 ]

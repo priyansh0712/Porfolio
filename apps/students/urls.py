@@ -27,6 +27,10 @@ urlpatterns = [
 
     # Student portal (for logged-in students)
     path('portal/', views.StudentPortalView.as_view(), name='portal'),
+    path('portal/attendance/', views.StudentPortalAttendanceView.as_view(), name='portal_attendance'),
+
+    # Class Teacher Attendance Marking
+    path('my-class/attendance/', views.ClassTeacherStudentAttendanceView.as_view(), name='my_class_attendance'),
 
     # Dynamic Custom Fields & Field Config (School Admin)
     path('custom-fields/add/', views.CustomFieldCreateView.as_view(), name='custom_field_create'),

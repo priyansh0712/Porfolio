@@ -58,6 +58,8 @@ INSTALLED_APPS = [
     'apps.notifications',
     'apps.academics',
     'apps.students',
+    'apps.notes',
+    'apps.announcements',
     'apps.onboarding',
 ]
 

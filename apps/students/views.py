@@ -881,6 +881,47 @@ class StudentPortalView(StudentRequiredMixin, TemplateView):
         except ClassTeacherAllocation.DoesNotExist:
             ctx['class_teacher'] = None
 
+        # 1. Today's & Summary Attendance
+        from apps.attendance.models import StudentAttendanceLog
+        today_date = timezone.localdate()
+        ctx['today_attendance'] = StudentAttendanceLog.objects.filter(
+            school=tenant, student=student, date=today_date
+        ).first()
+
+        all_attn = StudentAttendanceLog.objects.filter(school=tenant, student=student)
+        tot_days = all_attn.count()
+        p_days = all_attn.filter(status=StudentAttendanceLog.Status.PRESENT).count()
+        h_days = all_attn.filter(status=StudentAttendanceLog.Status.HALF_DAY).count()
+        eff_p = p_days + (0.5 * h_days)
+        ctx['attendance_percentage'] = round((eff_p / tot_days * 100), 1) if tot_days > 0 else 0.0
+
+        # 2. Recent Approved Study Notes
+        from apps.notes.models import SubjectNote
+        ctx['recent_approved_notes'] = SubjectNote.objects.filter(
+            school=tenant,
+            division=student.division,
+            status=SubjectNote.Status.APPROVED,
+        ).select_related('subject', 'faculty').order_by('-created_at')[:4]
+
+        # 3. School Announcements
+        from apps.announcements.models import SchoolAnnouncement
+        ctx['recent_announcements'] = SchoolAnnouncement.objects.filter(
+            school=tenant,
+            is_active=True,
+            target_audience__in=[SchoolAnnouncement.TargetAudience.ALL, SchoolAnnouncement.TargetAudience.STUDENTS],
+        ).order_by('-published_at')[:3]
+
+        # 4. Today's Timetable
+        from apps.academics.models import ClassTimetable
+        today_weekday = today_date.isoweekday()
+        target_day = today_weekday if today_weekday <= 6 else 1
+        ctx['today_timetable'] = ClassTimetable.objects.filter(
+            school=tenant,
+            academic_year=student.academic_year,
+            division=student.division,
+            day_of_week=target_day,
+        ).select_related('subject', 'faculty').order_by('period_number')
+
         return ctx
 
 
@@ -986,5 +1027,160 @@ class StudentFormFieldConfigUpdateView(SchoolAdminRequiredMixin, View):
         else:
             messages.error(request, 'Failed to update form field settings. Please check values.')
         return redirect('/students/?tab=custom_fields')
+
+
+class ClassTeacherStudentAttendanceView(SchoolStaffRequiredMixin, TemplateView):
+    """
+    GET: Class Teacher selects date & views roster of students in their assigned division to mark attendance.
+    POST: Class Teacher saves student attendance records (Present, Absent, Half Day) for selected date.
+    """
+    template_name = 'students/class_teacher_attendance.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        tenant = self.request.tenant
+        user = self.request.user
+        current_year = AcademicService.get_current_academic_year(tenant)
+
+        division = None
+        if user.role == User.Role.FACULTY:
+            division = _get_class_teacher_division(user, tenant, current_year)
+        elif user.role == User.Role.SCHOOL_ADMIN:
+            div_id = self.request.GET.get('division_id')
+            if div_id:
+                division = Division.objects.filter(school=tenant, pk=div_id).first()
+            if not division:
+                division = Division.objects.filter(school=tenant, is_active=True).first()
+
+        ctx['division'] = division
+        ctx['academic_year'] = current_year
+        ctx['is_class_teacher'] = division is not None
+
+        date_str = self.request.GET.get('date')
+        if date_str:
+            try:
+                selected_date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                selected_date = timezone.localdate()
+        else:
+            selected_date = timezone.localdate()
+
+        ctx['selected_date'] = selected_date
+
+        if division and current_year:
+            students = Student.objects.filter(
+                school=tenant,
+                academic_year=current_year,
+                division=division,
+                is_active=True,
+            ).order_by('roll_number', 'full_name')
+            ctx['students'] = students
+
+            from apps.attendance.models import StudentAttendanceLog
+            existing_logs = StudentAttendanceLog.objects.filter(
+                school=tenant,
+                division=division,
+                date=selected_date,
+            )
+            logs_map = {log.student_id: log for log in existing_logs}
+            ctx['logs_map'] = logs_map
+
+            ctx['present_count'] = sum(1 for l in logs_map.values() if l.status == StudentAttendanceLog.Status.PRESENT)
+            ctx['absent_count'] = sum(1 for l in logs_map.values() if l.status == StudentAttendanceLog.Status.ABSENT)
+            ctx['half_day_count'] = sum(1 for l in logs_map.values() if l.status == StudentAttendanceLog.Status.HALF_DAY)
+            ctx['unmarked_count'] = len(students) - len(logs_map)
+
+        return ctx
+
+    def post(self, request):
+        tenant = request.tenant
+        user = request.user
+        current_year = AcademicService.get_current_academic_year(tenant)
+
+        division = None
+        if user.role == User.Role.FACULTY:
+            division = _get_class_teacher_division(user, tenant, current_year)
+        elif user.role == User.Role.SCHOOL_ADMIN:
+            div_id = request.POST.get('division_id')
+            if div_id:
+                division = Division.objects.filter(school=tenant, pk=div_id).first()
+
+        if not division:
+            messages.error(request, 'Access denied: You are not assigned as Class Teacher for any active division.')
+            return redirect('students:my_class_attendance')
+
+        date_str = request.POST.get('date')
+        try:
+            selected_date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            selected_date = timezone.localdate()
+
+        students = Student.objects.filter(
+            school=tenant,
+            academic_year=current_year,
+            division=division,
+            is_active=True,
+        )
+
+        from apps.attendance.models import StudentAttendanceLog
+        saved_count = 0
+        for student in students:
+            status_val = request.POST.get(f'status_{student.pk}')
+            remarks_val = request.POST.get(f'remarks_{student.pk}', '').strip()
+
+            if status_val in [c[0] for c in StudentAttendanceLog.Status.choices]:
+                StudentAttendanceLog.objects.update_or_create(
+                    school=tenant,
+                    student=student,
+                    date=selected_date,
+                    defaults={
+                        'division': division,
+                        'status': status_val,
+                        'remarks': remarks_val,
+                        'marked_by': user,
+                    }
+                )
+                saved_count += 1
+
+        messages.success(request, f"Successfully recorded attendance for {saved_count} students on {selected_date.strftime('%d %b %Y')}.")
+        return redirect(f"/students/my-class/attendance/?date={selected_date.strftime('%Y-%m-%d')}")
+
+
+class StudentPortalAttendanceView(StudentRequiredMixin, TemplateView):
+    """
+    GET: Student views their personal date-wise attendance history log and attendance percentage summary.
+    """
+    template_name = 'students/student_portal_attendance.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        tenant = self.request.tenant
+        student = getattr(self.request.user, 'student_profile', None)
+        ctx['student'] = student
+
+        if student:
+            from apps.attendance.models import StudentAttendanceLog
+            attendance_logs = StudentAttendanceLog.objects.filter(
+                school=tenant,
+                student=student,
+            ).order_by('-date')
+            ctx['attendance_logs'] = attendance_logs
+
+            total_days = attendance_logs.count()
+            present_days = attendance_logs.filter(status=StudentAttendanceLog.Status.PRESENT).count()
+            absent_days = attendance_logs.filter(status=StudentAttendanceLog.Status.ABSENT).count()
+            half_days = attendance_logs.filter(status=StudentAttendanceLog.Status.HALF_DAY).count()
+
+            effective_present = present_days + (0.5 * half_days)
+            percentage = round((effective_present / total_days * 100), 1) if total_days > 0 else 0.0
+
+            ctx['total_days'] = total_days
+            ctx['present_days'] = present_days
+            ctx['absent_days'] = absent_days
+            ctx['half_days'] = half_days
+            ctx['percentage'] = percentage
+
+        return ctx
+
 
 

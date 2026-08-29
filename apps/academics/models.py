@@ -428,3 +428,76 @@ class SubjectTeacherAllocation(TenantModel):
 
     def __str__(self):
         return f"{self.academic_year.name}: {self.division} [{self.subject.name}] → {self.faculty.full_name}"
+
+
+class ClassTimetable(TenantModel):
+    """
+    Represents weekly period timetable slot for a specific Division.
+    """
+
+    class DayOfWeek(models.IntegerChoices):
+        MONDAY = 1, 'Monday'
+        TUESDAY = 2, 'Tuesday'
+        WEDNESDAY = 3, 'Wednesday'
+        THURSDAY = 4, 'Thursday'
+        FRIDAY = 5, 'Friday'
+        SATURDAY = 6, 'Saturday'
+
+    academic_year = models.ForeignKey(
+        AcademicYear,
+        on_delete=models.CASCADE,
+        related_name='timetables',
+        help_text='Academic session for this timetable',
+    )
+    division = models.ForeignKey(
+        Division,
+        on_delete=models.CASCADE,
+        related_name='timetables',
+        help_text='Class division schedule',
+    )
+    day_of_week = models.IntegerField(
+        choices=DayOfWeek.choices,
+        help_text='Day of the week (1=Mon, 6=Sat)',
+    )
+    period_number = models.PositiveIntegerField(
+        help_text='Period number / sequence (e.g. 1, 2, 3...)',
+    )
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.PROTECT,
+        related_name='timetable_periods',
+        help_text='Subject taught during this period',
+    )
+    faculty = models.ForeignKey(
+        'faculty.Faculty',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='timetable_periods',
+        help_text='Faculty assigned to teach this period',
+    )
+    start_time = models.TimeField(
+        null=True,
+        blank=True,
+        help_text='Period start time',
+    )
+    end_time = models.TimeField(
+        null=True,
+        blank=True,
+        help_text='Period end time',
+    )
+
+    class Meta:
+        ordering = ['day_of_week', 'period_number']
+        verbose_name = 'Class Timetable Slot'
+        verbose_name_plural = 'Class Timetable Slots'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['school', 'academic_year', 'division', 'day_of_week', 'period_number'],
+                name='unique_period_per_division_day_year',
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.division} | {self.get_day_of_week_display()} P{self.period_number}: {self.subject.name}"
+
