@@ -891,25 +891,36 @@ class StudentPortalView(StudentRequiredMixin, TemplateView):
         all_attn = StudentAttendanceLog.objects.filter(school=tenant, student=student)
         tot_days = all_attn.count()
         p_days = all_attn.filter(status=StudentAttendanceLog.Status.PRESENT).count()
+        a_days = all_attn.filter(status=StudentAttendanceLog.Status.ABSENT).count()
         h_days = all_attn.filter(status=StudentAttendanceLog.Status.HALF_DAY).count()
         eff_p = p_days + (0.5 * h_days)
         ctx['attendance_percentage'] = round((eff_p / tot_days * 100), 1) if tot_days > 0 else 0.0
+        ctx['total_attendance_days'] = tot_days
+        ctx['present_days'] = p_days
+        ctx['absent_days'] = a_days
+        ctx['half_days'] = h_days
+        ctx['today_day_name'] = today_date.strftime('%A')
+        ctx['today_formatted_date'] = today_date.strftime('%d %B %Y')
 
         # 2. Recent Approved Study Notes
         from apps.notes.models import SubjectNote
-        ctx['recent_approved_notes'] = SubjectNote.objects.filter(
+        approved_notes_qs = SubjectNote.objects.filter(
             school=tenant,
             division=student.division,
             status=SubjectNote.Status.APPROVED,
-        ).select_related('subject', 'faculty').order_by('-created_at')[:4]
+        ).select_related('subject', 'faculty')
+        ctx['total_approved_notes_count'] = approved_notes_qs.count()
+        ctx['recent_approved_notes'] = approved_notes_qs.order_by('-created_at')[:4]
 
         # 3. School Announcements
         from apps.announcements.models import SchoolAnnouncement
-        ctx['recent_announcements'] = SchoolAnnouncement.objects.filter(
+        announcements_qs = SchoolAnnouncement.objects.filter(
             school=tenant,
             is_active=True,
             target_audience__in=[SchoolAnnouncement.TargetAudience.ALL, SchoolAnnouncement.TargetAudience.STUDENTS],
-        ).order_by('-published_at')[:3]
+        )
+        ctx['total_announcements_count'] = announcements_qs.count()
+        ctx['recent_announcements'] = announcements_qs.order_by('-published_at')[:4]
 
         # 4. Today's Timetable
         from apps.academics.models import ClassTimetable
@@ -921,6 +932,20 @@ class StudentPortalView(StudentRequiredMixin, TemplateView):
             division=student.division,
             day_of_week=target_day,
         ).select_related('subject', 'faculty').order_by('period_number')
+
+        # 5. Subject Allocations (Taught Subjects & Faculty)
+        ctx['subject_allocations'] = SubjectTeacherAllocation.objects.filter(
+            school=tenant,
+            academic_year=student.academic_year,
+            division=student.division,
+        ).select_related('subject', 'faculty').order_by('subject__name')
+
+        # 6. Fees Overview
+        try:
+            from apps.fees.services import FeeService
+            ctx['fee_summary'] = FeeService.get_student_fee_summary(student=student)
+        except Exception:
+            ctx['fee_summary'] = None
 
         return ctx
 

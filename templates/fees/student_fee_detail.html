@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ student.full_name }} — Fee Ledger | StudentERP{% endblock %}
+{% block page_title %}Student Fee Ledger{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+
+    <!-- Top Header -->
+    <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-[#0066cc] text-white flex items-center justify-center font-bold text-xl flex-shrink-0 shadow-xs">
+                {{ student.initials }}
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <a href="{% url 'fees:student_roster' %}" class="text-xs font-semibold text-[#0066cc] hover:underline">← Students Roster</a>
+                    <span class="text-gray-300">/</span>
+                    <span class="text-xs font-bold text-gray-500">{{ student.standard.name }} - {{ student.division.name }}</span>
+                </div>
+                <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight mt-0.5">
+                    {{ student.full_name }}
+                </h1>
+                <p class="text-xs text-[#86868b]">
+                    GR Number: <span class="font-mono font-bold text-gray-700">{{ student.gr_number }}</span> • Roll: <span class="font-bold text-gray-700">{{ student.roll_number|default:"--" }}</span> • Academic Year: <span class="font-semibold text-gray-700">{{ student.academic_year.name }}</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+            {% if available_structures %}
+            <button onclick="document.getElementById('assign-single-modal').classList.remove('hidden')" class="apple-btn-secondary px-3.5 py-2 text-xs font-semibold rounded-xl border border-gray-200 inline-flex items-center gap-1.5 hover:bg-gray-50 transition-colors">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Add Fee Component</span>
+            </button>
+            {% endif %}
+            {% if summary.total_outstanding > 0 %}
+            <a href="{% url 'fees:collect_payment' %}?student_id={{ student.pk }}" class="apple-btn-primary px-4 py-2 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 shadow-xs">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Collect Fee</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 4 KPI Cards Summary -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="apple-card p-5">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Total Assigned</span>
+            <div class="text-3xl font-extrabold text-[#1d1d1f] tracking-tight mt-1">₹{{ summary.total_assigned }}</div>
+            <p class="text-xs text-gray-500 mt-1">Net payable after waivers</p>
+        </div>
+
+        <div class="apple-card p-5">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Total Paid</span>
+            <div class="text-3xl font-extrabold text-emerald-600 tracking-tight mt-1">₹{{ summary.total_paid }}</div>
+            <p class="text-xs text-gray-500 mt-1">Collected across installments</p>
+        </div>
+
+        <div class="apple-card p-5">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Outstanding Balance</span>
+            <div class="text-3xl font-extrabold text-amber-600 tracking-tight mt-1">₹{{ summary.total_outstanding }}</div>
+            <p class="text-xs text-gray-500 mt-1">Remaining to be paid</p>
+        </div>
+
+        <div class="apple-card p-5">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Overdue Dues</span>
+            <div class="text-3xl font-extrabold {% if summary.total_overdue > 0 %}text-rose-600{% else %}text-gray-400{% endif %} tracking-tight mt-1">₹{{ summary.total_overdue }}</div>
+            <p class="text-xs text-gray-500 mt-1">Installments past due date</p>
+        </div>
+    </div>
+
+    <!-- Assigned Fee Components -->
+    <div class="apple-card overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+            <h2 class="text-base font-bold text-[#1d1d1f]">Assigned Fee Components</h2>
+        </div>
+
+        {% if not summary.categories %}
+        <div class="p-8 text-center text-gray-500 text-xs">
+            No fee components assigned to this student yet.
+        </div>
+        {% else %}
+        <div class="divide-y divide-gray-100">
+            {% for cat in summary.categories %}
+            <div class="px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-gray-50/80 transition-colors">
+                <div class="space-y-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-sm font-bold text-[#1d1d1f]">{{ cat.fee_name }}</h3>
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200">
+                            {{ cat.category_name }}
+                        </span>
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-gray-100 text-gray-700">
+                            {{ cat.frequency }}
+                        </span>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        Base: <strong>₹{{ cat.base_amount }}</strong>
+                        {% if cat.discount_amount > 0 %} • Discount: <span class="text-emerald-600 font-semibold">-₹{{ cat.discount_amount }}</span>{% endif %}
+                        {% if cat.waived_amount > 0 %} • Waived: <span class="text-purple-600 font-semibold">-₹{{ cat.waived_amount }}</span>{% endif %}
+                        • Net Payable: <strong class="text-gray-900">₹{{ cat.net_amount }}</strong>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 flex-shrink-0">
+                    <div class="text-right">
+                        <div class="text-xs font-bold text-gray-700">Paid: <span class="text-emerald-600">₹{{ cat.paid_amount }}</span> / ₹{{ cat.net_amount }}</div>
+                        <div class="text-[11px] font-semibold text-gray-500">Balance: ₹{{ cat.balance }}</div>
+                    </div>
+                    <button onclick="openAdjustmentModal('{{ cat.id }}', '{{ cat.discount_amount }}', '{{ cat.waived_amount }}')" class="apple-btn-secondary px-3 py-1.5 text-xs font-semibold rounded-xl inline-flex items-center gap-1 border border-gray-200">
+                        <span>Discount / Waiver</span>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 2-Column Responsive: Installments Schedule & Payment History -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- Left: Payment Schedule Timeline (lg:col-span-7) -->
+        <div class="lg:col-span-7 space-y-6">
+            <div class="apple-card overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <h2 class="text-base font-bold text-[#1d1d1f]">Payment Schedule & Installments</h2>
+                </div>
+
+                {% if not summary.installments %}
+                <div class="p-8 text-center text-gray-500 text-xs">
+                    No installment schedule generated yet.
+                </div>
+                {% else %}
+                <div class="divide-y divide-gray-100">
+                    {% for inst in summary.installments %}
+                    <div class="px-6 py-3.5 flex items-center justify-between hover:bg-gray-50/80 transition-colors">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-gray-100 text-gray-700 flex items-center justify-center font-mono font-bold text-xs">
+                                    {{ inst.period_number }}
+                                </span>
+                                <h4 class="text-xs font-bold text-[#1d1d1f]">{{ inst.period_name }}</h4>
+                            </div>
+                            <div class="text-[11px] text-gray-500 ml-8 mt-0.5">
+                                Due Date: <strong>{{ inst.due_date|date:"d M Y" }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 text-right flex-shrink-0">
+                            <div>
+                                <div class="text-xs font-bold text-[#1d1d1f]">₹{{ inst.amount_due }}</div>
+                                <div class="text-[10px] text-gray-500">Paid: ₹{{ inst.amount_paid }}</div>
+                            </div>
+
+                            {% if inst.status == 'PAID' %}
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Paid</span>
+                            {% elif inst.status == 'PARTIAL' %}
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200">Partial</span>
+                            {% elif inst.status == 'OVERDUE' %}
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200">Overdue</span>
+                            {% else %}
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200">Unpaid</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Payment Transaction History (lg:col-span-5) -->
+        <div class="lg:col-span-5 space-y-6">
+            <div class="apple-card overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <h2 class="text-base font-bold text-[#1d1d1f]">Payment Ledger History</h2>
+                </div>
+
+                {% if not summary.payments %}
+                <div class="p-8 text-center text-gray-500 text-xs">
+                    No payment transactions recorded for this student yet.
+                </div>
+                {% else %}
+                <div class="divide-y divide-gray-100">
+                    {% for p in summary.payments %}
+                    <div class="p-4 flex items-center justify-between hover:bg-gray-50/80 transition-colors">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <a href="{% url 'fees:receipt_detail' p.pk %}" class="text-xs font-mono font-bold text-[#0066cc] hover:underline">
+                                    {{ p.receipt_number }}
+                                </a>
+                                <span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded bg-gray-100 text-gray-600">
+                                    {{ p.get_payment_method_display }}
+                                </span>
+                            </div>
+                            <div class="text-[11px] text-gray-500 mt-0.5">
+                                {{ p.payment_date|date:"d M Y" }}
+                                {% if p.transaction_reference %} • Ref: <span class="font-mono">{{ p.transaction_reference }}</span>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="text-right flex-shrink-0">
+                            <div class="text-xs font-extrabold text-emerald-600">₹{{ p.amount }}</div>
+                            <a href="{% url 'fees:receipt_detail' p.pk %}" class="text-[10px] font-bold text-[#0066cc] hover:underline">
+                                Receipt →
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Modal: Assign Single Structure -->
+<div id="assign-single-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xl max-w-md w-full p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Add Fee Component</h3>
+            <button onclick="document.getElementById('assign-single-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">✕</button>
+        </div>
+
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="assign_single">
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Select Fee Structure *</label>
+                <select name="fee_structure_id" required class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+                    {% for fs in available_structures %}
+                    <option value="{{ fs.pk }}">{{ fs.name }} — ₹{{ fs.amount }} ({{ fs.get_payment_frequency_display }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="document.getElementById('assign-single-modal').classList.add('hidden')" class="apple-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl">Cancel</button>
+                <button type="submit" class="apple-btn-primary px-5 py-2 text-xs font-semibold rounded-xl shadow-xs">Assign Fee</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Apply Discount / Waiver -->
+<div id="adjustment-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xl max-w-md w-full p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Apply Discount / Waiver</h3>
+            <button onclick="document.getElementById('adjustment-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">✕</button>
+        </div>
+
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="apply_adjustment">
+            <input type="hidden" name="student_fee_id" id="modal_student_fee_id">
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Discount / Scholarship Amount (₹)</label>
+                <input type="number" step="0.01" name="discount_amount" id="modal_discount_amount" value="0" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-bold text-[#1d1d1f]">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Discount Reason</label>
+                <input type="text" name="discount_reason" placeholder="e.g. Sibling scholarship, Merit discount" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs text-[#1d1d1f]">
+            </div>
+
+            <div class="pt-2 border-t border-gray-100">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Special Waived Amount (₹)</label>
+                <input type="number" step="0.01" name="waived_amount" id="modal_waived_amount" value="0" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-bold text-[#1d1d1f]">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Waiver Reason</label>
+                <input type="text" name="waiver_reason" placeholder="e.g. Approved by Principal on request" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs text-[#1d1d1f]">
+            </div>
+
+            <p class="text-[11px] text-gray-500">
+                ⚡ Unpaid installment periods will be automatically scaled to reflect the updated net payable amount.
+            </p>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="document.getElementById('adjustment-modal').classList.add('hidden')" class="apple-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl">Cancel</button>
+                <button type="submit" class="apple-btn-primary px-5 py-2 text-xs font-semibold rounded-xl shadow-xs">Save Adjustment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openAdjustmentModal(studentFeeId, discountAmt, waivedAmt) {
+    document.getElementById('modal_student_fee_id').value = studentFeeId;
+    document.getElementById('modal_discount_amount').value = discountAmt || 0;
+    document.getElementById('modal_waived_amount').value = waivedAmt || 0;
+    document.getElementById('adjustment-modal').classList.remove('hidden');
+}
+</script>
+{% endblock %}

@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'apps.notes',
     'apps.announcements',
     'apps.onboarding',
+    'apps.fees',
 ]
 
 MIDDLEWARE = [

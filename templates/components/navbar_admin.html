@@ -146,6 +146,52 @@
                 </div>
             </div>
 
+            <!-- FINANCE GROUP -->
+            <div>
+                <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">Finance</div>
+                <div class="space-y-0.5">
+                    <!-- Fees (Main Link) -->
+                    <a href="{% url 'fees:dashboard' %}" title="School Fees Management"
+                       class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[40px]
+                              {% if '/fees/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
+                        <svg width="16" height="16" style="width:16px!important;height:16px!important;min-width:16px!important;max-width:16px!important;flex-shrink:0!important;" class="flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>
+                        </svg>
+                        <span class="sidebar-label">Fees & Finance</span>
+                    </a>
+
+                    <!-- Contextual Sub-Navigation for Fees -->
+                    {% if '/fees/' in request.path %}
+                    <div class="sidebar-subnav pl-6 pr-1 pt-1 pb-1 space-y-1 border-l-2 border-white/20 ml-5 my-1">
+                        <a href="{% url 'fees:dashboard' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if request.path == '/fees/' %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
+                            <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
+                            <span>Overview</span>
+                        </a>
+                        <a href="{% url 'fees:student_roster' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if '/fees/students/' in request.path %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
+                            <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
+                            <span>Student Roster</span>
+                        </a>
+                        <a href="{% url 'fees:collect_payment' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if '/fees/collect/' in request.path %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
+                            <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
+                            <span>Collect Payment</span>
+                        </a>
+                        <a href="{% url 'fees:structures' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if '/fees/structures/' in request.path %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
+                            <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
+                            <span>Fee Structures</span>
+                        </a>
+                        <a href="{% url 'fees:categories' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if '/fees/categories/' in request.path %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
+                            <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
+                            <span>Categories</span>
+                        </a>
+                        <a href="{% url 'fees:reports' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if '/fees/reports/' in request.path %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
+                            <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
+                            <span>Fee Reports</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
             <!-- OPERATIONS GROUP -->
             <div>
                 <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">Operations</div>

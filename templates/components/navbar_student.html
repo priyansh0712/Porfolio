@@ -1,41 +1,180 @@
-<header class="bg-white/90 backdrop-blur-xl border-b border-[var(--apple-hairline)] sticky top-0 z-50 transition-all duration-200">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-14 items-center">
-            <!-- Brand -->
-            <div class="flex items-center space-x-3">
-                {% if request.tenant.school_logo or user.school.school_logo %}
-                    <img src="{% if request.tenant.school_logo %}{{ request.tenant.school_logo.url }}{% else %}{{ user.school.school_logo.url }}{% endif %}" alt="School Logo" class="w-8 h-8 rounded-xl object-contain bg-white p-0.5 shadow-sm border border-[var(--apple-hairline)]">
-                {% else %}
-                    <div class="w-8 h-8 rounded-xl theme-bg-accent flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-                        {% if request.tenant %}{{ request.tenant.name|first }}{% elif user.school %}{{ user.school.name|first }}{% else %}S{% endif %}
-                    </div>
-                {% endif %}
-                <a href="{% url 'students:portal' %}" class="text-sm font-bold text-[var(--apple-ink)] tracking-tight hover:opacity-80 transition-opacity">
-                    {% if request.tenant %}{{ request.tenant.name }}{% else %}StudentERP{% endif %}
-                </a>
-                <span class="hidden sm:inline-flex text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200 shadow-sm">Student</span>
-            </div>
+{% url 'students:portal' as nav_dashboard %}
+{% url 'academics:student_timetable' as nav_timetable %}
+{% url 'notes:student_notes' as nav_notes %}
+{% url 'students:portal_attendance' as nav_attendance %}
+{% url 'announcements:student_list' as nav_announcements %}
+{% url 'accounts:password_change' as nav_password %}
+{% url 'accounts:logout' as nav_logout %}
 
-            <!-- Right Actions -->
-            <div class="flex items-center gap-3">
-                <a href="{% url 'students:portal_attendance' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1">My Attendance</a>
-                <a href="{% url 'notes:student_notes' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1">Study Notes</a>
-                <a href="{% url 'announcements:student_list' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1">Announcements</a>
-                <a href="{% url 'academics:student_timetable' %}" class="text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1">Class Timetable</a>
-                <a href="{% url 'accounts:password_change' %}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--apple-ink)]/80 hover:text-[var(--apple-blue)] transition-colors px-1 py-1" title="Security & Password">
-                    <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+<!-- Mobile Sidebar Backdrop -->
+<div id="sidebar-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[55] hidden transition-opacity duration-300" onclick="closeSidebar()"></div>
+
+<!-- Student Persistent Left Sidebar (~260px) -->
+<aside id="admin-sidebar" class="fixed top-0 left-0 bottom-0 h-screen w-[260px] border-r border-white/10 z-[60] flex flex-col justify-between overflow-hidden" style="background: linear-gradient(180deg, #0d3b66 0%, #06192d 100%) !important;" data-lenis-prevent>
+    <!-- Brand Header -->
+    <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between flex-shrink-0">
+        <a href="{{ nav_dashboard }}" class="flex items-center gap-3 group min-w-0">
+            {% if request.tenant.school_logo or user.school.school_logo %}
+                <img src="{% if request.tenant.school_logo %}{{ request.tenant.school_logo.url }}{% else %}{{ user.school.school_logo.url }}{% endif %}" alt="School Logo" class="w-8 h-8 rounded-xl object-contain bg-white p-0.5 shadow-xs flex-shrink-0 border border-white/20">
+            {% else %}
+                <div class="w-8 h-8 rounded-xl bg-[#0066cc] flex items-center justify-center text-white font-bold text-sm shadow-xs flex-shrink-0 border border-white/20">
+                    {% if request.tenant %}{{ request.tenant.name|first }}{% elif user.school %}{{ user.school.name|first }}{% else %}S{% endif %}
+                </div>
+            {% endif %}
+            <div class="sidebar-brand-text min-w-0">
+                <div class="text-sm font-bold text-white tracking-tight truncate group-hover:text-blue-200 transition-colors">
+                    {% if request.tenant %}{{ request.tenant.name }}{% else %}StudentERP{% endif %}
+                </div>
+                <div class="text-[10px] font-bold uppercase tracking-wider" style="color: #93c5fd !important;">Student Portal</div>
+            </div>
+        </a>
+        <!-- Mobile Close Button -->
+        <button type="button" onclick="closeSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 focus:outline-none cursor-pointer" aria-label="Close Sidebar">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="flex-1 min-h-0 px-3 py-4 space-y-4 overflow-y-auto overflow-x-hidden">
+
+        <!-- MAIN GROUP -->
+        <div>
+            <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">Main</div>
+            <div class="space-y-0.5">
+                <!-- Dashboard / My Portal -->
+                <a href="{{ nav_dashboard }}" title="My Student Portal"
+                   class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[40px]
+                          {% if request.path == nav_dashboard or request.path == '/dashboard/' or request.path == '/students/portal/' %}erp-nav-active{% else %}erp-nav-default{% endif %}">
+                    <svg width="16" height="16" class="flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>
                     </svg>
-                    <span>Password</span>
-                </a>
-                <a href="{% url 'accounts:logout' %}" class="inline-flex items-center text-xs font-semibold text-[var(--apple-ink)]/70 hover:text-rose-600 bg-[var(--apple-canvas)] hover:bg-rose-50 border border-[var(--apple-hairline)] hover:border-rose-200 rounded-full px-3.5 py-2 transition-all">
-                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                    </svg>
-                    Sign Out
+                    <span class="sidebar-label">My Portal</span>
                 </a>
             </div>
         </div>
+
+        <!-- ACADEMICS GROUP -->
+        <div>
+            <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">Academics</div>
+            <div class="space-y-0.5">
+                <!-- Timetable -->
+                <a href="{{ nav_timetable }}" title="Class Timetable"
+                   class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[40px]
+                          {% if '/academics/student/timetable/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
+                    <svg width="16" height="16" class="flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span class="sidebar-label">Class Timetable</span>
+                </a>
+
+                <!-- Study Notes -->
+                <a href="{{ nav_notes }}" title="Study Materials & Notes"
+                   class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[40px]
+                          {% if '/notes/student/' in request.path or '/notes/' in request.path and not '/upload/' in request.path and not '/review/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
+                    <svg width="16" height="16" class="flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    <span class="sidebar-label">Study Notes</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- FINANCE GROUP -->
+        <div>
+            <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">Finance</div>
+            <div class="space-y-0.5">
+                <!-- My Fees -->
+                <a href="{% url 'fees:student_fees' %}" title="My Fees & Payments"
+                   class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[40px]
+                          {% if '/fees/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
+                    <svg width="16" height="16" class="flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>
+                    </svg>
+                    <span class="sidebar-label">My Fees & Dues</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- ATTENDANCE GROUP -->
+        <div>
+            <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">Attendance</div>
+            <div class="space-y-0.5">
+                <!-- My Attendance -->
+                <a href="{{ nav_attendance }}" title="My Attendance History"
+                   class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[40px]
+                          {% if '/students/portal/attendance/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
+                    <svg width="16" height="16" class="flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                    <span class="sidebar-label">My Attendance</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- COMMUNICATION GROUP -->
+        <div>
+            <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">Communication</div>
+            <div class="space-y-0.5">
+                <!-- Announcements -->
+                <a href="{{ nav_announcements }}" title="School Announcements"
+                   class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[40px]
+                          {% if '/announcements/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
+                    <svg width="16" height="16" class="flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="sidebar-label">Announcements</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- ACCOUNT GROUP -->
+        <div>
+            <div class="sidebar-section-label px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">Account</div>
+            <div class="space-y-0.5">
+                <!-- Password Change -->
+                <a href="{{ nav_password }}" title="Security & Password"
+                   class="sidebar-nav-item flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 min-h-[40px]
+                          {% if '/password-change/' in request.path %}erp-nav-active{% else %}erp-nav-default{% endif %}">
+                    <svg width="16" height="16" class="flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <span class="sidebar-label">Change Password</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- BOTTOM UTILITIES & UNIFIED PROFILE CAPSULE (Always Pinned at Bottom) -->
+    <div class="border-t border-white/10 p-3 space-y-2 flex-shrink-0 bg-black/15">
+        <!-- Unified Apple User Profile & Sign Out Capsule -->
+        <div class="flex items-center justify-between gap-2 p-2 rounded-2xl bg-white/6 border border-white/10 hover:border-white/20 transition-all shadow-2xs">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                <div class="w-8 h-8 rounded-xl bg-[#0066cc] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-xs border border-white/20">
+                    {% if request.user.student_profile %}{{ request.user.student_profile.initials }}{% else %}{{ user.first_name|first|default:user.username|first|upper }}{% endif %}
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-xs font-semibold text-white truncate" title="{% if request.user.student_profile %}{{ request.user.student_profile.full_name }}{% else %}{{ user.get_full_name|default:user.username }}{% endif %}">
+                        {% if request.user.student_profile %}{{ request.user.student_profile.full_name }}{% else %}{{ user.get_full_name|default:user.username }}{% endif %}
+                    </div>
+                    <div class="text-[10px] font-medium truncate" style="color: #93c5fd !important;">
+                        {% if request.user.student_profile %}GR: {{ request.user.student_profile.gr_number }}{% if request.user.student_profile.division %} • {{ request.user.student_profile.division.standard.name }}-{{ request.user.student_profile.division.name }}{% endif %}{% else %}Student{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sleek Sign Out Icon Button (Clean Transparent with Crisp Red Icon) -->
+            <form method="post" action="{{ nav_logout }}" class="flex-shrink-0">
+                {% csrf_token %}
+                <button type="submit" title="Sign Out"
+                   class="w-8 h-8 flex items-center justify-center rounded-xl bg-transparent hover:bg-white/10 transition-all cursor-pointer group"
+                   style="border: none !important; background: transparent !important;">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ff4d4f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-115 transition-transform" style="stroke: #ff4d4f !important;">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
     </div>
-</header>
+</aside>

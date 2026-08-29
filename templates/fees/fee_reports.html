@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Fee Collection Reports — {{ request.tenant.name }} | StudentERP{% endblock %}
+{% block page_title %}Fee Reports{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+
+    <!-- Top Header -->
+    <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2">
+                <a href="{% url 'fees:dashboard' %}" class="text-xs font-semibold text-[#0066cc] hover:underline">← Fees Dashboard</a>
+                <span class="text-gray-300">/</span>
+                <span class="text-xs font-bold text-gray-500">Analytics & Ledgers</span>
+            </div>
+            <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight mt-1">Fee Collection Reports</h1>
+            <p class="text-xs text-[#86868b] mt-0.5">
+                Audit and reconcile all fee transactions with filtering and CSV/Excel export.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <a href="?{% if selected_standard_id %}standard_id={{ selected_standard_id }}&{% endif %}{% if selected_method %}payment_method={{ selected_method }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}export=csv" class="apple-btn-primary px-4 py-2 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 shadow-xs">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>Export CSV</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="apple-card p-5 bg-white">
+        <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+            <div>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Session</label>
+                <select name="academic_year_id" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+                    {% for ay in academic_years %}
+                    <option value="{{ ay.pk }}" {% if current_year and current_year.pk == ay.pk %}selected{% endif %}>{{ ay.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Standard / Grade</label>
+                <select name="standard_id" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+                    <option value="">All Standards</option>
+                    {% for std in standards %}
+                    <option value="{{ std.pk }}" {% if selected_standard_id == std.pk|stringformat:"s" %}selected{% endif %}>{{ std.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Payment Method</label>
+                <select name="payment_method" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+                    <option value="">All Methods</option>
+                    {% for code, label in payment_methods %}
+                    <option value="{{ code }}" {% if selected_method == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">From Date</label>
+                <input type="date" name="start_date" value="{{ start_date }}" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button type="submit" class="apple-btn-secondary px-4 py-1.5 text-xs font-semibold rounded-xl w-full">Apply Filters</button>
+                <a href="{% url 'fees:reports' %}" class="text-xs text-rose-600 hover:underline px-2">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Summary Bar -->
+    <div class="apple-card p-5 bg-gradient-to-r from-[#0d3b66] to-[#06192d] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <span class="text-xs text-blue-200 uppercase font-bold tracking-wider">Filtered Revenue Collected</span>
+            <div class="text-3xl font-extrabold tracking-tight mt-0.5">₹{{ total_collected }}</div>
+        </div>
+        <div class="text-xs text-blue-200">
+            Total Transactions: <strong class="text-white">{{ payments|length }}</strong>
+        </div>
+    </div>
+
+    <!-- Payments Ledger Table -->
+    <div class="apple-card overflow-hidden">
+        {% if not payments %}
+        <div class="p-12 text-center text-gray-500 text-xs font-medium">
+            No fee transactions found for the selected criteria.
+        </div>
+        {% else %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-gray-100 text-[10px] font-bold uppercase tracking-wider text-[#86868b] bg-gray-50/50">
+                        <th class="py-3.5 px-6">Receipt #</th>
+                        <th class="py-3.5 px-6">Date</th>
+                        <th class="py-3.5 px-6">Student</th>
+                        <th class="py-3.5 px-6">Class</th>
+                        <th class="py-3.5 px-6 text-right">Amount</th>
+                        <th class="py-3.5 px-6 text-center">Method</th>
+                        <th class="py-3.5 px-6">Reference</th>
+                        <th class="py-3.5 px-6">Recorded By</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-xs">
+                    {% for p in payments %}
+                    <tr class="hover:bg-gray-50/80 transition-colors">
+                        <td class="py-3.5 px-6 font-mono font-bold text-[#0066cc]">
+                            <a href="{% url 'fees:receipt_detail' p.pk %}" class="hover:underline">
+                                {{ p.receipt_number }}
+                            </a>
+                        </td>
+                        <td class="py-3.5 px-6 text-gray-600 font-mono">
+                            {{ p.payment_date|date:"d M Y" }}
+                        </td>
+                        <td class="py-3.5 px-6 font-bold text-[#1d1d1f]">
+                            {{ p.student.full_name }}
+                            <div class="text-[10px] font-mono text-gray-400">GR: {{ p.student.gr_number }}</div>
+                        </td>
+                        <td class="py-3.5 px-6 text-gray-600">
+                            {{ p.student.standard.name }} - {{ p.student.division.name }}
+                        </td>
+                        <td class="py-3.5 px-6 text-right font-extrabold text-emerald-600">
+                            ₹{{ p.amount }}
+                        </td>
+                        <td class="py-3.5 px-6 text-center">
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 text-gray-700">
+                                {{ p.get_payment_method_display }}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-6 font-mono text-gray-500 text-[11px]">
+                            {{ p.transaction_reference|default:"--" }}
+                        </td>
+                        <td class="py-3.5 px-6 text-gray-600 text-[11px]">
+                            {{ p.recorded_by.get_full_name|default:p.recorded_by.username }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

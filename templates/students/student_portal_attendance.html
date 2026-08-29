@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}My Attendance History — Student Portal | StudentERP{% endblock %}
+{% block page_title %}My Attendance{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-6 pb-12">
@@ -34,7 +35,7 @@
     <!-- Attendance Percentage Progress Ring / Badge -->
     <div class="flex items-center gap-4 bg-[#f5f5f7] p-4 rounded-2xl border border-gray-200/80">
       <div class="text-center">
-        <div class="text-3xl font-extrabold text-[#5A2132] tracking-tight">{{ percentage }}%</div>
+        <div class="text-3xl font-extrabold text-[#0066cc] tracking-tight">{{ percentage }}%</div>
         <div class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-0.5">Overall Attendance</div>
       </div>
       <div class="h-10 w-[1px] bg-gray-300"></div>

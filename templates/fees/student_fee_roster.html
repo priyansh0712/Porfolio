@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Student Fee Roster — {{ request.tenant.name }} | StudentERP{% endblock %}
+{% block page_title %}Student Fee Roster{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+
+    <!-- Top Header -->
+    <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2">
+                <a href="{% url 'fees:dashboard' %}" class="text-xs font-semibold text-[#0066cc] hover:underline">← Fees Dashboard</a>
+                <span class="text-gray-300">/</span>
+                <span class="text-xs font-bold text-gray-500">Class & Student Accounts</span>
+            </div>
+            <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight mt-1">Student Fee Roster</h1>
+            <p class="text-xs text-[#86868b] mt-0.5">
+                Monitor student balances, outstanding dues, and assign fees to grade divisions in bulk.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="document.getElementById('assign-modal').classList.remove('hidden')" class="apple-btn-primary px-4 py-2 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 shadow-xs">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Assign Fee to Class</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="apple-card p-4 bg-white">
+        <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+            <div>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Standard / Grade</label>
+                <select name="standard_id" onchange="this.form.submit()" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+                    <option value="">All Standards</option>
+                    {% for std in standards %}
+                    <option value="{{ std.pk }}" {% if selected_standard_id == std.pk|stringformat:"s" %}selected{% endif %}>{{ std.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Division / Section</label>
+                <select name="division_id" onchange="this.form.submit()" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+                    <option value="">All Divisions</option>
+                    {% for div in divisions %}
+                    <option value="{{ div.pk }}" {% if selected_division_id == div.pk|stringformat:"s" %}selected{% endif %}>{{ div.standard.name }} - {{ div.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Search Student</label>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Name or GR Number..." class="w-full px-3 py-1.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button type="submit" class="apple-btn-secondary px-4 py-1.5 text-xs font-semibold rounded-xl w-full">Filter</button>
+                {% if selected_standard_id or selected_division_id or search_query %}
+                <a href="{% url 'fees:student_roster' %}" class="text-xs text-rose-600 hover:underline px-2">Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Student Roster Table -->
+    <div class="apple-card overflow-hidden">
+        {% if not student_rows %}
+        <div class="p-12 text-center text-gray-500 text-xs font-medium space-y-2">
+            <p>No students matched the selected filters.</p>
+        </div>
+        {% else %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-gray-100 text-[10px] font-bold uppercase tracking-wider text-[#86868b] bg-gray-50/50">
+                        <th class="py-3.5 px-6">Student</th>
+                        <th class="py-3.5 px-6">Class</th>
+                        <th class="py-3.5 px-6 text-right">Total Net Fee</th>
+                        <th class="py-3.5 px-6 text-right">Total Paid</th>
+                        <th class="py-3.5 px-6 text-right">Outstanding</th>
+                        <th class="py-3.5 px-6 text-center">Status</th>
+                        <th class="py-3.5 px-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-xs">
+                    {% for row in student_rows %}
+                    <tr class="hover:bg-gray-50/80 transition-colors">
+                        <td class="py-4 px-6 font-bold text-[#1d1d1f]">
+                            <a href="{% url 'fees:student_detail' row.student.pk %}" class="hover:text-[#0066cc] hover:underline">
+                                {{ row.student.full_name }}
+                            </a>
+                            <div class="text-[10px] font-mono text-gray-400">GR: {{ row.student.gr_number }} • Roll: {{ row.student.roll_number|default:"--" }}</div>
+                        </td>
+                        <td class="py-4 px-6 text-gray-600 font-semibold">
+                            {{ row.student.standard.name }} - {{ row.student.division.name }}
+                        </td>
+                        <td class="py-4 px-6 text-right font-extrabold text-gray-800">
+                            ₹{{ row.total_assigned }}
+                        </td>
+                        <td class="py-4 px-6 text-right font-bold text-emerald-600">
+                            ₹{{ row.total_paid }}
+                        </td>
+                        <td class="py-4 px-6 text-right font-bold {% if row.total_overdue > 0 %}text-rose-600{% elif row.total_outstanding > 0 %}text-amber-600{% else %}text-gray-400{% endif %}">
+                            ₹{{ row.total_outstanding }}
+                        </td>
+                        <td class="py-4 px-6 text-center">
+                            {% if row.total_assigned == 0 %}
+                            <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-gray-100 text-gray-500">Unassigned</span>
+                            {% elif row.total_outstanding == 0 %}
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Fully Paid</span>
+                            {% elif row.total_overdue > 0 %}
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200">⚠ Overdue (₹{{ row.total_overdue }})</span>
+                            {% elif row.total_paid > 0 %}
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200">Partially Paid</span>
+                            {% else %}
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6 text-right space-x-1">
+                            <a href="{% url 'fees:student_detail' row.student.pk %}" class="apple-btn-secondary px-2.5 py-1 text-[11px] font-semibold rounded-lg inline-flex items-center">
+                                Details
+                            </a>
+                            {% if row.total_outstanding > 0 %}
+                            <button onclick="openQuickCollect('{{ row.student.pk }}', '{{ row.student.full_name|escapejs }}', '{{ row.student.gr_number|escapejs }}', '{{ row.student.standard.name }} - {{ row.student.division.name }}', '{{ row.total_outstanding }}', '{% if row.next_due %}{{ row.next_due.remaining_amount }}{% else %}{{ row.total_outstanding }}{% endif %}')" class="apple-btn-primary px-3 py-1 text-[11px] font-bold rounded-lg inline-flex items-center shadow-xs cursor-pointer">
+                                Collect
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Modal: Quick Collect Payment -->
+<div id="quick-collect-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xl max-w-md w-full p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div>
+                <h3 class="text-base font-bold text-[#1d1d1f]">Quick Collect Fee</h3>
+                <p id="qc_student_info" class="text-xs text-[#86868b] mt-0.5">Student Name (GR01)</p>
+            </div>
+            <button onclick="document.getElementById('quick-collect-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">✕</button>
+        </div>
+
+        <form method="POST" action="{% url 'fees:collect_payment' %}" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="student_id" id="qc_student_id">
+
+            <!-- Amount Input -->
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="block text-xs font-semibold text-gray-700">Amount to Collect (₹) *</label>
+                    <span id="qc_balance_badge" class="text-[11px] text-[#0066cc] font-semibold cursor-pointer" onclick="document.getElementById('qc_amount').value = this.dataset.fullbalance">
+                        Total Balance: ₹0
+                    </span>
+                </div>
+                <input type="number" step="0.01" name="amount" id="qc_amount" required placeholder="0.00" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-2xl text-xl font-extrabold text-[#1d1d1f] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0066cc]">
+            </div>
+
+            <!-- Payment Method Pills -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Payment Method *</label>
+                <div class="grid grid-cols-4 gap-1.5 text-center text-xs font-bold">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="payment_method" value="CASH" checked class="peer sr-only">
+                        <div class="py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 peer-checked:bg-[#0066cc] peer-checked:text-white peer-checked:border-[#0066cc] transition-colors">
+                            Cash
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="payment_method" value="BANK_TRANSFER" class="peer sr-only">
+                        <div class="py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 peer-checked:bg-[#0066cc] peer-checked:text-white peer-checked:border-[#0066cc] transition-colors">
+                            Bank
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="payment_method" value="CHEQUE" class="peer sr-only">
+                        <div class="py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 peer-checked:bg-[#0066cc] peer-checked:text-white peer-checked:border-[#0066cc] transition-colors">
+                            Cheque
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="payment_method" value="ONLINE" class="peer sr-only">
+                        <div class="py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 peer-checked:bg-[#0066cc] peer-checked:text-white peer-checked:border-[#0066cc] transition-colors">
+                            Online
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Transaction Reference -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Cheque / UTR / Reference No. (Optional)</label>
+                <input type="text" name="transaction_reference" placeholder="e.g. UTR1920392, Cheque #091234" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-mono font-semibold text-[#1d1d1f]">
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+                <button type="button" onclick="document.getElementById('quick-collect-modal').classList.add('hidden')" class="apple-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl">Cancel</button>
+                <button type="submit" class="apple-btn-primary px-5 py-2 text-xs font-bold rounded-xl shadow-xs inline-flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Record & Print Receipt</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Assign Fee to Class -->
+<div id="assign-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xl max-w-lg w-full p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-[#1d1d1f]">Assign Fee Structure to Class</h3>
+            <button onclick="document.getElementById('assign-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">✕</button>
+        </div>
+
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="assign_class">
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Academic Session *</label>
+                <select name="academic_year" id="modal_academic_year" onchange="filterModalStructures(this.value)" required class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+                    {% for ay in academic_years %}
+                    <option value="{{ ay.pk }}" {% if current_year and current_year.pk == ay.pk %}selected{% endif %}>{{ ay.name }}{% if ay.is_current %} (Current){% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="block text-xs font-semibold text-gray-700">Fee Structure to Assign *</label>
+                    <a href="{% url 'fees:structures' %}" target="_blank" class="text-[11px] font-bold text-[#0066cc] hover:underline">+ New Structure</a>
+                </div>
+                {% if not all_fee_structures %}
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800 space-y-2">
+                    <p>No fee structures found for this school. Please create a fee structure first.</p>
+                    <a href="{% url 'fees:structures' %}" class="apple-btn-primary px-3 py-1 text-xs font-semibold rounded-lg inline-block">
+                        Create Fee Structure
+                    </a>
+                </div>
+                {% else %}
+                <select name="fee_structure" id="modal_fee_structure" required class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+                    <option value="">-- Select Fee Structure --</option>
+                    {% for fs in all_fee_structures %}
+                    <option value="{{ fs.pk }}" data-year="{{ fs.academic_year_id }}">
+                        {{ fs.name }} — ₹{{ fs.amount }} ({{ fs.get_payment_frequency_display }}{% if fs.standard %} • {{ fs.standard.name }}{% endif %})
+                    </option>
+                    {% endfor %}
+                </select>
+                <div id="no-structures-warning" class="hidden text-[11px] text-rose-600 mt-1 font-medium">
+                    No fee structures found for the selected academic session. <a href="{% url 'fees:structures' %}" class="underline font-bold">Create one now ↗</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Target Standard (Optional)</label>
+                    <select name="standard" id="modal_standard" onchange="filterModalDivisions(this.value)" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+                        <option value="">All Standards</option>
+                        {% for std in standards %}
+                        <option value="{{ std.pk }}">{{ std.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Target Division (Optional)</label>
+                    <select name="division" id="modal_division" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+                        <option value="">All Divisions</option>
+                        {% for div in divisions %}
+                        <option value="{{ div.pk }}" data-std="{{ div.standard_id }}">{{ div.standard.name }} - {{ div.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-gray-500">
+                ⚡ This will automatically calculate and generate installment schedules for all active students in the selected class division.
+            </p>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="document.getElementById('assign-modal').classList.add('hidden')" class="apple-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl">Cancel</button>
+                <button type="submit" class="apple-btn-primary px-5 py-2 text-xs font-semibold rounded-xl shadow-xs">Assign to Students</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function filterModalStructures(yearId) {
+    const fsSelect = document.getElementById('modal_fee_structure');
+    const warning = document.getElementById('no-structures-warning');
+    if (!fsSelect) return;
+
+    let visibleCount = 0;
+    Array.from(fsSelect.options).forEach(opt => {
+        if (!opt.value) {
+            opt.hidden = false;
+            return;
+        }
+        const optYear = opt.getAttribute('data-year');
+        if (!yearId || optYear === yearId) {
+            opt.hidden = false;
+            visibleCount++;
+        } else {
+            opt.hidden = true;
+        }
+    });
+
+    if (visibleCount === 0 && warning) {
+        warning.classList.remove('hidden');
+    } else if (warning) {
+        warning.classList.add('hidden');
+    }
+}
+
+function filterModalDivisions(stdId) {
+    const divSelect = document.getElementById('modal_division');
+    if (!divSelect) return;
+
+    Array.from(divSelect.options).forEach(opt => {
+        if (!opt.value) {
+            opt.hidden = false;
+            return;
+        }
+        const optStd = opt.getAttribute('data-std');
+        if (!stdId || optStd === stdId) {
+            opt.hidden = false;
+        } else {
+            opt.hidden = true;
+        }
+    });
+}
+
+function openQuickCollect(studentId, studentName, grNumber, className, balanceAmount, nextDueAmount) {
+    document.getElementById('qc_student_id').value = studentId;
+    document.getElementById('qc_student_info').textContent = `${studentName} • ${grNumber} (${className})`;
+    
+    const amountInput = document.getElementById('qc_amount');
+    const balanceBadge = document.getElementById('qc_balance_badge');
+    
+    const defaultAmount = (parseFloat(nextDueAmount) > 0) ? nextDueAmount : balanceAmount;
+    amountInput.value = defaultAmount;
+    amountInput.max = balanceAmount;
+    
+    balanceBadge.textContent = `Total Balance: ₹${balanceAmount}`;
+    balanceBadge.dataset.fullbalance = balanceAmount;
+
+    document.getElementById('quick-collect-modal').classList.remove('hidden');
+}
+
+// Initial run
+document.addEventListener('DOMContentLoaded', () => {
+    const yr = document.getElementById('modal_academic_year');
+    if (yr) filterModalStructures(yr.value);
+});
+</script>
+{% endblock %}

@@ -23,6 +23,7 @@ urlpatterns = [
     path('notes/', include('apps.notes.urls', namespace='notes')),
     path('announcements/', include('apps.announcements.urls', namespace='announcements')),
     path('onboarding/', include('apps.onboarding.urls', namespace='onboarding')),
+    path('fees/', include('apps.fees.urls', namespace='fees')),
 ]
 
 if settings.DEBUG:
