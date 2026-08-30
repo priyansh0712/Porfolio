@@ -8,29 +8,56 @@
 <div class="max-w-7xl mx-auto space-y-6 pb-12">
 
   <!-- Header Card & Division Filter -->
-  <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
     <div>
-      <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200 uppercase tracking-wider">
-        School Admin Portal
-      </span>
+      <div class="flex items-center gap-2 flex-wrap">
+        {% if is_class_teacher %}
+        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wider">
+          Class Teacher Portal
+        </span>
+        {% else %}
+        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200 uppercase tracking-wider">
+          School Admin Portal
+        </span>
+        {% endif %}
+        {% if academic_year %}
+        <span class="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-gray-100 text-gray-600">
+          Session: {{ academic_year.name }}
+        </span>
+        {% endif %}
+      </div>
       <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight mt-2">Class Timetable Management</h1>
       <p class="text-xs text-[#86868b] mt-1">
-        Configure weekly period schedule and teacher assignments for class divisions.
+        Configure weekly period schedules, assign teachers, or upload batch timetables via Excel.
       </p>
     </div>
 
-    {% if divisions %}
-    <form method="GET" class="flex items-center gap-2 bg-[#f5f5f7] p-2 rounded-2xl border border-gray-200/80">
-      <label for="div_select" class="text-xs font-semibold text-gray-600 pl-1">Class Division:</label>
-      <select id="div_select" name="division_id" onchange="this.form.submit()" class="px-3 py-1.5 bg-white border border-gray-300 rounded-xl text-xs font-bold text-[#1d1d1f]">
-        {% for div in divisions %}
-        <option value="{{ div.pk }}" {% if selected_division and selected_division.pk == div.pk %}selected{% endif %}>
-          {{ div.standard.name }} - {{ div.name }}
-        </option>
-        {% endfor %}
-      </select>
-    </form>
-    {% endif %}
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Download Excel Template -->
+      <a href="{% url 'academics:timetable_template' %}" class="apple-btn-secondary px-3.5 py-2 text-xs font-semibold rounded-xl border border-gray-200 inline-flex items-center gap-1.5 hover:bg-gray-50 transition-colors shadow-2xs">
+        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span>Download Template</span>
+      </a>
+
+      <!-- Upload Excel -->
+      <button type="button" onclick="document.getElementById('upload-modal').classList.remove('hidden')" class="apple-btn-primary px-4 py-2 text-xs font-bold rounded-xl inline-flex items-center gap-1.5 shadow-xs cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        <span>Upload Excel</span>
+      </button>
+
+      {% if divisions %}
+      <form method="GET" class="flex items-center gap-2 bg-[#f5f5f7] p-1.5 rounded-2xl border border-gray-200/80">
+        <label for="div_select" class="text-xs font-semibold text-gray-600 pl-1">Class:</label>
+        <select id="div_select" name="division_id" onchange="this.form.submit()" class="px-3 py-1.5 bg-white border border-gray-300 rounded-xl text-xs font-bold text-[#1d1d1f]">
+          {% for div in divisions %}
+          <option value="{{ div.pk }}" {% if selected_division and selected_division.pk == div.pk %}selected{% endif %}>
+            {{ div.standard.name }} - {{ div.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </form>
+      {% endif %}
+    </div>
   </div>
 
   {% if not selected_division %}
@@ -147,11 +174,68 @@
       </div>
 
       <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-3">
-        <button type="button" onclick="document.getElementById('slot-modal').classList.add('hidden')" class="px-4 py-2 text-xs font-semibold text-gray-500 hover:text-gray-800">
+        <button type="button" onclick="document.getElementById('slot-modal').classList.add('hidden')" class="apple-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl">
           Cancel
         </button>
-        <button type="submit" class="px-5 py-2 bg-[#0066cc] text-white text-xs font-bold rounded-full hover:bg-blue-700 shadow-xs transition-colors">
+        <button type="submit" class="apple-btn-primary px-5 py-2 text-xs font-bold rounded-xl shadow-xs">
           Save Slot
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Excel Bulk Timetable Upload -->
+<div id="upload-modal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-gray-200/80 space-y-4" data-lenis-prevent>
+    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold border border-emerald-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-[#1d1d1f]">Upload Timetable Excel</h2>
+          <p class="text-xs text-[#86868b]">Bulk upload schedules for multiple classes</p>
+        </div>
+      </div>
+      <button type="button" onclick="document.getElementById('upload-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">&times;</button>
+    </div>
+
+    <form method="POST" action="{% url 'academics:timetable_upload' %}" enctype="multipart/form-data" class="space-y-4">
+      {% csrf_token %}
+
+      <!-- File Picker -->
+      <div>
+        <label class="block text-xs font-bold text-[#1d1d1f] mb-1.5">Select Excel Spreadsheet (.xlsx / .xls) *</label>
+        <input type="file" name="excel_file" accept=".xlsx, .xls" required class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-[#0066cc] hover:file:bg-blue-100 cursor-pointer border border-gray-300 rounded-2xl p-2 bg-gray-50/50" />
+      </div>
+
+      <!-- Quick Template Download & Guidance Card -->
+      <div class="p-3.5 bg-[#f5f5f7] rounded-2xl border border-gray-200/80 space-y-2 text-xs text-gray-600">
+        <div class="flex items-center justify-between font-bold text-[#1d1d1f]">
+          <span>Required Format Columns:</span>
+          <a href="{% url 'academics:timetable_template' %}" class="text-[#0066cc] hover:underline flex items-center gap-1 font-semibold">
+            <span>Download Sample Template ↗</span>
+          </a>
+        </div>
+        <div class="font-mono text-[11px] bg-white p-2 rounded-xl border border-gray-200 text-gray-700">
+          Class | Day | Period | Start Time | End Time | Subject | Faculty
+        </div>
+        <ul class="list-disc pl-4 space-y-0.5 text-[11px] text-gray-500">
+          <li><strong>Class:</strong> e.g. <code>10-A</code> or <code>Standard 10-A</code></li>
+          <li><strong>Day:</strong> e.g. <code>Monday</code>, <code>Tuesday</code>, etc.</li>
+          <li><strong>Times:</strong> 24-hr format like <code>08:00</code> and <code>08:45</code></li>
+          <li>System will validate conflicts and prevent teacher double-booking.</li>
+        </ul>
+      </div>
+
+      <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+        <button type="button" onclick="document.getElementById('upload-modal').classList.add('hidden')" class="apple-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl">
+          Cancel
+        </button>
+        <button type="submit" class="apple-btn-primary px-5 py-2 text-xs font-bold rounded-xl shadow-xs inline-flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <span>Validate & Import Timetable</span>
         </button>
       </div>
     </form>

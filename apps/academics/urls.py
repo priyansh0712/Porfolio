@@ -41,6 +41,8 @@ urlpatterns = [
 
     # Timetables
     path('timetable/manage/', views_timetable.AdminTimetableManageView.as_view(), name='timetable_manage'),
+    path('timetable/template/', views_timetable.TimetableTemplateDownloadView.as_view(), name='timetable_template'),
+    path('timetable/upload/', views_timetable.TimetableExcelUploadView.as_view(), name='timetable_upload'),
     path('timetable/student/', views_timetable.StudentPortalTimetableView.as_view(), name='student_timetable'),
 
     path('allocations/<int:pk>/edit-subject-teacher/', views.SubjectTeacherUpdateView.as_view(), name='edit_subject_teacher'),

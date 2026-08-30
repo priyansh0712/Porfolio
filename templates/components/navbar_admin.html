@@ -141,6 +141,16 @@
                             <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
                             <span>Teaching Assignments</span>
                         </a>
+
+                        <!-- 6. Timetables -->
+                        {% if school_features.timetable %}
+                        <a href="{% url 'academics:timetable_manage' %}"
+                           class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px]
+                                  {% if '/academics/timetable/' in request.path %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
+                            <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
+                            <span>Timetables</span>
+                        </a>
+                        {% endif %}
                     </div>
                     {% endif %}
                 </div>

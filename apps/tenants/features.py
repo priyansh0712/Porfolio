@@ -35,6 +35,12 @@ FEATURE_CATALOG: Dict[str, Dict[str, str | bool]] = {
         'icon': '🏫',
         'default': True,
     },
+    'timetable': {
+        'label': 'Class Timetables & Schedules',
+        'description': 'Weekly period timetables, manual schedule planner, and bulk Excel timetable uploads',
+        'icon': '🗓️',
+        'default': True,
+    },
     'school_branding': {
         'label': 'School Branding & Customization',
         'description': 'Custom school logo, institute title, and login page cover customization',
