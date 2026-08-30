@@ -214,7 +214,11 @@ class StudentFee(TenantModel):
 
     @property
     def total_paid(self) -> Decimal:
-        paid_sum = self.installments.aggregate(total=models.Sum('amount_paid'))['total']
+        paid_sum = self.student.fee_payments.filter(
+            school=self.school,
+            academic_year=self.academic_year,
+            status=FeePayment.Status.SUCCESS,
+        ).aggregate(total=models.Sum('amount'))['total']
         return paid_sum or Decimal('0.00')
 
     @property
@@ -228,11 +232,8 @@ class StudentFee(TenantModel):
         if net == Decimal('0.00') or paid >= net:
             return 'PAID'
         if paid > Decimal('0.00'):
-            return 'PARTIAL'
-        today = timezone.localdate()
-        if self.installments.filter(status='OVERDUE').exists() or self.installments.filter(due_date__lt=today, amount_paid=0).exists():
-            return 'OVERDUE'
-        return 'UNPAID'
+            return 'PARTIALLY PAID'
+        return 'PENDING'
 
 
 class FeeInstallment(TenantModel):
@@ -380,7 +381,9 @@ class FeePayment(TenantModel):
     )
     recorded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name='recorded_fee_payments',
         help_text='Staff member / Admin who recorded the payment',
     )

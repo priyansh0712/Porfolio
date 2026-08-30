@@ -422,17 +422,21 @@
             <div class="apple-card p-6 space-y-4">
                 <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                     <h2 class="text-xs font-bold text-[#86868b] uppercase tracking-wider">Fee Account</h2>
-                    {% if fee_summary.total_outstanding == 0 and fee_summary.total_assigned > 0 %}
+                    {% if fee_summary.status == 'PAID' %}
                     <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        ✓ Settled
+                        ✓ PAID
                     </span>
-                    {% elif fee_summary.total_overdue > 0 %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-                        ⚠ Overdue
+                    {% elif fee_summary.status == 'PARTIALLY PAID' %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200">
+                        PARTIAL
+                    </span>
+                    {% elif fee_summary.status == 'PENDING' %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                        PENDING
                     </span>
                     {% else %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200">
-                        Active Plan
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-gray-100 text-gray-500">
+                        Active
                     </span>
                     {% endif %}
                 </div>
@@ -440,31 +444,30 @@
                 <div class="grid grid-cols-2 gap-2 text-center">
                     <div class="p-2.5 rounded-xl bg-gray-50 border border-gray-100">
                         <span class="text-[10px] font-bold text-gray-400 uppercase">Paid</span>
-                        <div class="text-base font-extrabold text-emerald-600">₹{{ fee_summary.total_paid }}</div>
+                        <div class="text-base font-extrabold text-emerald-600">₹{{ fee_summary.total_paid|floatformat:2 }}</div>
                     </div>
                     <div class="p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase">Balance</span>
-                        <div class="text-base font-extrabold {% if fee_summary.total_outstanding > 0 %}text-amber-600{% else %}text-gray-400{% endif %}">
-                            ₹{{ fee_summary.total_outstanding }}
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Remaining</span>
+                        <div class="text-base font-extrabold {% if fee_summary.remaining_amount > 0 %}text-amber-600{% else %}text-gray-400{% endif %}">
+                            ₹{{ fee_summary.remaining_amount|floatformat:2 }}
                         </div>
                     </div>
                 </div>
 
-                {% if fee_summary.next_due_installment %}
-                <div class="p-3 rounded-xl bg-amber-50/60 border border-amber-200/60 text-xs">
-                    <div class="flex items-center justify-between text-amber-900 font-bold">
-                        <span>Upcoming Due</span>
-                        <span>₹{{ fee_summary.next_due_installment.remaining_amount }}</span>
+                <div class="p-3 rounded-xl bg-[#f5f5f7] border border-gray-200/80 text-xs space-y-1">
+                    <div class="flex items-center justify-between text-gray-600">
+                        <span>Total Class Fee:</span>
+                        <strong class="text-[#1d1d1f]">₹{{ fee_summary.total_fee|floatformat:2 }}</strong>
                     </div>
-                    <p class="text-[11px] text-amber-700 mt-0.5">
-                        {{ fee_summary.next_due_installment.period_name }} due on {{ fee_summary.next_due_installment.due_date|date:"d M Y" }}
-                    </p>
+                    <div class="flex items-center justify-between text-gray-500 text-[11px]">
+                        <span>Payment Frequency:</span>
+                        <span class="font-bold text-[#0066cc]">{{ fee_summary.frequency }}</span>
+                    </div>
                 </div>
-                {% endif %}
 
                 <div class="pt-1">
                     <a href="{% url 'fees:student_fees' %}" class="apple-btn-secondary w-full py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 border border-gray-200 hover:bg-gray-100 transition-colors">
-                        <span>View Detailed Schedule & Receipts</span>
+                        <span>View Fees & Download Slips</span>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                     </a>
                 </div>

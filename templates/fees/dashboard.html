@@ -1,239 +1,498 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Fees Management — {{ request.tenant.name }} | StudentERP{% endblock %}
-{% block page_title %}Fees Overview{% endblock %}
+{% block title %}School Fees Management — {{ school.name }} | StudentERP{% endblock %}
+{% block page_title %}Fees Management{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto space-y-6 pb-12">
+<div class="max-w-7xl mx-auto space-y-6 pb-16">
 
-    <!-- ═══ Top Header & Navigation Actions ═══ -->
-    <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <div class="flex items-center gap-2">
-                <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    Finance & Revenue
-                </span>
-                {% if current_year %}
-                <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                    Session: {{ current_year.name }}
-                </span>
-                {% endif %}
-            </div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight mt-2">
-                School Fees Management
-            </h1>
-            <p class="text-xs sm:text-sm text-[#86868b] mt-1">
-                Configure fee policies, collect payments, manage student schedules, and view financial collections.
-            </p>
-        </div>
-
-        <div class="flex items-center gap-2 flex-wrap">
-            <a href="{% url 'fees:structures' %}" class="apple-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl border border-gray-200 inline-flex items-center gap-1.5 hover:bg-gray-50 transition-colors">
-                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span>Structures</span>
-            </a>
-            <a href="{% url 'fees:student_roster' %}" class="apple-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl border border-gray-200 inline-flex items-center gap-1.5 hover:bg-gray-50 transition-colors">
-                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
-                <span>Students Roster</span>
-            </a>
-            <a href="{% url 'fees:collect_payment' %}" class="apple-btn-primary px-4 py-2 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 shadow-xs">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                <span>Collect Payment</span>
-            </a>
-        </div>
+  <!-- Header Card & Quick Actions -->
+  <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200 uppercase tracking-wider">
+          School Admin Portal
+        </span>
+        {% if academic_year %}
+        <span class="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-gray-100 text-gray-600">
+          Session: {{ academic_year.name }}
+        </span>
+        {% endif %}
+      </div>
+      <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight mt-2">School Fees Management</h1>
+      <p class="text-xs text-[#86868b] mt-1">
+        Upload class fee structures via Excel, track student payment statuses, and record payments with instant receipt generation.
+      </p>
     </div>
 
-    <!-- ═══ 4 Apple KPI Cards Grid ═══ -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- 1. Total Expected -->
-        <div class="apple-card p-5">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Total Expected</span>
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200">
-                    Net Fee
-                </span>
-            </div>
-            <div class="text-3xl font-extrabold text-[#1d1d1f] tracking-tight">₹{{ metrics.total_expected }}</div>
-            <p class="text-xs text-[#86868b] mt-1">Total revenue assigned for session</p>
-        </div>
+    <!-- Actions -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Download Sample Excel -->
+      <a href="{% url 'fees:template_download' %}" class="apple-btn-secondary px-3.5 py-2 text-xs font-semibold rounded-xl border border-gray-200 inline-flex items-center gap-1.5 hover:bg-gray-50 transition-colors shadow-2xs">
+        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span>Download Template</span>
+      </a>
 
-        <!-- 2. Total Collected -->
-        <div class="apple-card p-5">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Total Collected</span>
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    {{ metrics.collection_rate }}% Rate
-                </span>
-            </div>
-            <div class="text-3xl font-extrabold text-emerald-600 tracking-tight">₹{{ metrics.total_collected }}</div>
-            <!-- Progress bar -->
-            <div class="w-full bg-gray-100 rounded-full h-1.5 mt-3 overflow-hidden">
-                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ metrics.collection_rate }}%;"></div>
-            </div>
-        </div>
+      <!-- Upload Excel -->
+      <button type="button" onclick="document.getElementById('upload-modal').classList.remove('hidden')" class="apple-btn-primary px-4 py-2 text-xs font-bold rounded-xl inline-flex items-center gap-1.5 shadow-xs cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        <span>Upload Excel</span>
+      </button>
 
-        <!-- 3. Outstanding Balance -->
-        <div class="apple-card p-5">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Outstanding</span>
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-                    Unpaid
-                </span>
-            </div>
-            <div class="text-3xl font-extrabold text-amber-600 tracking-tight">₹{{ metrics.total_outstanding }}</div>
-            <p class="text-xs text-[#86868b] mt-1">Total remaining to be collected</p>
-        </div>
+      <!-- Add Structure Manually -->
+      <button type="button" onclick="document.getElementById('add-structure-modal').classList.remove('hidden')" class="apple-btn-secondary px-3.5 py-2 text-xs font-semibold rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
+        + Add Class Fee
+      </button>
+    </div>
+  </div>
 
-        <!-- 4. Overdue Amount -->
-        <div class="apple-card p-5">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Overdue Dues</span>
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-                    Action Needed
-                </span>
-            </div>
-            <div class="text-3xl font-extrabold text-rose-600 tracking-tight">₹{{ metrics.total_overdue }}</div>
-            <p class="text-xs text-[#86868b] mt-1">Installments past due date</p>
-        </div>
+  <!-- Metric Stats Summary Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Card 1: Expected Revenue -->
+    <div class="apple-card p-5 space-y-1">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Total Expected Fees</div>
+      <div class="text-2xl font-bold text-[#1d1d1f]">₹{{ metrics.total_expected|floatformat:2 }}</div>
+      <div class="text-[11px] text-gray-500">Across enrolled students</div>
     </div>
 
-    <!-- ═══ 2-Column Responsive Split ═══ -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-        <!-- Left: Recent Payments Table (lg:col-span-8) -->
-        <div class="lg:col-span-8 space-y-6">
-            <div class="apple-card overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                        <h2 class="text-base font-bold text-[#1d1d1f]">Recent Payment Collections</h2>
-                    </div>
-                    <a href="{% url 'fees:reports' %}" class="text-xs font-bold text-[#0066cc] hover:underline">
-                        View All Reports →
-                    </a>
-                </div>
-
-                {% if not recent_payments %}
-                <div class="p-12 text-center text-gray-500 text-xs font-medium">
-                    No fee payments recorded yet for this session.
-                </div>
-                {% else %}
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-gray-100 text-[10px] font-bold uppercase tracking-wider text-[#86868b] bg-gray-50/50">
-                                <th class="py-3 px-6">Receipt #</th>
-                                <th class="py-3 px-6">Student</th>
-                                <th class="py-3 px-6">Class</th>
-                                <th class="py-3 px-6 text-right">Amount</th>
-                                <th class="py-3 px-6 text-center">Method</th>
-                                <th class="py-3 px-6 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-xs">
-                            {% for payment in recent_payments %}
-                            <tr class="hover:bg-gray-50/80 transition-colors">
-                                <td class="py-3.5 px-6 font-mono font-bold text-[#0066cc]">
-                                    <a href="{% url 'fees:receipt_detail' payment.pk %}" class="hover:underline">
-                                        {{ payment.receipt_number }}
-                                    </a>
-                                    <div class="text-[10px] text-gray-400 font-normal">{{ payment.payment_date|date:"d M Y" }}</div>
-                                </td>
-                                <td class="py-3.5 px-6 font-bold text-[#1d1d1f]">
-                                    {{ payment.student.full_name }}
-                                    <div class="text-[10px] font-mono text-gray-400">GR: {{ payment.student.gr_number }}</div>
-                                </td>
-                                <td class="py-3.5 px-6 text-gray-600">
-                                    {{ payment.student.standard.name }} - {{ payment.student.division.name }}
-                                </td>
-                                <td class="py-3.5 px-6 text-right font-bold text-emerald-600">
-                                    ₹{{ payment.amount }}
-                                </td>
-                                <td class="py-3.5 px-6 text-center">
-                                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-gray-100 text-gray-700">
-                                        {{ payment.get_payment_method_display }}
-                                    </span>
-                                </td>
-                                <td class="py-3.5 px-6 text-right">
-                                    <a href="{% url 'fees:receipt_detail' payment.pk %}" class="apple-btn-secondary px-3 py-1 text-[11px] font-bold rounded-lg inline-flex items-center gap-1">
-                                        <span>Receipt</span>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Right: Overdue Quick List & Shortcuts (lg:col-span-4) -->
-        <div class="lg:col-span-4 space-y-6">
-            <!-- Overdue Dues List -->
-            <div class="apple-card overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-                        <h2 class="text-base font-bold text-[#1d1d1f]">Overdue Installments</h2>
-                    </div>
-                </div>
-
-                {% if not overdue_installments %}
-                <div class="p-8 text-center text-gray-500 text-xs">
-                    🎉 Excellent! No overdue fee installments found.
-                </div>
-                {% else %}
-                <div class="divide-y divide-gray-100">
-                    {% for inst in overdue_installments %}
-                    <div class="p-4 flex items-center justify-between hover:bg-gray-50/80 transition-colors">
-                        <div class="min-w-0">
-                            <h4 class="text-xs font-bold text-[#1d1d1f] truncate">{{ inst.student.full_name }}</h4>
-                            <p class="text-[11px] text-gray-500">{{ inst.period_name }} • Due {{ inst.due_date|date:"d M" }}</p>
-                        </div>
-                        <div class="text-right flex-shrink-0">
-                            <span class="text-xs font-bold text-rose-600 block">₹{{ inst.remaining_amount }}</span>
-                            <a href="{% url 'fees:collect_payment' %}?student_id={{ inst.student.pk }}&installment_id={{ inst.pk }}" class="text-[11px] font-bold text-[#0066cc] hover:underline">
-                                Collect →
-                            </a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Quick Configuration Links -->
-            <div class="apple-card p-6 space-y-4">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-[#86868b]">Configuration & Master Data</h3>
-                <div class="space-y-2">
-                    <a href="{% url 'fees:categories' %}" class="flex items-center justify-between p-3 rounded-2xl bg-gray-50 hover:bg-gray-100/80 border border-gray-200/60 transition-colors group">
-                        <div class="flex items-center gap-3">
-                            <span class="w-8 h-8 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-sm border border-purple-200">📁</span>
-                            <div>
-                                <h4 class="text-xs font-bold text-[#1d1d1f]">Fee Categories</h4>
-                                <p class="text-[10px] text-gray-500">Tuition, Transport, Activity, Exam</p>
-                            </div>
-                        </div>
-                        <span class="text-gray-400 group-hover:translate-x-0.5 transition-transform">→</span>
-                    </a>
-
-                    <a href="{% url 'fees:structures' %}" class="flex items-center justify-between p-3 rounded-2xl bg-gray-50 hover:bg-gray-100/80 border border-gray-200/60 transition-colors group">
-                        <div class="flex items-center gap-3">
-                            <span class="w-8 h-8 rounded-xl bg-blue-50 text-[#0066cc] flex items-center justify-center font-bold text-sm border border-blue-200">⚙️</span>
-                            <div>
-                                <h4 class="text-xs font-bold text-[#1d1d1f]">Fee Structures & Frequencies</h4>
-                                <p class="text-[10px] text-gray-500">Monthly, Quarterly, Half-Yearly, Full-Year</p>
-                            </div>
-                        </div>
-                        <span class="text-gray-400 group-hover:translate-x-0.5 transition-transform">→</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-
+    <!-- Card 2: Collected -->
+    <div class="apple-card p-5 space-y-1">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Total Collected</div>
+      <div class="text-2xl font-bold text-emerald-600">₹{{ metrics.total_collected|floatformat:2 }}</div>
+      <div class="text-[11px] text-emerald-700/80">Verified payment ledger</div>
     </div>
+
+    <!-- Card 3: Outstanding Balance -->
+    <div class="apple-card p-5 space-y-1">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Remaining Outstanding</div>
+      <div class="text-2xl font-bold text-amber-600">₹{{ metrics.total_outstanding|floatformat:2 }}</div>
+      <div class="text-[11px] text-amber-700/80">Pending collections</div>
+    </div>
+
+    <!-- Card 4: Collection Rate -->
+    <div class="apple-card p-5 space-y-2">
+      <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[#86868b]">
+        <span>Collection Rate</span>
+        <span class="text-[#0066cc] font-bold">{{ metrics.collection_rate_pct }}%</span>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+        <div class="bg-[#0066cc] h-2 rounded-full transition-all duration-500" style="width: {{ metrics.collection_rate_pct }}%"></div>
+      </div>
+      <div class="text-[11px] text-gray-500">Session recovery progress</div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="flex items-center gap-2 border-b border-gray-200/80 pb-3 overflow-x-auto">
+    <a href="?tab=students" class="px-4 py-2 text-xs font-bold rounded-xl transition-colors whitespace-nowrap {% if active_tab == 'students' %}bg-[#0066cc] text-white shadow-2xs{% else %}bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/80{% endif %}">
+      Students & Fee Status ({{ student_roster|length }})
+    </a>
+    <a href="?tab=structures" class="px-4 py-2 text-xs font-bold rounded-xl transition-colors whitespace-nowrap {% if active_tab == 'structures' %}bg-[#0066cc] text-white shadow-2xs{% else %}bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/80{% endif %}">
+      Fee Structures ({{ structures|length }})
+    </a>
+    <a href="?tab=payments" class="px-4 py-2 text-xs font-bold rounded-xl transition-colors whitespace-nowrap {% if active_tab == 'payments' %}bg-[#0066cc] text-white shadow-2xs{% else %}bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/80{% endif %}">
+      Payment Ledger & Receipts ({{ recent_payments|length }})
+    </a>
+  </div>
+
+  <!-- TAB 1: Students Roster & Record Payment -->
+  {% if active_tab == 'students' %}
+  <div class="apple-card p-6 space-y-5">
+    <!-- Filter & Search Controls -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <form method="GET" class="flex flex-wrap items-center gap-2 w-full">
+        <input type="hidden" name="tab" value="students">
+
+        <!-- Search Bar -->
+        <div class="relative flex-1 min-w-[240px]">
+          <input type="text" name="q" value="{{ search_query }}" placeholder="Search by student name or GR..." class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-[#0066cc] focus:bg-white" />
+          <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
+        </div>
+
+        <!-- Class Filter -->
+        <select name="standard" onchange="this.form.submit()" class="px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+          <option value="">All Classes</option>
+          {% for std in standards %}
+          <option value="{{ std.pk }}" {% if standard_filter == std.pk|stringformat:'s' %}selected{% endif %}>{{ std.name }}</option>
+          {% endfor %}
+        </select>
+
+        <!-- Status Filter -->
+        <select name="status" onchange="this.form.submit()" class="px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+          <option value="">All Statuses</option>
+          <option value="PAID" {% if status_filter == 'PAID' %}selected{% endif %}>Paid</option>
+          <option value="PARTIALLY PAID" {% if status_filter == 'PARTIALLY PAID' %}selected{% endif %}>Partially Paid</option>
+          <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pending</option>
+        </select>
+
+        <button type="submit" class="apple-btn-secondary px-3.5 py-2 text-xs font-semibold rounded-xl border border-gray-200">
+          Filter
+        </button>
+        {% if search_query or standard_filter or status_filter %}
+        <a href="?tab=students" class="text-xs text-gray-500 hover:text-gray-800 font-semibold underline pl-1">Reset</a>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- Student Roster Table -->
+    <div class="border border-gray-200/80 rounded-2xl overflow-x-auto shadow-2xs">
+      <table class="w-full text-left text-xs border-collapse min-w-[700px]">
+        <thead class="bg-gray-50/80 border-b border-gray-200 text-gray-500 uppercase font-bold text-[10px] tracking-wider">
+          <tr>
+            <th class="py-3 px-4">Student</th>
+            <th class="py-3 px-4">Class</th>
+            <th class="py-3 px-4 text-right">Total Fee</th>
+            <th class="py-3 px-4 text-right">Paid</th>
+            <th class="py-3 px-4 text-right">Remaining</th>
+            <th class="py-3 px-4 text-center">Status</th>
+            <th class="py-3 px-4 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 text-[#1d1d1f]">
+          {% for item in student_roster %}
+          <tr class="hover:bg-gray-50/50 transition-colors">
+            <td class="py-3.5 px-4">
+              <div class="font-bold">{{ item.student.full_name }}</div>
+              <div class="text-[10px] text-gray-400 font-mono">GR: {{ item.student.gr_number }} • Roll: {{ item.student.roll_number|default:"—" }}</div>
+            </td>
+            <td class="py-3.5 px-4 font-semibold text-gray-600">
+              {{ item.student.standard.name }} {% if item.student.division %}- {{ item.student.division.name }}{% endif %}
+            </td>
+            <td class="py-3.5 px-4 text-right font-bold">
+              ₹{{ item.summary.total_fee|floatformat:2 }}
+              <span class="block text-[10px] font-normal text-gray-400">({{ item.summary.frequency }})</span>
+            </td>
+            <td class="py-3.5 px-4 text-right font-bold text-emerald-600">
+              ₹{{ item.summary.total_paid|floatformat:2 }}
+            </td>
+            <td class="py-3.5 px-4 text-right font-bold {% if item.summary.remaining_amount > 0 %}text-amber-600{% else %}text-gray-400{% endif %}">
+              ₹{{ item.summary.remaining_amount|floatformat:2 }}
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              {% if item.summary.status == 'PAID' %}
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">PAID</span>
+              {% elif item.summary.status == 'PARTIALLY PAID' %}
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-[#0066cc] border border-blue-200">PARTIALLY PAID</span>
+              {% elif item.summary.status == 'PENDING' %}
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">PENDING</span>
+              {% else %}
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500">NO FEE</span>
+              {% endif %}
+            </td>
+            <td class="py-3.5 px-4 text-right">
+              <button type="button" onclick="openRecordPaymentModal('{{ item.student.pk }}', '{{ item.student.full_name|escapejs }}', '{{ item.summary.remaining_amount }}', '{{ item.student.standard.name|escapejs }}')" class="apple-btn-primary px-3 py-1.5 text-xs font-bold rounded-xl shadow-2xs inline-flex items-center gap-1 cursor-pointer">
+                <span>Record Payment</span>
+              </button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="py-8 text-center text-gray-400 text-xs">
+              No students found matching current filters.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- TAB 2: Fee Structures -->
+  {% if active_tab == 'structures' %}
+  <div class="apple-card p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-base font-bold text-[#1d1d1f]">Class Fee Structures</h3>
+        <p class="text-xs text-gray-500">Configured annual fees per standard / class</p>
+      </div>
+      <button type="button" onclick="document.getElementById('upload-modal').classList.remove('hidden')" class="apple-btn-secondary px-3 py-1.5 text-xs font-semibold rounded-xl border border-gray-200 inline-flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        <span>Upload Excel</span>
+      </button>
+    </div>
+
+    <div class="border border-gray-200/80 rounded-2xl overflow-x-auto shadow-2xs">
+      <table class="w-full text-left text-xs border-collapse min-w-[600px]">
+        <thead class="bg-gray-50/80 border-b border-gray-200 text-gray-500 uppercase font-bold text-[10px] tracking-wider">
+          <tr>
+            <th class="py-3 px-4">Class / Standard</th>
+            <th class="py-3 px-4">Structure Name</th>
+            <th class="py-3 px-4 text-right">Total Annual Fee</th>
+            <th class="py-3 px-4 text-center">Payment Frequency</th>
+            <th class="py-3 px-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 text-[#1d1d1f]">
+          {% for struct in structures %}
+          <tr class="hover:bg-gray-50/50 transition-colors">
+            <td class="py-3.5 px-4 font-bold text-[#0066cc]">
+              {{ struct.standard.name|default:"All Classes" }}
+              {% if struct.division %}- Division {{ struct.division.name }}{% endif %}
+            </td>
+            <td class="py-3.5 px-4 text-gray-600 font-medium">{{ struct.name }}</td>
+            <td class="py-3.5 px-4 text-right font-bold text-base">₹{{ struct.amount|floatformat:2 }}</td>
+            <td class="py-3.5 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-[#0066cc] border border-blue-200">
+                {{ struct.get_payment_frequency_display }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-right">
+              <form method="POST" onsubmit="return confirm('Remove fee structure for {{ struct.name }}? Existing historical payments will remain preserved.');" class="inline">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_structure">
+                <input type="hidden" name="structure_id" value="{{ struct.pk }}">
+                <button type="submit" class="text-rose-600 hover:text-rose-800 text-xs font-semibold px-2 py-1 rounded-lg hover:bg-rose-50 cursor-pointer">
+                  Delete
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="py-8 text-center text-gray-400 text-xs">
+              No fee structures configured yet. Upload an Excel spreadsheet or click "+ Add Class Fee" above.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- TAB 3: Payment History & Receipts -->
+  {% if active_tab == 'payments' %}
+  <div class="apple-card p-6 space-y-4">
+    <div>
+      <h3 class="text-base font-bold text-[#1d1d1f]">Recent Payment Ledger & Receipts</h3>
+      <p class="text-xs text-gray-500">Official recorded transactions with instant receipt print / download</p>
+    </div>
+
+    <div class="border border-gray-200/80 rounded-2xl overflow-x-auto shadow-2xs">
+      <table class="w-full text-left text-xs border-collapse min-w-[700px]">
+        <thead class="bg-gray-50/80 border-b border-gray-200 text-gray-500 uppercase font-bold text-[10px] tracking-wider">
+          <tr>
+            <th class="py-3 px-4">Receipt #</th>
+            <th class="py-3 px-4">Date</th>
+            <th class="py-3 px-4">Student</th>
+            <th class="py-3 px-4">Method</th>
+            <th class="py-3 px-4">Ref / Note</th>
+            <th class="py-3 px-4 text-right">Amount Paid</th>
+            <th class="py-3 px-4 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 text-[#1d1d1f]">
+          {% for p in recent_payments %}
+          <tr class="hover:bg-gray-50/50 transition-colors">
+            <td class="py-3.5 px-4 font-mono font-bold text-[#0066cc]">{{ p.receipt_number }}</td>
+            <td class="py-3.5 px-4 text-gray-600">{{ p.payment_date|date:"d M Y" }}</td>
+            <td class="py-3.5 px-4">
+              <div class="font-bold">{{ p.student.full_name }}</div>
+              <div class="text-[10px] text-gray-400 font-mono">{{ p.student.standard.name }} • GR: {{ p.student.gr_number }}</div>
+            </td>
+            <td class="py-3.5 px-4 font-semibold text-gray-700">{{ p.get_payment_method_display }}</td>
+            <td class="py-3.5 px-4 font-mono text-[11px] text-gray-500">{{ p.transaction_reference|default:"—" }}</td>
+            <td class="py-3.5 px-4 text-right font-bold text-emerald-600 text-sm">₹{{ p.amount|floatformat:2 }}</td>
+            <td class="py-3.5 px-4 text-right">
+              <a href="{% url 'fees:receipt_detail' pk=p.pk %}" target="_blank" class="apple-btn-secondary px-3 py-1.5 text-xs font-semibold rounded-xl border border-gray-200 hover:bg-gray-50 inline-flex items-center gap-1 shadow-2xs">
+                <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <span>View Slip</span>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="py-8 text-center text-gray-400 text-xs">
+              No payments recorded yet for this academic session.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
 
 </div>
+
+<!-- Modal 1: Excel Bulk Fee Structure Upload -->
+<div id="upload-modal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-gray-200/80 space-y-4" data-lenis-prevent>
+    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold border border-emerald-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-[#1d1d1f]">Upload Fee Structure Excel</h2>
+          <p class="text-xs text-[#86868b]">Set class-wise annual fees in one upload</p>
+        </div>
+      </div>
+      <button type="button" onclick="document.getElementById('upload-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">&times;</button>
+    </div>
+
+    <form method="POST" action="{% url 'fees:excel_upload' %}" enctype="multipart/form-data" class="space-y-4">
+      {% csrf_token %}
+
+      <div>
+        <label class="block text-xs font-bold text-[#1d1d1f] mb-1.5">Select Excel Spreadsheet (.xlsx / .xls) *</label>
+        <input type="file" name="excel_file" accept=".xlsx, .xls" required class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-[#0066cc] hover:file:bg-blue-100 cursor-pointer border border-gray-300 rounded-2xl p-2 bg-gray-50/50" />
+      </div>
+
+      <div class="p-3.5 bg-[#f5f5f7] rounded-2xl border border-gray-200/80 space-y-2 text-xs text-gray-600">
+        <div class="flex items-center justify-between font-bold text-[#1d1d1f]">
+          <span>Excel Columns Required:</span>
+          <a href="{% url 'fees:template_download' %}" class="text-[#0066cc] hover:underline flex items-center gap-1 font-semibold">
+            <span>Download Sample ↗</span>
+          </a>
+        </div>
+        <div class="font-mono text-[11px] bg-white p-2 rounded-xl border border-gray-200 text-gray-700">
+          Class | Total Fee | Payment Frequency
+        </div>
+        <ul class="list-disc pl-4 space-y-0.5 text-[11px] text-gray-500">
+          <li><strong>Class:</strong> e.g. <code>1</code>, <code>2</code>, <code>10</code>, or <code>10-A</code></li>
+          <li><strong>Total Fee:</strong> e.g. <code>25000</code>, <code>50000</code></li>
+          <li><strong>Frequency:</strong> <code>Monthly</code>, <code>Quarterly</code>, <code>Half-Yearly</code>, <code>Full-Year</code></li>
+          <li>Enrolled students will automatically receive the updated fee structure.</li>
+        </ul>
+      </div>
+
+      <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+        <button type="button" onclick="document.getElementById('upload-modal').classList.add('hidden')" class="apple-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl">
+          Cancel
+        </button>
+        <button type="submit" class="apple-btn-primary px-5 py-2 text-xs font-bold rounded-xl shadow-xs inline-flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <span>Validate & Save Fees</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal 2: 1-Click Quick Record Payment -->
+<div id="payment-modal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-gray-200/80 space-y-4" data-lenis-prevent>
+    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-2xl bg-blue-50 text-[#0066cc] flex items-center justify-center font-bold border border-blue-200">
+          ₹
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-[#1d1d1f]">Record Fee Payment</h2>
+          <p id="modal-student-name" class="text-xs text-[#86868b]">Student Name</p>
+        </div>
+      </div>
+      <button type="button" onclick="document.getElementById('payment-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">&times;</button>
+    </div>
+
+    <form method="POST" action="{% url 'fees:record_payment' %}" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" id="modal-student-id" name="student_id" value="">
+
+      <!-- Amount -->
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="text-xs font-bold text-[#1d1d1f]">Payment Amount (₹) *</label>
+          <span id="modal-remaining-badge" class="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">Balance: ₹0.00</span>
+        </div>
+        <div class="relative">
+          <span class="absolute left-3.5 top-2.5 text-gray-400 font-bold">₹</span>
+          <input type="number" step="0.01" min="1" id="modal-payment-amount" name="amount" required placeholder="0.00" class="w-full pl-8 pr-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-sm font-bold text-[#1d1d1f] focus:ring-2 focus:ring-[#0066cc] focus:bg-white" />
+        </div>
+      </div>
+
+      <!-- Payment Method -->
+      <div>
+        <label class="block text-xs font-bold text-[#1d1d1f] mb-1">Payment Method</label>
+        <select name="payment_method" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-[#1d1d1f]">
+          {% for code, label in payment_methods %}
+          <option value="{{ code }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Payment Date -->
+      <div>
+        <label class="block text-xs font-bold text-[#1d1d1f] mb-1">Payment Date</label>
+        <input type="date" name="payment_date" value="{% now 'Y-m-d' %}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold" />
+      </div>
+
+      <!-- Reference / Notes -->
+      <div>
+        <label class="block text-xs font-bold text-[#1d1d1f] mb-1">Transaction Ref / Cheque No / Notes (Optional)</label>
+        <input type="text" name="transaction_reference" placeholder="e.g. UTR123456, Cheque #00451" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-medium" />
+      </div>
+
+      <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+        <button type="button" onclick="document.getElementById('payment-modal').classList.add('hidden')" class="apple-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl">
+          Cancel
+        </button>
+        <button type="submit" class="apple-btn-primary px-5 py-2 text-xs font-bold rounded-xl shadow-xs inline-flex items-center gap-1.5">
+          <span>Record & Generate Slip</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal 3: Manual Add Class Fee Structure -->
+<div id="add-structure-modal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-gray-200/80 space-y-4" data-lenis-prevent>
+    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+      <h2 class="text-base font-bold text-[#1d1d1f]">Add Class Fee Structure</h2>
+      <button type="button" onclick="document.getElementById('add-structure-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">&times;</button>
+    </div>
+
+    <form method="POST" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="save_structure">
+
+      <div>
+        <label class="block text-xs font-bold text-[#1d1d1f] mb-1">Class / Standard *</label>
+        <select name="standard_id" required class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold">
+          <option value="">-- Select Class --</option>
+          {% for std in standards %}
+          <option value="{{ std.pk }}">{{ std.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-[#1d1d1f] mb-1">Total Annual Fee (₹) *</label>
+        <input type="number" step="0.01" min="1" name="amount" required placeholder="e.g. 50000" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-bold" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-[#1d1d1f] mb-1">Payment Frequency *</label>
+        <select name="payment_frequency" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold">
+          {% for code, label in frequencies %}
+          <option value="{{ code }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+        <button type="button" onclick="document.getElementById('add-structure-modal').classList.add('hidden')" class="apple-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl">
+          Cancel
+        </button>
+        <button type="submit" class="apple-btn-primary px-5 py-2 text-xs font-bold rounded-xl shadow-xs">
+          Save Fee Structure
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openRecordPaymentModal(studentId, studentName, remainingAmount, className) {
+    document.getElementById('modal-student-id').value = studentId;
+    document.getElementById('modal-student-name').innerText = `${studentName} (${className})`;
+    document.getElementById('modal-payment-amount').value = remainingAmount > 0 ? remainingAmount : '';
+    document.getElementById('modal-remaining-badge').innerText = `Balance: ₹${parseFloat(remainingAmount).toFixed(2)}`;
+    document.getElementById('payment-modal').classList.remove('hidden');
+  }
+</script>
 {% endblock %}

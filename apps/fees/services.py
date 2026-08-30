@@ -1,196 +1,400 @@
 """
-Core Business Services for School Fees Management.
+Simplified School Fees Management Services.
 
-Includes:
-  - FrequencyEngine: Calculates installment dates, periods, and penny-accurate payment schedules.
-  - FeeService: High-level transactional operations for fee structures, assignments, payments,
-                partial payments, adjustments, and receipts.
+Provides:
+  - FeeExcelService: Generates downloadable Excel template and imports class-wise fee structures.
+  - FeeService: Direct payment recording, receipt numbering, student fee summaries, and metrics.
 """
-from datetime import date, timedelta
-from decimal import Decimal, ROUND_DOWN
-from typing import List, Dict, Any, Optional, Tuple
+import io
+import re
+from datetime import date, datetime
+from decimal import Decimal, InvalidOperation
+from typing import Dict, List, Optional, Tuple, Any
 
-from django.db import transaction, models
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+from django.db import models, transaction
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-from apps.fees.models import (
-    FeeCategory,
-    FeeStructure,
-    StudentFee,
-    FeeInstallment,
-    FeePayment,
-    FeeAuditLog,
-)
+from apps.accounts.models import User
 from apps.academics.models import AcademicYear, Standard, Division
 from apps.students.models import Student
+from apps.fees.models import FeeCategory, FeeStructure, StudentFee, FeePayment
 from apps.notifications.models import InAppNotification
 
 
-class FrequencyEngine:
+class FeeExcelService:
     """
-    Calculates installment schedules with exact dates and penny-accurate decimal distribution.
-    Supports MONTHLY (12), QUARTERLY (4), HALF_YEARLY (2), and FULL_YEAR (1).
+    Service for generating downloadable Fee Structure Excel template and processing bulk uploads.
     """
 
-    @staticmethod
-    def _clamp_day_for_month(year: int, month: int, day: int) -> date:
-        """Returns a valid date for given year, month, and day (clamping to last day of month if necessary)."""
-        import calendar
-        _, last_day = calendar.monthrange(year, month)
-        clamped_day = min(day, last_day)
-        return date(year, month, clamped_day)
+    FREQUENCY_MAP = {
+        'monthly': FeeStructure.Frequency.MONTHLY,
+        'month': FeeStructure.Frequency.MONTHLY,
+        '12': FeeStructure.Frequency.MONTHLY,
+        'quarterly': FeeStructure.Frequency.QUARTERLY,
+        'quarter': FeeStructure.Frequency.QUARTERLY,
+        '4': FeeStructure.Frequency.QUARTERLY,
+        'half-yearly': FeeStructure.Frequency.HALF_YEARLY,
+        'halfyearly': FeeStructure.Frequency.HALF_YEARLY,
+        'half yearly': FeeStructure.Frequency.HALF_YEARLY,
+        'semi-annual': FeeStructure.Frequency.HALF_YEARLY,
+        '2': FeeStructure.Frequency.HALF_YEARLY,
+        'full-year': FeeStructure.Frequency.FULL_YEAR,
+        'fullyear': FeeStructure.Frequency.FULL_YEAR,
+        'full year': FeeStructure.Frequency.FULL_YEAR,
+        'annual': FeeStructure.Frequency.FULL_YEAR,
+        'yearly': FeeStructure.Frequency.FULL_YEAR,
+        '1': FeeStructure.Frequency.FULL_YEAR,
+    }
 
     @classmethod
-    def generate_schedule_periods(
-        cls,
-        academic_year: AcademicYear,
-        payment_frequency: str,
-        total_amount: Decimal,
-        due_day: int = 10,
-    ) -> List[Dict[str, Any]]:
+    def generate_sample_template(cls, school, academic_year: AcademicYear) -> bytes:
         """
-        Generates list of installment period specifications:
-        [
-            {
-                'period_number': 1,
-                'period_name': 'April 2026',
-                'due_date': date(2026, 4, 10),
-                'amount_due': Decimal('5000.00'),
-            }, ...
-        ]
+        Creates an Apple-styled Excel workbook containing:
+        1. 'Fee Structure' sheet with Class, Total Fee, Payment Frequency.
+        2. 'Available Classes' reference sheet with existing classes in the school.
         """
-        start_date = academic_year.start_date
-        end_date = academic_year.end_date
+        wb = openpyxl.Workbook()
 
-        start_year = start_date.year
-        start_month = start_date.month
+        # Sheet 1: Main Upload Sheet
+        ws = wb.active
+        ws.title = "Fee Structure"
 
-        # Determine number of installments and labels
-        periods_meta = []
-        if payment_frequency == FeeStructure.Frequency.MONTHLY:
-            num_installments = 12
-            month_cursor = start_month
-            year_cursor = start_year
-            for i in range(1, 13):
-                due_d = cls._clamp_day_for_month(year_cursor, month_cursor, due_day)
-                month_name = date(year_cursor, month_cursor, 1).strftime("%B %Y")
-                periods_meta.append({
-                    'period_number': i,
-                    'period_name': month_name,
-                    'due_date': due_d,
-                })
-                month_cursor += 1
-                if month_cursor > 12:
-                    month_cursor = 1
-                    year_cursor += 1
+        headers = ["Class", "Total Fee", "Payment Frequency"]
+        header_font = Font(name="Arial", size=11, bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="0066CC", end_color="0066CC", fill_type="solid")
+        center_align = Alignment(horizontal="center", vertical="center")
+        left_align = Alignment(horizontal="left", vertical="center")
+        right_align = Alignment(horizontal="right", vertical="center")
+        border = Border(
+            left=Side(style='thin', color='E0E0E0'),
+            right=Side(style='thin', color='E0E0E0'),
+            top=Side(style='thin', color='E0E0E0'),
+            bottom=Side(style='thin', color='E0E0E0'),
+        )
 
-        elif payment_frequency == FeeStructure.Frequency.QUARTERLY:
-            num_installments = 4
-            quarters = [
-                ("Q1 (Apr - Jun)", 4, start_year),
-                ("Q2 (Jul - Sep)", 7, start_year),
-                ("Q3 (Oct - Dec)", 10, start_year),
-                ("Q4 (Jan - Mar)", 1, start_year + 1 if start_month >= 4 else start_year),
-            ]
-            for i, (q_name, q_month, q_year) in enumerate(quarters, start=1):
-                due_d = cls._clamp_day_for_month(q_year, q_month, due_day)
-                periods_meta.append({
-                    'period_number': i,
-                    'period_name': q_name,
-                    'due_date': due_d,
-                })
+        ws.append(headers)
+        for col_num in range(1, len(headers) + 1):
+            cell = ws.cell(row=1, column=col_num)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = center_align
+            cell.border = border
+            ws.row_dimensions[1].height = 28
 
-        elif payment_frequency == FeeStructure.Frequency.HALF_YEARLY:
-            num_installments = 2
-            terms = [
-                ("Term 1 (First Half)", start_month, start_year),
-                ("Term 2 (Second Half)", (start_month + 6 - 1) % 12 + 1, start_year if start_month <= 6 else start_year + 1),
-            ]
-            for i, (t_name, t_month, t_year) in enumerate(terms, start=1):
-                due_d = cls._clamp_day_for_month(t_year, t_month, due_day)
-                periods_meta.append({
-                    'period_number': i,
-                    'period_name': t_name,
-                    'due_date': due_d,
-                })
-
-        elif payment_frequency == FeeStructure.Frequency.FULL_YEAR:
-            num_installments = 1
-            due_d = cls._clamp_day_for_month(start_year, start_month, due_day)
-            periods_meta.append({
-                'period_number': 1,
-                'period_name': f"Full Session ({academic_year.name})",
-                'due_date': due_d,
-            })
+        # Get existing standards for realistic samples
+        standards = Standard.objects.filter(school=school, is_active=True).order_by('order_index')
+        sample_rows = []
+        if standards.exists():
+            frequencies = ["Monthly", "Quarterly", "Half-Yearly", "Full-Year"]
+            for idx, std in enumerate(standards[:6], start=1):
+                sample_amt = 25000 + (idx * 3000)
+                sample_freq = frequencies[(idx - 1) % len(frequencies)]
+                sample_rows.append([std.name, sample_amt, sample_freq])
         else:
-            raise ValidationError(f"Unsupported payment frequency: {payment_frequency}")
+            sample_rows = [
+                ["1", 25000, "Monthly"],
+                ["2", 28000, "Monthly"],
+                ["3", 30000, "Quarterly"],
+                ["4", 35000, "Half-Yearly"],
+                ["5", 40000, "Full-Year"],
+                ["10-A", 50000, "Quarterly"],
+            ]
 
-        # Distribute amounts with penny-exact rounding (no fractions lost)
-        total_dec = Decimal(str(total_amount))
-        base_inst_amount = (total_dec / Decimal(str(num_installments))).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
-        allocated_so_far = base_inst_amount * Decimal(str(num_installments))
-        remainder = total_dec - allocated_so_far
+        sample_font = Font(name="Arial", size=10)
+        for row in sample_rows:
+            ws.append(row)
+            row_idx = ws.max_row
+            ws.row_dimensions[row_idx].height = 22
+            for col_num in range(1, len(row) + 1):
+                c = ws.cell(row=row_idx, column=col_num)
+                c.font = sample_font
+                c.border = border
+                if col_num == 2:
+                    c.alignment = right_align
+                    c.number_format = '#,##0.00'
+                elif col_num == 3:
+                    c.alignment = center_align
+                else:
+                    c.alignment = left_align
 
-        results = []
-        for i, meta in enumerate(periods_meta):
-            amt = base_inst_amount
-            # Add remainder cents to the final installment
-            if i == len(periods_meta) - 1:
-                amt += remainder
-            results.append({
-                'period_number': meta['period_number'],
-                'period_name': meta['period_name'],
-                'due_date': meta['due_date'],
-                'amount_due': amt,
+        # Auto-adjust column widths
+        for col in ws.columns:
+            max_len = max(len(str(cell.value or '')) for cell in col)
+            col_letter = get_column_letter(col[0].column)
+            ws.column_dimensions[col_letter].width = max(max_len + 5, 20)
+
+        # Sheet 2: Reference Available Classes
+        ws_ref = wb.create_sheet(title="Available Classes")
+        ref_header_fill = PatternFill(start_color="4A5568", end_color="4A5568", fill_type="solid")
+
+        ref_headers = ["Class / Standard Name", "Grade Order", "Division (Optional)"]
+        ws_ref.append(ref_headers)
+        ws_ref.row_dimensions[1].height = 26
+        for col_num in range(1, 4):
+            c = ws_ref.cell(row=1, column=col_num)
+            c.font = header_font
+            c.fill = ref_header_fill
+            c.alignment = center_align
+            c.border = border
+
+        divisions = Division.objects.filter(school=school, is_active=True).select_related('standard').order_by('standard__order_index', 'name')
+        if divisions.exists():
+            for div in divisions:
+                ws_ref.append([f"{div.standard.name} - {div.name}", div.standard.order_index, div.name])
+                r_idx = ws_ref.max_row
+                ws_ref.row_dimensions[r_idx].height = 20
+                for col_idx in range(1, 4):
+                    cell = ws_ref.cell(row=r_idx, column=col_idx)
+                    cell.font = sample_font
+                    cell.border = border
+        else:
+            for std in standards:
+                ws_ref.append([std.name, std.order_index, "All Divisions"])
+                r_idx = ws_ref.max_row
+                ws_ref.row_dimensions[r_idx].height = 20
+                for col_idx in range(1, 4):
+                    cell = ws_ref.cell(row=r_idx, column=col_idx)
+                    cell.font = sample_font
+                    cell.border = border
+
+        for col in ws_ref.columns:
+            max_len = max(len(str(cell.value or '')) for cell in col)
+            col_letter = get_column_letter(col[0].column)
+            ws_ref.column_dimensions[col_letter].width = max(max_len + 4, 22)
+
+        output = io.BytesIO()
+        wb.save(output)
+        return output.getvalue()
+
+    @classmethod
+    def import_fee_structure_excel(
+        cls,
+        school,
+        academic_year: AcademicYear,
+        file_obj,
+        user: User,
+    ) -> Dict[str, Any]:
+        """
+        Parses and validates the uploaded Fee Structure Excel file.
+        Creates/updates FeeStructure per class and automatically syncs StudentFee records.
+        """
+        filename = getattr(file_obj, 'name', 'upload.xlsx').lower()
+        if not (filename.endswith('.xlsx') or filename.endswith('.xls')):
+            return {
+                'total_processed': 0,
+                'successful': 0,
+                'failed': 0,
+                'errors': ["Invalid file type. Please upload a valid Microsoft Excel (.xlsx or .xls) file."],
+            }
+
+        try:
+            wb = openpyxl.load_workbook(file_obj, data_only=True)
+            ws = wb.active
+        except Exception as e:
+            return {
+                'total_processed': 0,
+                'successful': 0,
+                'failed': 0,
+                'errors': [f"Could not open Excel file: {str(e)}"],
+            }
+
+        # 1. Map Header Columns
+        header_row = [str(cell.value or '').strip().lower() for cell in ws[1]]
+        col_map = {}
+        for idx, col_name in enumerate(header_row):
+            clean_name = re.sub(r'[^a-z0-9]', '', col_name)
+            if 'class' in clean_name or 'standard' in clean_name or 'grade' in clean_name:
+                col_map['class'] = idx
+            elif 'fee' in clean_name or 'amount' in clean_name or 'total' in clean_name:
+                col_map['amount'] = idx
+            elif 'frequency' in clean_name or 'freq' in clean_name or 'payment' in clean_name:
+                col_map['frequency'] = idx
+
+        required_cols = ['class', 'amount', 'frequency']
+        missing = [c.capitalize() for c in required_cols if c not in col_map]
+        if missing:
+            return {
+                'total_processed': 0,
+                'successful': 0,
+                'failed': 0,
+                'errors': [f"Missing required columns in Excel sheet: {', '.join(missing)}. Please use the downloadable template."],
+            }
+
+        # 2. Build In-Memory Class Lookups for the School Tenant
+        standards = Standard.objects.filter(school=school, is_active=True)
+        standard_lookup: Dict[str, Standard] = {}
+        for std in standards:
+            name_clean = std.name.lower().strip()
+            standard_lookup[name_clean] = std
+            standard_lookup[str(std.order_index)] = std
+            standard_lookup[f"class {std.order_index}"] = std
+            standard_lookup[f"std {std.order_index}"] = std
+            standard_lookup[f"standard {std.order_index}"] = std
+            standard_lookup[f"grade {std.order_index}"] = std
+
+        divisions = Division.objects.filter(school=school, is_active=True).select_related('standard')
+        division_lookup: Dict[str, Division] = {}
+        for div in divisions:
+            d_name = div.name.lower().strip()
+            std_name = div.standard.name.lower().strip()
+            division_lookup[f"{std_name}-{d_name}"] = div
+            division_lookup[f"{std_name} {d_name}"] = div
+            division_lookup[f"{div.standard.order_index}-{d_name}"] = div
+            division_lookup[f"{div.standard.order_index}{d_name}"] = div
+            division_lookup[f"{std_name}{d_name}"] = div
+
+        default_category = FeeService.ensure_default_category(school)
+
+        row_errors: List[str] = []
+        valid_records: List[Dict[str, Any]] = []
+        seen_classes = set()
+        total_processed = 0
+
+        # 3. Process Data Rows (Row 2 onwards)
+        for row_idx in range(2, ws.max_row + 1):
+            row_cells = ws[row_idx]
+            if all(cell.value is None or str(cell.value).strip() == '' for cell in row_cells):
+                continue
+
+            total_processed += 1
+
+            raw_class = str(row_cells[col_map['class']].value or '').strip()
+            raw_amount = str(row_cells[col_map['amount']].value or '').strip()
+            raw_freq_display = str(row_cells[col_map['frequency']].value or '').strip()
+            raw_freq = raw_freq_display.lower()
+
+            # 3.1 Validate Class
+            clean_class_key = re.sub(r'\s+', ' ', raw_class.lower())
+            target_standard = standard_lookup.get(clean_class_key)
+            target_division = division_lookup.get(clean_class_key)
+
+            if not target_standard and not target_division:
+                clean_condensed = re.sub(r'[^a-z0-9]', '', clean_class_key)
+                for k, std_obj in standard_lookup.items():
+                    if re.sub(r'[^a-z0-9]', '', k) == clean_condensed:
+                        target_standard = std_obj
+                        break
+                if not target_standard:
+                    for k, div_obj in division_lookup.items():
+                        if re.sub(r'[^a-z0-9]', '', k) == clean_condensed:
+                            target_division = div_obj
+                            break
+
+            if not target_standard and not target_division:
+                row_errors.append(f"Row {row_idx}: Class '{raw_class}' not found in active standards or divisions.")
+                continue
+
+            # 3.2 Duplicate Class in File
+            class_id_key = f"div_{target_division.pk}" if target_division else f"std_{target_standard.pk}"
+            if class_id_key in seen_classes:
+                row_errors.append(f"Row {row_idx}: Duplicate entry for Class '{raw_class}'. Each class should only have one fee structure.")
+                continue
+            seen_classes.add(class_id_key)
+
+            # 3.3 Validate Fee Amount
+            try:
+                # Remove currency symbols or commas if present
+                clean_amt_str = re.sub(r'[^\d.-]', '', raw_amount)
+                amount = Decimal(clean_amt_str)
+                if amount <= Decimal('0.00'):
+                    raise ValueError
+            except (InvalidOperation, ValueError):
+                row_errors.append(f"Row {row_idx}: Invalid fee amount '{raw_amount}'. Must be a positive number.")
+                continue
+
+            # 3.4 Validate Payment Frequency
+            clean_freq_key = re.sub(r'[^a-z0-9]', '', raw_freq)
+            freq_value = cls.FREQUENCY_MAP.get(raw_freq) or cls.FREQUENCY_MAP.get(clean_freq_key)
+            if not freq_value:
+                row_errors.append(f"Row {row_idx}: Invalid payment frequency '{raw_freq_display}'. Allowed: Monthly, Quarterly, Half-Yearly, Full-Year.")
+                continue
+
+            valid_records.append({
+                'standard': target_standard or (target_division.standard if target_division else None),
+                'division': target_division,
+                'amount': amount,
+                'frequency': freq_value,
+                'class_display': raw_class,
             })
 
-        return results
+        # 4. Save Valid Fee Structures & Automatically Sync Students
+        successful_count = 0
+        if valid_records:
+            with transaction.atomic():
+                for rec in valid_records:
+                    std = rec['standard']
+                    div = rec['division']
+                    amt = rec['amount']
+                    freq = rec['frequency']
+
+                    name = f"{std.name} Annual Fee" if std else f"{div.standard.name}-{div.name} Annual Fee"
+
+                    # Find or create FeeStructure
+                    structure, created = FeeStructure.objects.update_or_create(
+                        school=school,
+                        academic_year=academic_year,
+                        standard=std,
+                        division=div,
+                        defaults={
+                            'name': name,
+                            'fee_category': default_category,
+                            'amount': amt,
+                            'payment_frequency': freq,
+                            'is_active': True,
+                        }
+                    )
+
+                    # Auto-sync/propagate to all students in that class
+                    FeeService.sync_students_for_structure(
+                        school=school,
+                        academic_year=academic_year,
+                        fee_structure=structure,
+                    )
+                    successful_count += 1
+
+        return {
+            'total_processed': total_processed,
+            'successful': successful_count,
+            'failed': len(row_errors),
+            'errors': row_errors,
+        }
 
 
 class FeeService:
     """
-    High-level business operations for managing fee structures, student fee assignments,
-    payment collections, partial allocations, receipts, and audit trails.
+    Simplified service for recording payments, compiling student fee summaries,
+    and managing school fee metrics.
     """
 
     @classmethod
-    def ensure_default_categories(cls, school) -> List[FeeCategory]:
+    def ensure_default_category(cls, school) -> FeeCategory:
         """
-        Auto-provisions standard fee categories (Tuition, Transport, Activity, Exam, Library, Laboratory)
-        for a school if none exist yet.
+        Retrieves or creates a standard default FeeCategory for the school.
         """
-        defaults = [
-            ("Tuition Fee", "TUITION", "Core academic instruction and curriculum fee"),
-            ("Transport Fee", "TRANSPORT", "Daily school bus and transit commute fee"),
-            ("Activity Fee", "ACTIVITY", "Sports, cultural, and extracurricular activity fee"),
-            ("Exam Fee", "EXAM", "Term examinations and assessment fee"),
-            ("Library Fee", "LIBRARY", "Library access and books maintenance fee"),
-            ("Laboratory Fee", "LAB", "Science, Computer, and Language laboratory fee"),
-        ]
-        created_cats = []
-        for name, code, desc in defaults:
-            cat, _ = FeeCategory.objects.get_or_create(
-                school=school,
-                name=name,
-                defaults={
-                    'code': code,
-                    'description': desc,
-                    'is_active': True,
-                }
-            )
-            created_cats.append(cat)
-        return created_cats
+        category, _ = FeeCategory.objects.get_or_create(
+            school=school,
+            name="Tuition & Academic Fee",
+            defaults={
+                'code': 'TUITION',
+                'description': 'Standard school tuition and academic fee',
+                'is_active': True,
+            }
+        )
+        return category
 
     @classmethod
     def generate_next_receipt_number(cls, school) -> str:
         """
         Generates a unique sequential receipt number for the school:
-        Format: RCPT-{SUBDOMAIN}-{YEAR}-{SEQUENCE:05d}
+        Format: REC-{SUBDOMAIN}-{YEAR}-{SEQUENCE:05d}
         """
         current_year = timezone.localdate().year
         prefix = f"REC-{school.subdomain.upper()}-{current_year}-"
-        
+
         last_payment = FeePayment.objects.filter(
             school=school,
             receipt_number__startswith=prefix,
@@ -208,136 +412,34 @@ class FeeService:
         return f"{prefix}{next_seq:05d}"
 
     @classmethod
-    @transaction.atomic
-    def assign_fee_to_student(
-        cls,
-        student: Student,
-        fee_structure: FeeStructure,
-        custom_amount: Optional[Decimal] = None,
-        discount_amount: Decimal = Decimal('0.00'),
-        discount_reason: str = '',
-        waived_amount: Decimal = Decimal('0.00'),
-        waiver_reason: str = '',
-        performed_by=None,
-        ip_address: Optional[str] = None,
-    ) -> StudentFee:
+    def sync_students_for_structure(cls, school, academic_year: AcademicYear, fee_structure: FeeStructure) -> int:
         """
-        Assigns a FeeStructure to an individual student and generates all installment records.
-        """
-        school = student.school
-        academic_year = fee_structure.academic_year
-
-        student_fee, created = StudentFee.objects.get_or_create(
-            school=school,
-            student=student,
-            fee_structure=fee_structure,
-            defaults={
-                'academic_year': academic_year,
-                'custom_amount': custom_amount,
-                'discount_amount': discount_amount,
-                'discount_reason': discount_reason,
-                'waived_amount': waived_amount,
-                'waiver_reason': waiver_reason,
-            }
-        )
-
-        if not created:
-            student_fee.custom_amount = custom_amount
-            student_fee.discount_amount = discount_amount
-            student_fee.discount_reason = discount_reason
-            student_fee.waived_amount = waived_amount
-            student_fee.waiver_reason = waiver_reason
-            student_fee.is_active = True
-            student_fee.save()
-            # Remove existing unpaid installments to regenerate schedule
-            student_fee.installments.filter(amount_paid=Decimal('0.00')).delete()
-
-        # Calculate installments schedule based on net payable amount
-        net_amount = student_fee.net_payable_amount
-        schedule_periods = FrequencyEngine.generate_schedule_periods(
-            academic_year=academic_year,
-            payment_frequency=fee_structure.payment_frequency,
-            total_amount=net_amount,
-            due_day=fee_structure.due_day,
-        )
-
-        installments_to_create = []
-        today = timezone.localdate()
-        for p in schedule_periods:
-            due_d = p['due_date']
-            status = FeeInstallment.Status.OVERDUE if due_d < today else FeeInstallment.Status.UNPAID
-            installments_to_create.append(
-                FeeInstallment(
-                    school=school,
-                    student_fee=student_fee,
-                    student=student,
-                    academic_year=academic_year,
-                    period_number=p['period_number'],
-                    period_name=p['period_name'],
-                    due_date=due_d,
-                    amount_due=p['amount_due'],
-                    amount_paid=Decimal('0.00'),
-                    status=status,
-                )
-            )
-
-        FeeInstallment.objects.bulk_create(installments_to_create)
-
-        # Record audit log
-        FeeAuditLog.objects.create(
-            school=school,
-            action=FeeAuditLog.Action.FEE_ASSIGNED,
-            student=student,
-            performed_by=performed_by,
-            ip_address=ip_address,
-            details={
-                'fee_structure_id': fee_structure.id,
-                'fee_structure_name': fee_structure.name,
-                'amount': str(student_fee.net_payable_amount),
-                'frequency': fee_structure.payment_frequency,
-                'installments_count': len(installments_to_create),
-            }
-        )
-
-        return student_fee
-
-    @classmethod
-    @transaction.atomic
-    def assign_fee_to_class(
-        cls,
-        school,
-        academic_year: AcademicYear,
-        fee_structure: FeeStructure,
-        standard: Optional[Standard] = None,
-        division: Optional[Division] = None,
-        performed_by=None,
-        ip_address: Optional[str] = None,
-    ) -> int:
-        """
-        Assigns a fee structure to all enrolled active students in a standard/division.
-        Returns count of assigned students.
+        Automatically creates or updates StudentFee assignments for all active students in the target standard/division.
+        Preserves all existing payments and adjusts net payable amounts cleanly.
         """
         students_qs = Student.objects.filter(
             school=school,
             academic_year=academic_year,
             is_active=True,
         )
-        if standard:
-            students_qs = students_qs.filter(standard=standard)
-        if division:
-            students_qs = students_qs.filter(division=division)
+        if fee_structure.division:
+            students_qs = students_qs.filter(division=fee_structure.division)
+        elif fee_structure.standard:
+            students_qs = students_qs.filter(standard=fee_structure.standard)
 
-        assigned_count = 0
+        count = 0
         for student in students_qs:
-            cls.assign_fee_to_student(
+            StudentFee.objects.update_or_create(
+                school=school,
                 student=student,
-                fee_structure=fee_structure,
-                performed_by=performed_by,
-                ip_address=ip_address,
+                academic_year=academic_year,
+                defaults={
+                    'fee_structure': fee_structure,
+                    'is_active': True,
+                }
             )
-            assigned_count += 1
-
-        return assigned_count
+            count += 1
+        return count
 
     @classmethod
     @transaction.atomic
@@ -346,17 +448,13 @@ class FeeService:
         school,
         student: Student,
         amount: Decimal,
-        payment_method: str,
-        recorded_by,
-        installment: Optional[FeeInstallment] = None,
-        transaction_reference: str = '',
-        remarks: str = '',
         payment_date: Optional[date] = None,
-        ip_address: Optional[str] = None,
-    ) -> Tuple[FeePayment, List[FeeInstallment]]:
+        payment_method: str = FeePayment.PaymentMethod.CASH,
+        transaction_reference: str = '',
+        recorded_by: Optional[User] = None,
+    ) -> Tuple[FeePayment, Optional[StudentFee]]:
         """
-        Records a fee payment transaction, automatically allocates funds across unpaid/partial
-        installments, updates installment statuses, and issues an atomic sequential receipt.
+        Records an approved fee payment for a student and generates an official receipt.
         """
         if amount <= Decimal('0.00'):
             raise ValidationError("Payment amount must be greater than zero.")
@@ -364,392 +462,180 @@ class FeeService:
         if payment_date is None:
             payment_date = timezone.localdate()
 
-        receipt_number = cls.generate_next_receipt_number(school)
+        academic_year = student.academic_year
+        if not academic_year:
+            academic_year = AcademicYear.objects.filter(school=school, is_current=True).first()
 
-        # Determine target installments for allocation
-        if installment is not None:
-            # Targeted installment allocation
-            target_installments = [installment]
-        else:
-            # Chronological allocation across all active unpaid/partial installments for this student
-            target_installments = list(
-                FeeInstallment.objects.filter(
+        # Ensure student has an assigned StudentFee record
+        student_fee = StudentFee.objects.filter(
+            school=school,
+            student=student,
+            academic_year=academic_year,
+            is_active=True,
+        ).first()
+
+        if not student_fee:
+            # Try to auto-link matching FeeStructure for student's standard
+            structure = FeeStructure.objects.filter(
+                school=school,
+                academic_year=academic_year,
+                standard=student.standard,
+                is_active=True,
+            ).first()
+            if not structure:
+                # Fallback to any general active structure
+                structure = FeeStructure.objects.filter(
+                    school=school,
+                    academic_year=academic_year,
+                    standard__isnull=True,
+                    is_active=True,
+                ).first()
+
+            if structure:
+                student_fee = StudentFee.objects.create(
                     school=school,
                     student=student,
-                ).exclude(
-                    status=FeeInstallment.Status.PAID
-                ).order_by('due_date', 'period_number')
-            )
+                    academic_year=academic_year,
+                    fee_structure=structure,
+                    is_active=True,
+                )
 
-        if not target_installments:
-            raise ValidationError("No outstanding fee installments found for this student.")
+        receipt_number = cls.generate_next_receipt_number(school)
 
-        remaining_to_allocate = Decimal(str(amount))
-        affected_installments = []
-
-        for inst in target_installments:
-            if remaining_to_allocate <= Decimal('0.00'):
-                break
-
-            inst_balance = inst.remaining_amount
-            if inst_balance <= Decimal('0.00'):
-                continue
-
-            alloc_amount = min(remaining_to_allocate, inst_balance)
-            inst.amount_paid += alloc_amount
-            inst.update_status(commit=True)
-            affected_installments.append(inst)
-
-            remaining_to_allocate -= alloc_amount
-
-        # Create the Payment Ledger Record
         payment = FeePayment.objects.create(
             school=school,
             student=student,
-            academic_year=student.academic_year,
-            installment=installment if installment else (affected_installments[0] if affected_installments else None),
+            academic_year=academic_year,
             amount=amount,
             payment_date=payment_date,
             payment_method=payment_method,
-            transaction_reference=transaction_reference,
+            transaction_reference=transaction_reference.strip(),
             receipt_number=receipt_number,
             recorded_by=recorded_by,
-            remarks=remarks,
             status=FeePayment.Status.SUCCESS,
         )
 
-        # Create Financial Audit Log
-        FeeAuditLog.objects.create(
-            school=school,
-            action=FeeAuditLog.Action.PAYMENT_RECORDED,
-            student=student,
-            performed_by=recorded_by,
-            ip_address=ip_address,
-            details={
-                'payment_id': payment.id,
-                'receipt_number': receipt_number,
-                'amount': str(amount),
-                'payment_method': payment_method,
-                'transaction_reference': transaction_reference,
-                'affected_installments': [
-                    {'id': i.id, 'period': i.period_name, 'paid': str(i.amount_paid), 'status': i.status}
-                    for i in affected_installments
-                ]
-            }
-        )
-
-        # Dispatch In-App Notification if user is linked to student
+        # Dispatch in-app notification if student user exists
         if student.user:
             try:
                 InAppNotification.objects.create(
                     school=school,
                     user=student.user,
                     title="Fee Payment Received",
-                    message=f"Payment of ₹{amount} has been successfully recorded. Receipt #{receipt_number} is now available in your portal.",
+                    message=f"Payment of ₹{amount} has been successfully recorded. Receipt #{receipt_number} is available in your portal.",
                 )
             except Exception:
-                pass  # Notifications shouldn't break payment flow
+                pass
 
-        return payment, affected_installments
-
-    @classmethod
-    @transaction.atomic
-    def void_payment(
-        cls,
-        payment: FeePayment,
-        voided_by,
-        reason: str,
-        ip_address: Optional[str] = None,
-    ) -> FeePayment:
-        """
-        Reverses a recorded payment, reduces installment paid balances, and updates audit records.
-        """
-        if payment.status == FeePayment.Status.VOIDED:
-            raise ValidationError("This payment has already been voided.")
-
-        if not reason.strip():
-            raise ValidationError("A reason is required to void a payment.")
-
-        school = payment.school
-        student = payment.student
-        amount_to_reverse = payment.amount
-
-        # Revert paid amount from student's most recently paid installments
-        installments = list(
-            FeeInstallment.objects.filter(
-                school=school,
-                student=student,
-                amount_paid__gt=Decimal('0.00'),
-            ).order_by('-due_date', '-period_number')
-        )
-
-        rem = amount_to_reverse
-        for inst in installments:
-            if rem <= Decimal('0.00'):
-                break
-            deduct = min(rem, inst.amount_paid)
-            inst.amount_paid -= deduct
-            inst.update_status(commit=True)
-            rem -= deduct
-
-        payment.status = FeePayment.Status.VOIDED
-        payment.void_reason = reason
-        payment.voided_by = voided_by
-        payment.voided_at = timezone.now()
-        payment.save(update_fields=['status', 'void_reason', 'voided_by', 'voided_at', 'updated_at'])
-
-        # Audit log
-        FeeAuditLog.objects.create(
-            school=school,
-            action=FeeAuditLog.Action.PAYMENT_VOIDED,
-            student=student,
-            performed_by=voided_by,
-            ip_address=ip_address,
-            details={
-                'payment_id': payment.id,
-                'receipt_number': payment.receipt_number,
-                'amount_reversed': str(amount_to_reverse),
-                'reason': reason,
-            }
-        )
-
-        return payment
-
-    @classmethod
-    @transaction.atomic
-    def apply_adjustment(
-        cls,
-        student_fee: StudentFee,
-        discount_amount: Optional[Decimal] = None,
-        discount_reason: Optional[str] = None,
-        waived_amount: Optional[Decimal] = None,
-        waiver_reason: Optional[str] = None,
-        performed_by=None,
-        ip_address: Optional[str] = None,
-    ) -> StudentFee:
-        """
-        Applies a discount or waiver adjustment to a student fee and recalculates remaining schedule.
-        """
-        old_discount = student_fee.discount_amount
-        old_waived = student_fee.waived_amount
-
-        if discount_amount is not None:
-            student_fee.discount_amount = discount_amount
-        if discount_reason is not None:
-            student_fee.discount_reason = discount_reason
-        if waived_amount is not None:
-            student_fee.waived_amount = waived_amount
-        if waiver_reason is not None:
-            student_fee.waiver_reason = waiver_reason
-
-        student_fee.save()
-
-        # Recalculate unpaid installments based on new net payable
-        net_total = student_fee.net_payable_amount
-        total_already_paid = student_fee.total_paid
-        remaining_to_schedule = max(Decimal('0.00'), net_total - total_already_paid)
-
-        unpaid_installments = list(student_fee.installments.filter(amount_paid=Decimal('0.00')).order_by('period_number'))
-        if unpaid_installments:
-            n_unpaid = len(unpaid_installments)
-            base_amt = (remaining_to_schedule / Decimal(str(n_unpaid))).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
-            rem = remaining_to_schedule - (base_amt * Decimal(str(n_unpaid)))
-
-            for i, inst in enumerate(unpaid_installments):
-                amt = base_amt + (rem if i == n_unpaid - 1 else Decimal('0.00'))
-                inst.amount_due = amt
-                inst.update_status(commit=True)
-
-        # Audit log
-        FeeAuditLog.objects.create(
-            school=student_fee.school,
-            action=FeeAuditLog.Action.DISCOUNT_APPLIED if discount_amount is not None else FeeAuditLog.Action.WAIVER_APPLIED,
-            student=student_fee.student,
-            performed_by=performed_by,
-            ip_address=ip_address,
-            details={
-                'student_fee_id': student_fee.id,
-                'old_discount': str(old_discount),
-                'new_discount': str(student_fee.discount_amount),
-                'old_waived': str(old_waived),
-                'new_waived': str(student_fee.waived_amount),
-                'net_payable': str(student_fee.net_payable_amount),
-            }
-        )
-
-        return student_fee
+        return payment, student_fee
 
     @classmethod
     def get_student_fee_summary(cls, student: Student, academic_year: Optional[AcademicYear] = None) -> Dict[str, Any]:
         """
-        Compiles complete fee balance, schedules, categories, and payment history for a student.
+        Compiles the streamlined student fee summary: Total Fee, Paid, Remaining, Frequency, Status, and Payment history.
         """
         school = student.school
         if academic_year is None:
-            academic_year = student.academic_year
+            academic_year = student.academic_year or AcademicYear.objects.filter(school=school, is_current=True).first()
 
-        student_fees = StudentFee.objects.filter(
+        student_fee = StudentFee.objects.filter(
             school=school,
             student=student,
             academic_year=academic_year,
             is_active=True,
-        ).select_related('fee_structure', 'fee_structure__fee_category')
+        ).select_related('fee_structure').first()
 
-        total_assigned = Decimal('0.00')
-        total_paid = Decimal('0.00')
-
-        categories_summary = []
-        for sf in student_fees:
-            sf_net = sf.net_payable_amount
-            sf_paid = sf.total_paid
-            total_assigned += sf_net
-            total_paid += sf_paid
-
-            categories_summary.append({
-                'id': sf.id,
-                'fee_name': sf.fee_structure.name,
-                'category_name': sf.fee_structure.fee_category.name,
-                'frequency': sf.fee_structure.get_payment_frequency_display(),
-                'base_amount': sf.base_amount,
-                'discount_amount': sf.discount_amount,
-                'waived_amount': sf.waived_amount,
-                'net_amount': sf_net,
-                'paid_amount': sf_paid,
-                'balance': sf.remaining_balance,
-                'status': sf.overall_status,
-            })
-
-        total_outstanding = max(Decimal('0.00'), total_assigned - total_paid)
-
-        # Installments
-        installments = list(
-            FeeInstallment.objects.filter(
+        # If not explicitly created, check standard's fee structure
+        if not student_fee and academic_year and student.standard:
+            structure = FeeStructure.objects.filter(
                 school=school,
-                student=student,
                 academic_year=academic_year,
-            ).select_related('student_fee__fee_structure').order_by('due_date', 'period_number')
-        )
+                standard=student.standard,
+                is_active=True,
+            ).first()
+            if structure:
+                student_fee = StudentFee(
+                    school=school,
+                    student=student,
+                    academic_year=academic_year,
+                    fee_structure=structure,
+                )
 
-        today = timezone.localdate()
-        total_overdue = Decimal('0.00')
-        next_due_installment = None
-
-        for inst in installments:
-            if inst.status == FeeInstallment.Status.OVERDUE or (inst.due_date < today and inst.remaining_amount > Decimal('0.00')):
-                total_overdue += inst.remaining_amount
-            if next_due_installment is None and inst.remaining_amount > Decimal('0.00'):
-                next_due_installment = inst
-
-        # Payments
         payments = list(
             FeePayment.objects.filter(
                 school=school,
                 student=student,
                 academic_year=academic_year,
                 status=FeePayment.Status.SUCCESS,
-            ).select_related('installment').order_by('-payment_date', '-created_at')
+            ).order_by('-payment_date', '-id')
         )
 
+        total_paid = sum((p.amount for p in payments), Decimal('0.00'))
+
+        if student_fee:
+            total_fee = student_fee.net_payable_amount
+            frequency = student_fee.fee_structure.get_payment_frequency_display()
+            fee_name = student_fee.fee_structure.name
+        else:
+            total_fee = Decimal('0.00')
+            frequency = "Full-Year"
+            fee_name = "Standard Fee"
+
+        remaining_amount = max(Decimal('0.00'), total_fee - total_paid)
+
+        if total_fee == Decimal('0.00') and total_paid == Decimal('0.00'):
+            status = 'NOT ASSIGNED'
+        elif remaining_amount == Decimal('0.00'):
+            status = 'PAID'
+        elif total_paid > Decimal('0.00'):
+            status = 'PARTIALLY PAID'
+        else:
+            status = 'PENDING'
+
         return {
-            'student': student,
-            'academic_year': academic_year,
-            'total_assigned': total_assigned,
+            'has_fee': (student_fee is not None or total_fee > 0),
+            'student_fee': student_fee,
+            'fee_structure_name': fee_name,
+            'frequency': frequency,
+            'total_fee': total_fee,
             'total_paid': total_paid,
-            'total_outstanding': total_outstanding,
-            'total_overdue': total_overdue,
-            'next_due_installment': next_due_installment,
-            'categories': categories_summary,
-            'installments': installments,
+            'remaining_amount': remaining_amount,
+            'status': status,
             'payments': payments,
+            'academic_year': academic_year,
         }
 
     @classmethod
-    def get_school_fee_metrics(
-        cls,
-        school,
-        academic_year: Optional[AcademicYear] = None,
-        standard_id: Optional[int] = None,
-        division_id: Optional[int] = None,
-    ) -> Dict[str, Any]:
+    def get_school_fee_metrics(cls, school, academic_year: Optional[AcademicYear] = None) -> Dict[str, Any]:
         """
-        Aggregates school-wide fee metrics (Expected, Collected, Outstanding, Overdue).
+        Aggregates school-wide fee metrics for the session.
         """
         if academic_year is None:
             academic_year = AcademicYear.objects.filter(school=school, is_current=True).first()
-            if not academic_year:
-                academic_year = AcademicYear.objects.filter(school=school).first()
 
-        if not academic_year:
-            return {
-                'total_expected': Decimal('0.00'),
-                'total_collected': Decimal('0.00'),
-                'total_outstanding': Decimal('0.00'),
-                'total_overdue': Decimal('0.00'),
-                'collection_rate': 0.0,
-                'total_students_enrolled': 0,
-                'total_students_with_dues': 0,
-            }
-
-        students_qs = Student.objects.filter(
+        students = Student.objects.filter(
             school=school,
             academic_year=academic_year,
             is_active=True,
-        )
-        if standard_id:
-            students_qs = students_qs.filter(standard_id=standard_id)
-        if division_id:
-            students_qs = students_qs.filter(division_id=division_id)
-
-        student_ids = list(students_qs.values_list('id', flat=True))
-
-        # Total Paid
-        payments_qs = FeePayment.objects.filter(
-            school=school,
-            academic_year=academic_year,
-            student_id__in=student_ids,
-            status=FeePayment.Status.SUCCESS,
-        )
-        total_collected = payments_qs.aggregate(t=models.Sum('amount'))['t'] or Decimal('0.00')
-
-        # Total Expected (Net payable)
-        student_fees = StudentFee.objects.filter(
-            school=school,
-            academic_year=academic_year,
-            student_id__in=student_ids,
-            is_active=True,
-        ).select_related('fee_structure')
+        ).select_related('standard')
 
         total_expected = Decimal('0.00')
-        for sf in student_fees:
-            total_expected += sf.net_payable_amount
+        for s in students:
+            summary = cls.get_student_fee_summary(student=s, academic_year=academic_year)
+            total_expected += summary['total_fee']
 
-        total_outstanding = max(Decimal('0.00'), total_expected - total_collected)
-
-        # Overdue
-        today = timezone.localdate()
-        overdue_installments = FeeInstallment.objects.filter(
+        total_collected = FeePayment.objects.filter(
             school=school,
             academic_year=academic_year,
-            student_id__in=student_ids,
-        ).filter(
-            models.Q(status=FeeInstallment.Status.OVERDUE) |
-            models.Q(due_date__lt=today, amount_paid__lt=models.F('amount_due'))
-        )
-        
-        total_overdue = Decimal('0.00')
-        for oi in overdue_installments:
-            total_overdue += oi.remaining_amount
+            status=FeePayment.Status.SUCCESS,
+        ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
 
-        collection_rate = 0.0
-        if total_expected > Decimal('0.00'):
-            collection_rate = round(float((total_collected / total_expected) * 100), 1)
+        total_outstanding = max(Decimal('0.00'), total_expected - total_collected)
+        rate_pct = int((total_collected / total_expected * 100)) if total_expected > 0 else 0
 
         return {
-            'academic_year': academic_year,
             'total_expected': total_expected,
             'total_collected': total_collected,
             'total_outstanding': total_outstanding,
-            'total_overdue': total_overdue,
-            'collection_rate': collection_rate,
-            'total_students_enrolled': len(student_ids),
+            'collection_rate_pct': min(100, rate_pct),
         }

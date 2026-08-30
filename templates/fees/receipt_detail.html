@@ -1,163 +1,159 @@
-{% extends "base.html" %}
-{% load static %}
-
-{% block title %}Fee Receipt #{{ payment.receipt_number }} — {{ school.name }}{% endblock %}
-{% block page_title %}Fee Receipt{% endblock %}
-
-{% block content %}
-<div class="max-w-3xl mx-auto space-y-6 pb-12">
-
-    <!-- Top Action Bar (Hidden when printing) -->
-    <div class="print:hidden flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs">
-        <div class="flex items-center gap-2">
-            {% if request.user.role == 'SCHOOL_ADMIN' %}
-            <a href="{% url 'fees:student_detail' student.pk %}" class="text-xs font-semibold text-[#0066cc] hover:underline">← Student Ledger</a>
-            {% else %}
-            <a href="{% url 'fees:student_fees' %}" class="text-xs font-semibold text-[#0066cc] hover:underline">← My Fees</a>
-            {% endif %}
-            <span class="text-gray-300">/</span>
-            <span class="text-xs font-bold text-gray-500">Receipt #{{ payment.receipt_number }}</span>
-        </div>
-
-        <div class="flex items-center gap-2">
-            <button onclick="window.print()" class="apple-btn-primary px-4 py-2 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 shadow-xs">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                <span>Print Official Receipt</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- ═══ Printable Receipt Canvas ═══ -->
-    <div id="printable-receipt" class="bg-white p-8 sm:p-10 rounded-3xl border border-gray-200/80 shadow-sm space-y-8 print:border-none print:shadow-none print:p-0">
-
-        <!-- Receipt Header -->
-        <div class="flex items-center justify-between border-b-2 border-gray-900 pb-6">
-            <div class="flex items-center gap-4">
-                {% if school.school_logo %}
-                <img src="{{ school.school_logo.url }}" alt="Logo" class="w-14 h-14 object-contain rounded-xl">
-                {% else %}
-                <div class="w-14 h-14 rounded-2xl bg-[#0066cc] text-white flex items-center justify-center font-bold text-2xl">
-                    {{ school.name|first }}
-                </div>
-                {% endif %}
-                <div>
-                    <h1 class="text-xl sm:text-2xl font-bold text-[#1d1d1f] tracking-tight">{{ school.name }}</h1>
-                    <p class="text-xs text-gray-500">{{ school.contact_email }} • {{ school.full_domain }}</p>
-                </div>
-            </div>
-
-            <div class="text-right">
-                <span class="px-3 py-1 text-xs font-mono font-bold uppercase rounded-md bg-gray-100 text-gray-800 border border-gray-200 inline-block mb-1">
-                    Fee Receipt
-                </span>
-                <div class="text-xs font-mono font-bold text-gray-700">#{{ payment.receipt_number }}</div>
-                <div class="text-[11px] text-gray-500 mt-0.5">Date: {{ payment.payment_date|date:"d F Y" }}</div>
-            </div>
-        </div>
-
-        <!-- Student & Academic Information Grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs bg-gray-50 p-4 rounded-2xl border border-gray-200/60">
-            <div>
-                <span class="text-[10px] uppercase font-bold text-gray-400 block">Student Name</span>
-                <p class="font-bold text-[#1d1d1f] text-sm mt-0.5">{{ student.full_name }}</p>
-            </div>
-            <div>
-                <span class="text-[10px] uppercase font-bold text-gray-400 block">GR / Register No.</span>
-                <p class="font-mono font-bold text-[#1d1d1f] text-sm mt-0.5">{{ student.gr_number }}</p>
-            </div>
-            <div>
-                <span class="text-[10px] uppercase font-bold text-gray-400 block">Class & Division</span>
-                <p class="font-bold text-[#1d1d1f] text-sm mt-0.5">{{ student.standard.name }} - {{ student.division.name }}</p>
-            </div>
-            <div>
-                <span class="text-[10px] uppercase font-bold text-gray-400 block">Academic Session</span>
-                <p class="font-semibold text-gray-700 mt-0.5">{{ payment.academic_year.name }}</p>
-            </div>
-            <div>
-                <span class="text-[10px] uppercase font-bold text-gray-400 block">Payment Mode</span>
-                <p class="font-semibold text-gray-700 mt-0.5">{{ payment.get_payment_method_display }}</p>
-            </div>
-            <div>
-                <span class="text-[10px] uppercase font-bold text-gray-400 block">Transaction Reference</span>
-                <p class="font-mono font-semibold text-gray-700 mt-0.5">{% if payment.transaction_reference %}{{ payment.transaction_reference }}{% else %}N/A{% endif %}</p>
-            </div>
-        </div>
-
-        <!-- Line Item Table -->
-        <div class="border border-gray-200 rounded-2xl overflow-hidden">
-            <table class="w-full text-left text-xs border-collapse">
-                <thead>
-                    <tr class="bg-gray-100/80 text-[10px] font-bold uppercase tracking-wider text-gray-600 border-b border-gray-200">
-                        <th class="py-3 px-4">#</th>
-                        <th class="py-3 px-4">Particulars / Installment Description</th>
-                        <th class="py-3 px-4 text-right">Amount (₹)</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    <tr>
-                        <td class="py-4 px-4 font-mono font-bold text-gray-400">01</td>
-                        <td class="py-4 px-4 font-bold text-[#1d1d1f]">
-                            {% if payment.installment %}
-                            {{ payment.installment.student_fee.fee_structure.name }} ({{ payment.installment.period_name }})
-                            {% else %}
-                            General Fee Collection / Account Settlement ({{ payment.academic_year.name }})
-                            {% endif %}
-                            {% if payment.remarks %}
-                            <div class="text-[11px] text-gray-500 font-normal mt-0.5">Note: {{ payment.remarks }}</div>
-                            {% endif %}
-                        </td>
-                        <td class="py-4 px-4 text-right font-extrabold text-[#1d1d1f] text-sm">
-                            ₹{{ payment.amount }}
-                        </td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr class="bg-gray-50/80 border-t-2 border-gray-900 font-bold">
-                        <td colspan="2" class="py-3.5 px-4 text-right text-xs uppercase tracking-wider text-gray-700">Total Paid Amount:</td>
-                        <td class="py-3.5 px-4 text-right text-base text-[#0066cc] font-extrabold">₹{{ payment.amount }}</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <!-- Balance Due & Stamp Signature Section -->
-        <div class="grid grid-cols-2 gap-6 pt-4 items-end">
-            <div class="space-y-1">
-                <div class="text-xs text-gray-500">
-                    Remaining Academic Balance: <strong class="text-gray-900">₹{{ total_balance_remaining }}</strong>
-                </div>
-                <div class="text-[10px] text-gray-400">
-                    Payment recorded by <strong class="text-gray-600">{{ payment.recorded_by.get_full_name|default:payment.recorded_by.username }}</strong>
-                </div>
-                <div class="text-[10px] text-gray-400">
-                    * This is a computer-generated receipt valid without physical signature.
-                </div>
-            </div>
-
-            <div class="text-right space-y-12">
-                <div class="h-10"></div>
-                <div class="border-t border-gray-400 inline-block px-8 pt-1 text-xs font-semibold text-gray-700">
-                    Authorized Signatory
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-</div>
-
-<style>
-@media print {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fee Payment Receipt #{{ payment.receipt_number }} — {{ school.name }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
     body {
-        background: white !important;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
+      background-color: #f5f5f7;
+      color: #1d1d1f;
     }
-    #admin-sidebar, #sidebar-backdrop, header, .print\:hidden {
+    @media print {
+      body {
+        background-color: #ffffff;
+      }
+      .no-print {
         display: none !important;
+      }
+      .print-border {
+        border: 1px solid #e0e0e0 !important;
+        box-shadow: none !important;
+      }
     }
-    main {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-}
-</style>
-{% endblock %}
+  </style>
+</head>
+<body class="min-h-screen py-8 px-4 flex flex-col items-center justify-center">
+
+  <!-- Print & Back Navigation Bar (Screen Only) -->
+  <div class="no-print w-full max-w-2xl flex items-center justify-between mb-4">
+    <button onclick="window.history.back()" class="px-4 py-2 bg-white text-gray-700 hover:bg-gray-100 rounded-xl text-xs font-semibold border border-gray-200 shadow-2xs cursor-pointer flex items-center gap-1.5">
+      ‹ Back
+    </button>
+    <button onclick="window.print()" class="px-5 py-2 bg-[#0066cc] hover:bg-[#0071e3] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+      <span>Print / Save PDF Slip</span>
+    </button>
+  </div>
+
+  <!-- Official Receipt Document Card -->
+  <div class="w-full max-w-2xl bg-white rounded-3xl p-8 sm:p-10 border border-gray-200/90 shadow-lg print-border space-y-6">
+
+    <!-- Header: School Branding -->
+    <div class="flex items-start justify-between border-b border-gray-200 pb-6">
+      <div class="flex items-center gap-4">
+        {% if school.logo %}
+        <img src="{{ school.logo.url }}" alt="{{ school.name }}" class="w-14 h-14 object-contain rounded-2xl border border-gray-200" />
+        {% else %}
+        <div class="w-14 h-14 rounded-2xl bg-[#0066cc]/10 text-[#0066cc] border border-[#0066cc]/20 flex items-center justify-center font-bold text-xl">
+          {{ school.name|slice:":2"|upper }}
+        </div>
+        {% endif %}
+        <div>
+          <h1 class="text-xl font-bold text-[#1d1d1f] tracking-tight">{{ school.name }}</h1>
+          <p class="text-xs text-gray-500 mt-0.5">Official Fee Payment Receipt</p>
+          {% if school.address %}
+          <p class="text-[11px] text-gray-400 mt-0.5">{{ school.address }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="text-right">
+        <span class="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold uppercase tracking-wider">
+          PAID RECEIPT
+        </span>
+        <div class="font-mono text-xs font-bold text-gray-700 mt-2">#{{ payment.receipt_number }}</div>
+        <div class="text-[11px] text-gray-400 mt-0.5">Date: {{ payment.payment_date|date:"d M Y" }}</div>
+      </div>
+    </div>
+
+    <!-- Student Details Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-[#f5f5f7] border border-gray-200/80 text-xs">
+      <div>
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Student Name</span>
+        <span class="font-bold text-[#1d1d1f] text-sm">{{ payment.student.full_name }}</span>
+      </div>
+      <div>
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Student ID / GR</span>
+        <span class="font-mono font-bold text-[#0066cc] text-sm">{{ payment.student.gr_number }}</span>
+      </div>
+      <div>
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Class & Division</span>
+        <span class="font-semibold text-gray-800">{{ payment.student.standard.name }} {% if payment.student.division %}— {{ payment.student.division.name }}{% endif %}</span>
+      </div>
+      <div>
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Academic Session</span>
+        <span class="font-medium text-gray-700">{{ payment.academic_year.name }}</span>
+      </div>
+      <div>
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Payment Method</span>
+        <span class="font-medium text-gray-700">{{ payment.get_payment_method_display }}</span>
+      </div>
+      <div>
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Reference / Cheque No</span>
+        <span class="font-mono text-gray-600">{{ payment.transaction_reference|default:"—" }}</span>
+      </div>
+    </div>
+
+    <!-- Financial Breakdown Table -->
+    <div class="border border-gray-200/80 rounded-2xl overflow-hidden">
+      <table class="w-full text-xs text-left">
+        <thead class="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase font-bold text-[10px]">
+          <tr>
+            <th class="py-3 px-4">Description</th>
+            <th class="py-3 px-4 text-center">Frequency</th>
+            <th class="py-3 px-4 text-right">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 text-[#1d1d1f]">
+          <tr>
+            <td class="py-3.5 px-4 font-semibold">
+              {{ summary.fee_structure_name }}
+              <span class="block text-[11px] text-gray-400 font-normal">Student Fee Assessment — {{ payment.academic_year.name }}</span>
+            </td>
+            <td class="py-3.5 px-4 text-center font-medium text-gray-600">{{ summary.frequency }}</td>
+            <td class="py-3.5 px-4 text-right font-bold">₹{{ summary.total_fee|floatformat:2 }}</td>
+          </tr>
+          <tr class="bg-blue-50/40 font-bold">
+            <td colspan="2" class="py-3 px-4 text-[#0066cc]">Amount Paid in This Transaction</td>
+            <td class="py-3 px-4 text-right text-emerald-600 text-sm">₹{{ payment.amount|floatformat:2 }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Account Balance Summary -->
+    <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-200 text-xs gap-3">
+      <div class="space-y-0.5">
+        <span class="text-gray-500 block">Total Cumulative Paid: <strong class="text-emerald-700">₹{{ summary.total_paid|floatformat:2 }}</strong></span>
+        <span class="text-gray-500 block">Current Remaining Balance: <strong class="text-amber-700">₹{{ summary.remaining_amount|floatformat:2 }}</strong></span>
+      </div>
+      <div class="text-right">
+        <span class="text-[10px] uppercase font-bold text-gray-400 block">Current Account Status</span>
+        <span class="font-bold text-sm {% if summary.remaining_amount == 0 %}text-emerald-600{% else %}text-[#0066cc]{% endif %}">
+          {{ summary.status }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Footer Signatures & Terms -->
+    <div class="pt-6 border-t border-gray-200 flex items-end justify-between text-xs text-gray-500">
+      <div class="space-y-1">
+        <p class="text-[10px] text-gray-400">This is a system-generated receipt. No physical signature required.</p>
+        <p class="text-[10px] text-gray-400">Generated on {{ payment.created_at|date:"d M Y, h:i A" }}</p>
+      </div>
+      <div class="text-center">
+        <div class="w-36 border-b border-gray-400 pb-8 mb-1"></div>
+        <span class="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Authorized Signatory</span>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

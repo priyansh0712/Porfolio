@@ -173,29 +173,17 @@
                     <!-- Contextual Sub-Navigation for Fees -->
                     {% if '/fees/' in request.path %}
                     <div class="sidebar-subnav pl-6 pr-1 pt-1 pb-1 space-y-1 border-l-2 border-white/20 ml-5 my-1">
-                        <a href="{% url 'fees:dashboard' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if request.path == '/fees/' %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
+                        <a href="{% url 'fees:dashboard' %}?tab=students" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if active_tab == 'students' or not active_tab %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
                             <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
-                            <span>Overview</span>
+                            <span>Student Fees</span>
                         </a>
-                        <a href="{% url 'fees:student_roster' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if '/fees/students/' in request.path %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
-                            <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
-                            <span>Student Roster</span>
-                        </a>
-                        <a href="{% url 'fees:collect_payment' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if '/fees/collect/' in request.path %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
-                            <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
-                            <span>Collect Payment</span>
-                        </a>
-                        <a href="{% url 'fees:structures' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if '/fees/structures/' in request.path %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
+                        <a href="{% url 'fees:dashboard' %}?tab=structures" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if active_tab == 'structures' %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
                             <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
                             <span>Fee Structures</span>
                         </a>
-                        <a href="{% url 'fees:categories' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if '/fees/categories/' in request.path %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
+                        <a href="{% url 'fees:dashboard' %}?tab=payments" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if active_tab == 'payments' %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
                             <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
-                            <span>Categories</span>
-                        </a>
-                        <a href="{% url 'fees:reports' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors min-h-[34px] {% if '/fees/reports/' in request.path %}erp-subnav-active{% else %}erp-subnav-default{% endif %}">
-                            <span class="erp-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
-                            <span>Fee Reports</span>
+                            <span>Payment Receipts</span>
                         </a>
                     </div>
                     {% endif %}

@@ -1,213 +1,145 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}My Fees & Payments — Student Portal | StudentERP{% endblock %}
-{% block page_title %}My Fees{% endblock %}
+{% block title %}My Fees — {{ school.name }} | StudentERP{% endblock %}
+{% block page_title %}My Fees & Payments{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto space-y-6 pb-12">
+<div class="max-w-4xl mx-auto space-y-6 pb-16">
 
-    <!-- Top Header -->
-    <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <div class="flex items-center gap-2">
-                <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-                    Student Portal
-                </span>
-                <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                    GR: {{ student.gr_number }}
-                </span>
-            </div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-[#1D1D1F] tracking-tight mt-2">
-                Fee Schedule & Payment History
-            </h1>
-            <p class="text-xs sm:text-sm text-[#86868b] mt-1">
-                {{ student.division.standard.name }} - {{ student.division.name }} | Academic Session: {{ student.academic_year.name }}
-            </p>
-        </div>
-
-        {% if summary.next_due_installment %}
-        <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 text-right">
-            <span class="text-[10px] uppercase font-bold text-amber-800 tracking-wider block">Upcoming Due Date</span>
-            <div class="text-base font-extrabold text-amber-900 mt-0.5">
-                {{ summary.next_due_installment.due_date|date:"d M Y" }}
-            </div>
-            <div class="text-xs text-amber-700 mt-0.5">
-                {{ summary.next_due_installment.period_name }} (₹{{ summary.next_due_installment.remaining_amount }})
-            </div>
-        </div>
+  <!-- Header Card -->
+  <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200 uppercase tracking-wider">
+          Student Portal
+        </span>
+        {% if summary.academic_year %}
+        <span class="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-gray-100 text-gray-600">
+          Session: {{ summary.academic_year.name }}
+        </span>
         {% endif %}
+      </div>
+      <h1 class="text-2xl font-bold text-[#1D1D1F] tracking-tight mt-2">My Fees & Payments</h1>
+      <p class="text-xs text-[#86868b] mt-1">
+        Overview of your class annual fees, payment balance, and downloadable transaction receipts.
+      </p>
     </div>
 
-    <!-- 4 Apple KPI Cards Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- 1. Total Fees Assigned -->
-        <div class="apple-card p-5">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Annual Fee</span>
-            <div class="text-3xl font-extrabold text-[#1d1d1f] tracking-tight mt-1">₹{{ summary.total_assigned }}</div>
-            <p class="text-xs text-gray-500 mt-1">Net payable for session</p>
-        </div>
+    <!-- Overall Status Pill -->
+    <div>
+      {% if summary.status == 'PAID' %}
+      <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1.5 shadow-2xs">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        <span>FEES FULLY PAID</span>
+      </span>
+      {% elif summary.status == 'PARTIALLY PAID' %}
+      <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-[#0066cc] border border-blue-200 inline-flex items-center gap-1.5 shadow-2xs">
+        <span class="w-2 h-2 rounded-full bg-[#0066cc] animate-pulse"></span>
+        <span>PARTIALLY PAID</span>
+      </span>
+      {% elif summary.status == 'PENDING' %}
+      <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1.5 shadow-2xs">
+        <span>⚠️ PAYMENT PENDING</span>
+      </span>
+      {% else %}
+      <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600">
+        NO FEE ASSIGNED
+      </span>
+      {% endif %}
+    </div>
+  </div>
 
-        <!-- 2. Total Paid Amount -->
-        <div class="apple-card p-5">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Amount Paid</span>
-            <div class="text-3xl font-extrabold text-emerald-600 tracking-tight mt-1">₹{{ summary.total_paid }}</div>
-            <p class="text-xs text-gray-500 mt-1">Total receipts cleared</p>
-        </div>
-
-        <!-- 3. Remaining Balance -->
-        <div class="apple-card p-5">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Remaining Balance</span>
-            <div class="text-3xl font-extrabold text-amber-600 tracking-tight mt-1">₹{{ summary.total_outstanding }}</div>
-            <p class="text-xs text-gray-500 mt-1">Balance to be settled</p>
-        </div>
-
-        <!-- 4. Overdue Amount -->
-        <div class="apple-card p-5">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-[#86868b]">Overdue Amount</span>
-            <div class="text-3xl font-extrabold {% if summary.total_overdue > 0 %}text-rose-600{% else %}text-gray-400{% endif %} tracking-tight mt-1">₹{{ summary.total_overdue }}</div>
-            <p class="text-xs text-gray-500 mt-1">Past scheduled due dates</p>
-        </div>
+  <!-- Fees Summary Card -->
+  <div class="apple-card p-6 space-y-6">
+    <div class="border-b border-gray-100 pb-4 flex items-center justify-between">
+      <div>
+        <h2 class="text-base font-bold text-[#1d1d1f]">Class Fee Breakdown</h2>
+        <p class="text-xs text-gray-500">{{ student.standard.name }} {% if student.division %}— Division {{ student.division.name }}{% endif %} • Roll No: {{ student.roll_number|default:"—" }}</p>
+      </div>
+      <div class="text-right">
+        <span class="text-[11px] font-semibold text-gray-400 block uppercase tracking-wider">Payment Schedule</span>
+        <span class="text-xs font-bold text-[#0066cc]">{{ summary.frequency }}</span>
+      </div>
     </div>
 
-    <!-- Fee Structure Breakdown -->
-    <div class="apple-card overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-            <h2 class="text-base font-bold text-[#1d1d1f]">Fee Breakdown by Category</h2>
-        </div>
+    <!-- 3 Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <!-- Total Fee -->
+      <div class="p-4 rounded-2xl bg-gray-50/80 border border-gray-200/60 space-y-1">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">Total Annual Fee</span>
+        <div class="text-2xl font-bold text-[#1d1d1f]">₹{{ summary.total_fee|floatformat:2 }}</div>
+        <span class="text-[11px] text-gray-400">Class applicable fee</span>
+      </div>
 
-        {% if not summary.categories %}
-        <div class="p-8 text-center text-gray-500 text-xs">
-            No fee structure has been assigned to your profile for this session.
-        </div>
-        {% else %}
-        <div class="divide-y divide-gray-100">
-            {% for cat in summary.categories %}
-            <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-gray-50/80 transition-colors">
-                <div class="space-y-1">
-                    <div class="flex items-center gap-2">
-                        <h3 class="text-sm font-bold text-[#1d1d1f]">{{ cat.fee_name }}</h3>
-                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200">
-                            {{ cat.category_name }}
-                        </span>
-                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-gray-100 text-gray-700">
-                            {{ cat.frequency }} Plan
-                        </span>
-                    </div>
-                    <div class="text-xs text-gray-500">
-                        Base: ₹{{ cat.base_amount }}
-                        {% if cat.discount_amount > 0 %} • Discount: <span class="text-emerald-600 font-semibold">-₹{{ cat.discount_amount }}</span>{% endif %}
-                        {% if cat.waived_amount > 0 %} • Waiver: <span class="text-purple-600 font-semibold">-₹{{ cat.waived_amount }}</span>{% endif %}
-                        • Net: <strong>₹{{ cat.net_amount }}</strong>
-                    </div>
-                </div>
+      <!-- Paid Amount -->
+      <div class="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/60 space-y-1">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Amount Paid</span>
+        <div class="text-2xl font-bold text-emerald-600">₹{{ summary.total_paid|floatformat:2 }}</div>
+        <span class="text-[11px] text-emerald-700/80">Cleared payments</span>
+      </div>
 
-                <div class="text-right flex-shrink-0">
-                    <div class="text-xs font-bold text-gray-800">Paid: <span class="text-emerald-600">₹{{ cat.paid_amount }}</span> / ₹{{ cat.net_amount }}</div>
-                    <div class="text-[11px] font-semibold text-gray-500">Remaining: ₹{{ cat.balance }}</div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+      <!-- Remaining Amount -->
+      <div class="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/60 space-y-1">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 block">Remaining Balance</span>
+        <div class="text-2xl font-bold text-amber-600">₹{{ summary.remaining_amount|floatformat:2 }}</div>
+        <span class="text-[11px] text-amber-700/80">Due balance</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment History & Slip Downloads -->
+  <div class="apple-card p-6 space-y-4">
+    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+      <div>
+        <h3 class="text-base font-bold text-[#1d1d1f]">Payment History</h3>
+        <p class="text-xs text-gray-500">Record of verified transactions with official receipt slips</p>
+      </div>
+      <span class="text-xs font-semibold text-gray-400">{{ summary.payments|length }} Transactions</span>
     </div>
 
-    <!-- 2-Column Split: Payment Periods & Receipts -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-        <!-- Left: Installment Timeline (lg:col-span-7) -->
-        <div class="lg:col-span-7 space-y-6">
-            <div class="apple-card overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                    <h2 class="text-base font-bold text-[#1d1d1f]">Payment Periods & Schedule</h2>
-                </div>
-
-                {% if not summary.installments %}
-                <div class="p-8 text-center text-gray-500 text-xs">
-                    No payment schedule periods found.
-                </div>
-                {% else %}
-                <div class="divide-y divide-gray-100">
-                    {% for inst in summary.installments %}
-                    <div class="px-6 py-3.5 flex items-center justify-between hover:bg-gray-50/80 transition-colors">
-                        <div class="min-w-0">
-                            <div class="flex items-center gap-2">
-                                <span class="w-6 h-6 rounded-lg bg-gray-100 text-gray-700 flex items-center justify-center font-mono font-bold text-xs">
-                                    {{ inst.period_number }}
-                                </span>
-                                <h4 class="text-xs font-bold text-[#1d1d1f]">{{ inst.period_name }}</h4>
-                            </div>
-                            <div class="text-[11px] text-gray-500 ml-8 mt-0.5">
-                                Due Date: <strong>{{ inst.due_date|date:"d M Y" }}</strong>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-3 text-right flex-shrink-0">
-                            <div>
-                                <div class="text-xs font-bold text-[#1d1d1f]">₹{{ inst.amount_due }}</div>
-                                <div class="text-[10px] text-gray-500">Paid: ₹{{ inst.amount_paid }}</div>
-                            </div>
-
-                            {% if inst.status == 'PAID' %}
-                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Paid</span>
-                            {% elif inst.status == 'PARTIAL' %}
-                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-[#0066cc] border border-blue-200">Partial</span>
-                            {% elif inst.status == 'OVERDUE' %}
-                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200">Overdue</span>
-                            {% else %}
-                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200">Unpaid</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Right: Official Payment Receipts (lg:col-span-5) -->
-        <div class="lg:col-span-5 space-y-6">
-            <div class="apple-card overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                    <h2 class="text-base font-bold text-[#1d1d1f]">Payment Receipts</h2>
-                </div>
-
-                {% if not summary.payments %}
-                <div class="p-8 text-center text-gray-500 text-xs">
-                    No payment receipts issued yet.
-                </div>
-                {% else %}
-                <div class="divide-y divide-gray-100">
-                    {% for p in summary.payments %}
-                    <div class="p-4 flex items-center justify-between hover:bg-gray-50/80 transition-colors">
-                        <div class="min-w-0">
-                            <div class="flex items-center gap-2">
-                                <a href="{% url 'fees:receipt_detail' p.pk %}" class="text-xs font-mono font-bold text-[#0066cc] hover:underline">
-                                    {{ p.receipt_number }}
-                                </a>
-                                <span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded bg-gray-100 text-gray-600">
-                                    {{ p.get_payment_method_display }}
-                                </span>
-                            </div>
-                            <div class="text-[11px] text-gray-500 mt-0.5 font-mono">
-                                {{ p.payment_date|date:"d M Y" }}
-                            </div>
-                        </div>
-
-                        <div class="text-right flex-shrink-0">
-                            <div class="text-xs font-extrabold text-emerald-600">₹{{ p.amount }}</div>
-                            <a href="{% url 'fees:receipt_detail' p.pk %}" class="apple-btn-secondary px-2.5 py-1 text-[11px] font-semibold rounded-lg inline-flex items-center gap-1 mt-0.5">
-                                <span>Receipt</span>
-                            </a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
+    <div class="border border-gray-200/80 rounded-2xl overflow-x-auto shadow-2xs">
+      <table class="w-full text-left text-xs border-collapse min-w-[500px]">
+        <thead class="bg-gray-50/80 border-b border-gray-200 text-gray-500 uppercase font-bold text-[10px] tracking-wider">
+          <tr>
+            <th class="py-3 px-4">Receipt #</th>
+            <th class="py-3 px-4">Date</th>
+            <th class="py-3 px-4">Payment Method</th>
+            <th class="py-3 px-4 text-right">Amount Paid</th>
+            <th class="py-3 px-4 text-center">Status</th>
+            <th class="py-3 px-4 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 text-[#1d1d1f]">
+          {% for p in summary.payments %}
+          <tr class="hover:bg-gray-50/50 transition-colors">
+            <td class="py-3.5 px-4 font-mono font-bold text-[#0066cc]">{{ p.receipt_number }}</td>
+            <td class="py-3.5 px-4 font-medium text-gray-700">{{ p.payment_date|date:"d M Y" }}</td>
+            <td class="py-3.5 px-4 font-semibold text-gray-600">{{ p.get_payment_method_display }}</td>
+            <td class="py-3.5 px-4 text-right font-bold text-emerald-600 text-sm">₹{{ p.amount|floatformat:2 }}</td>
+            <td class="py-3.5 px-4 text-center">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                PAID
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-right">
+              <a href="{% url 'fees:receipt_detail' pk=p.pk %}" target="_blank" class="apple-btn-primary px-3 py-1.5 text-xs font-bold rounded-xl shadow-2xs inline-flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Download Slip</span>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="py-8 text-center text-gray-400 text-xs">
+              No payments recorded yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
+  </div>
 
 </div>
 {% endblock %}
