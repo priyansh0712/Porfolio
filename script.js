@@ -557,9 +557,6 @@ function initProjectFilters() {
   });
 }
 
-// ============================================================
-// CONTACT FORM
-// ============================================================
 function initContactForm() {
   const form = document.getElementById("contactForm");
   const success = document.getElementById("formSuccess");
@@ -569,6 +566,13 @@ function initContactForm() {
   if (!form) return;
 
   form.addEventListener("submit", async (e) => {
+    // If running on local file:// protocol, allow native form POST to FormSubmit
+    // so FormSubmit can show the activation/confirmation page directly.
+    if (window.location.protocol === "file:") {
+      // Allow default form submission
+      return true;
+    }
+
     e.preventDefault();
     const name    = document.getElementById("contactName").value.trim();
     const email   = document.getElementById("contactEmail").value.trim();
@@ -592,7 +596,8 @@ function initContactForm() {
         body: JSON.stringify({
           name: name,
           email: email,
-          _subject: `Portfolio Message: ${subject || "General Inquiry"}`,
+          _replyto: email,
+          _subject: `New Portfolio Message from ${name} (${subject || "General Inquiry"})`,
           message: message,
           _template: "table",
           _captcha: "false"
@@ -603,21 +608,18 @@ function initContactForm() {
 
       if (response.ok && (result.success === "true" || result.success === true || result.message)) {
         if (success) {
+          success.innerHTML = "&#10003; Message sent! If this is your first time, check <strong>priyanshvekariya06@gmail.com</strong> (and Spam folder) to confirm FormSubmit activation.";
           success.style.display = "block";
-          setTimeout(() => { success.style.display = "none"; }, 6000);
+          setTimeout(() => { success.style.display = "none"; }, 9000);
         }
         form.reset();
       } else {
         throw new Error(result.message || "Form submission failed");
       }
     } catch (err) {
-      console.warn("Direct form submit error, falling back to mailto:", err);
-      if (errorMsg) {
-        errorMsg.style.display = "block";
-        setTimeout(() => { errorMsg.style.display = "none"; }, 6000);
-      }
-      const body = `Hi Priyansh,%0A%0A${encodeURIComponent(message)}%0A%0AFrom: ${encodeURIComponent(name)} (${encodeURIComponent(email)})`;
-      window.location.href = `mailto:priyanshvekariya06@gmail.com?subject=${encodeURIComponent(subject)}&body=${body}`;
+      console.warn("Direct form submit error, submitting via standard POST:", err);
+      // Fallback: submit form natively
+      form.submit();
     } finally {
       if (submitBtn) submitBtn.disabled = false;
       if (submitText) submitText.textContent = "Send Message";
@@ -715,19 +717,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const cvClose    = document.getElementById("cvModalClose");
 
   function openCvModal() {
+    if (!cvOverlay) return;
     cvOverlay.classList.add("open");
     document.body.style.overflow = "hidden";
   }
 
   function closeCvModal() {
+    if (!cvOverlay) return;
     cvOverlay.classList.remove("open");
     document.body.style.overflow = "";
   }
 
-  // Open on Resume button click
-  document.getElementById("resumeBtn")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    openCvModal();
+  // Open on Resume button click (all resume buttons)
+  document.querySelectorAll("#resumeBtn, [data-open-cv]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      openCvModal();
+    });
   });
 
   // Close on X button
@@ -745,4 +751,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
 

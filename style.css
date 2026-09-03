@@ -1141,7 +1141,8 @@ img { max-width: 100%; height: auto; display: block; }
   flex-shrink: 0;
 }
 
-.cv-modal-close {
+.cv-modal-close,
+.cv-modal-link-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1152,6 +1153,7 @@ img { max-width: 100%; height: auto; display: block; }
   border: 1px solid var(--border);
   color: var(--text-secondary);
   cursor: pointer;
+  text-decoration: none;
   transition: all var(--t-fast);
 }
 
@@ -1159,6 +1161,12 @@ img { max-width: 100%; height: auto; display: block; }
   background: rgba(251, 113, 133, 0.12);
   border-color: rgba(251, 113, 133, 0.4);
   color: var(--accent-rose);
+}
+
+.cv-modal-link-btn:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: var(--border-hover);
+  color: var(--accent-indigo-l);
 }
 
 /* PDF iframe area */
@@ -1198,7 +1206,7 @@ img { max-width: 100%; height: auto; display: block; }
 
 .cv-fallback p { font-size: 0.92rem; line-height: 1.6; }
 
-/* Footer bar — download button anchored bottom-right */
+/* Footer bar — download and open buttons */
 .cv-modal-footer {
   display: flex;
   align-items: center;
@@ -1217,6 +1225,35 @@ img { max-width: 100%; height: auto; display: block; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.cv-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cv-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.1rem;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  text-decoration: none;
+  transition: all var(--t-fast);
+}
+
+.cv-open-btn:hover {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: var(--border-hover);
+  color: var(--accent-indigo-l);
+  transform: translateY(-1px);
 }
 
 .cv-download-btn {
@@ -1250,5 +1287,6 @@ img { max-width: 100%; height: auto; display: block; }
   .cv-fallback { min-height: 420px; }
   .cv-file-info { display: none; }
   .cv-modal-footer { justify-content: flex-end; }
+  .cv-footer-actions { width: 100%; justify-content: flex-end; }
 }
 
