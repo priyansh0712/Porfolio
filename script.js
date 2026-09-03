@@ -8,90 +8,165 @@
 // ============================================================
 const SERVICES = [
   {
-    icon: "🗄️",
-    iconBg: "rgba(99,102,241,0.12)",
-    title: "Data Analysis & SQL",
-    desc: "Writing complex SQL queries to extract, clean, and transform raw data into structured, actionable datasets. Identifying patterns, trends, and anomalies at scale.",
-    tags: ["SQL", "MySQL", "Data Cleaning", "ETL"],
-  },
-  {
     icon: "📊",
     iconBg: "rgba(245,158,11,0.12)",
-    title: "BI Dashboards",
-    desc: "Building interactive Power BI dashboards that give stakeholders real-time visibility into KPIs — from revenue trends to operational metrics.",
-    tags: ["Power BI", "KPI Design", "Data Storytelling"],
+    title: "Power BI & BI Dashboards",
+    desc: "Building interactive end-to-end Power BI dashboards using star-schema modeling, Power Query transformations, and advanced DAX measures to surface actionable business KPIs.",
+    tags: ["Power BI", "DAX", "Power Query", "Star Schema"],
+  },
+  {
+    icon: "🗄️",
+    iconBg: "rgba(99,102,241,0.12)",
+    title: "SQL & Data Analysis",
+    desc: "Writing optimized SQL queries for relational databases (PostgreSQL & MySQL), performing exploratory data analysis (EDA), data cleaning, and aggregating large datasets.",
+    tags: ["SQL", "PostgreSQL", "Data Cleaning", "EDA"],
   },
   {
     icon: "🐍",
     iconBg: "rgba(45,212,191,0.12)",
     title: "Python for Data",
-    desc: "Using pandas, numpy, matplotlib and seaborn to perform exploratory data analysis, statistical analysis, and automate repetitive data workflows.",
+    desc: "Using pandas, numpy, matplotlib and seaborn for statistical analysis, exploratory workflows in Jupyter Notebooks, and automating repetitive data pipelines.",
     tags: ["Python", "Pandas", "NumPy", "Matplotlib"],
   },
   {
-    icon: "📑",
+    icon: "🌐",
     iconBg: "rgba(251,113,133,0.12)",
-    title: "Reporting & Excel",
-    desc: "Creating clear, concise business reports with pivot tables, advanced formulas, conditional formatting, and data validation in Microsoft Excel.",
-    tags: ["Excel", "Pivot Tables", "Reporting", "Analysis"],
+    title: "Full-Stack & Backend",
+    desc: "Developing web applications and backend systems with Next.js, Flask, TypeScript, and PostgreSQL — including QR-based check-in modules and team management platforms.",
+    tags: ["Next.js", "Flask", "TypeScript", "PostgreSQL"],
   },
 ];
 
 // ============================================================
-// ✏️  SKILLS — Grouped by category
+// ✏️  SKILLS — Grouped strictly by Resume & Projects
 // ============================================================
 const SKILLS = [
   {
-    category: "Data & Analytics (Core)",
+    category: "Business Intelligence & Data Analytics (Core)",
     icon: "📊",
     items: [
-      { name: "SQL",              icon: "devicon-mysql-plain colored",       featured: true },
-      { name: "Power BI",         icon: "devicon-microsoftsqlserver-plain",   featured: true },
-      { name: "Excel",            icon: "devicon-microsoftsqlserver-plain",   featured: true },
-      { name: "Jupyter Notebook", icon: "devicon-jupyter-plain colored",     featured: true },
+      {
+        name: "Power BI",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>`,
+        featured: true,
+      },
+      {
+        name: "Power Query (ETL)",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M9 12l2 2 4-4"/><path d="M4 9h16"/></svg>`,
+        featured: true,
+      },
+      {
+        name: "DAX Measures & Calculations",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19l4-14h3l4 14"/><path d="M6 14h6"/><path d="M16 8l4 8"/><path d="M20 8l-4 8"/></svg>`,
+        featured: true,
+      },
+      {
+        name: "Star Schema Data Modeling",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+        featured: true,
+      },
+      {
+        name: "Exploratory Data Analysis (EDA)",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>`,
+        featured: true,
+      },
+      {
+        name: "Microsoft Excel (Pivot & Reporting)",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#107c41" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="12" y2="17"/><line x1="12" y1="13" x2="8" y2="17"/></svg>`,
+        featured: true,
+      },
     ],
   },
   {
-    category: "Python & Libraries",
+    category: "Python & Data Science Stack",
     icon: "🐍",
     items: [
-      { name: "Python",      icon: "devicon-python-plain colored",    featured: true },
-      { name: "Pandas",      icon: "devicon-pandas-original colored", featured: false },
-      { name: "NumPy",       icon: "devicon-numpy-original colored",  featured: false },
-      { name: "Matplotlib",  icon: "devicon-python-plain",            featured: false },
+      { name: "Python",           icon: "devicon-python-plain colored",    featured: true },
+      { name: "Pandas",           icon: "devicon-pandas-original colored", featured: false },
+      { name: "NumPy",            icon: "devicon-numpy-original colored",  featured: false },
+      {
+        name: "Matplotlib",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg>`,
+        featured: false,
+      },
+      {
+        name: "Seaborn",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="16" r="2"/><circle cx="12" cy="10" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="15" cy="18" r="2"/><circle cx="9" cy="8" r="2"/></svg>`,
+        featured: false,
+      },
+      { name: "Jupyter Notebook", icon: "devicon-jupyter-plain colored",  featured: false },
     ],
   },
   {
-    category: "Web & Development",
+    category: "Databases & Data Management",
+    icon: "🗄️",
+    items: [
+      { name: "SQL",              icon: "devicon-mysql-plain colored",        featured: true },
+      { name: "PostgreSQL",       icon: "devicon-postgresql-plain colored",   featured: true },
+      { name: "MySQL",            icon: "devicon-mysql-plain colored",        featured: false },
+      {
+        name: "SQLAlchemy ORM",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`,
+        featured: false,
+      },
+      {
+        name: "Prisma ORM",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 20 2 20 12 2"/><polygon points="12 8 18 18 6 18 12 8"/></svg>`,
+        featured: false,
+      },
+    ],
+  },
+  {
+    category: "Web & Full-Stack Development",
     icon: "🌐",
     items: [
-      { name: "Django",      icon: "devicon-django-plain colored",       featured: false },
-      { name: "Flask",       icon: "devicon-flask-original",             featured: false },
-      { name: "React",       icon: "devicon-react-original colored",     featured: false },
-      { name: "HTML5",       icon: "devicon-html5-plain colored",        featured: false },
-      { name: "CSS3",        icon: "devicon-css3-plain colored",         featured: false },
-      { name: "JavaScript",  icon: "devicon-javascript-plain colored",   featured: false },
+      { name: "Next.js 15",       icon: "devicon-nextjs-original",            featured: false },
+      { name: "TypeScript",       icon: "devicon-typescript-plain colored",   featured: false },
+      { name: "Tailwind CSS",     icon: "devicon-tailwindcss-plain colored",  featured: false },
+      { name: "Flask",            icon: "devicon-flask-original",             featured: false },
+      { name: "Django",           icon: "devicon-django-plain colored",       featured: false },
+      { name: "JavaScript",       icon: "devicon-javascript-plain colored",   featured: false },
+      { name: "HTML5 / CSS3",     icon: "devicon-html5-plain colored",        featured: false },
+      {
+        name: "Auth.js (NextAuth)",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+        featured: false,
+      },
     ],
   },
   {
-    category: "Languages & Tools",
+    category: "Tools, Systems & Workflow",
     icon: "🛠️",
     items: [
-      { name: "Java",   icon: "devicon-java-plain colored",     featured: false },
-      { name: "C++",    icon: "devicon-cplusplus-plain colored", featured: false },
-      { name: "Rust",   icon: "devicon-rust-plain colored",      featured: false },
-      { name: "Git",    icon: "devicon-git-plain colored",       featured: false },
-      { name: "GitHub", icon: "devicon-github-original",         featured: false },
-      { name: "Linux",  icon: "devicon-linux-plain",             featured: false },
-      { name: "VS Code",icon: "devicon-vscode-plain colored",    featured: false },
+      { name: "Git",              icon: "devicon-git-plain colored",          featured: false },
+      { name: "GitHub",           icon: "devicon-github-original",            featured: false },
+      { name: "VS Code",          icon: "devicon-vscode-plain colored",       featured: false },
+      {
+        name: "QR Code Systems",
+        svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>`,
+        featured: false,
+      },
     ],
   },
 ];
 
 // ============================================================
-// ✏️  PROJECTS — All 7 projects
+// ✏️  PROJECTS — All projects
 // ============================================================
 const PROJECTS = [
+  {
+    title: "Syntra — Hackathon Management System",
+    emoji: "⚡",
+    gradient: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #0f172a 100%)",
+    desc: "A collaborative full-stack hackathon management platform for organizers & participants — featuring role-based dashboards, QR-code attendance check-in, food token redemption, and team lifecycle management.",
+    tech: ["Next.js 15", "TypeScript", "Prisma ORM", "Auth.js", "TailwindCSS"],
+    tags: ["Team Project", "Web App", "Full-Stack", "Next.js"],
+    badge: "team",
+    badgeText: "👥 Team Project",
+    repo: "https://github.com/Tech-Wizards-1331/syntra",
+    demo: "https://syntra1331.vercel.app/",
+    featured: true,
+  },
   {
     title: "OLA Ride-Booking Dashboard",
     emoji: "🚖",
@@ -411,8 +486,8 @@ function renderSkills() {
       <div class="skills-chips">
         ${cat.items.map((item) => `
           <div class="skill-chip${item.featured ? " featured" : ""}">
-            <i class="${item.icon}"></i>
-            ${item.name}
+            ${item.svg ? item.svg : (item.icon ? `<i class="${item.icon}"></i>` : "")}
+            <span>${item.name}</span>
           </div>
         `).join("")}
       </div>

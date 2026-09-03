@@ -8,6 +8,7 @@ Modern, responsive single-page portfolio showcasing data analysis, BI dashboards
 - **Theme Support**: Dark mode default with light mode toggle (saved in `localStorage`)
 - **Interactive Visuals**: Particle canvas, interactive CSS charts, animated metrics
 - **Featured Projects**:
+  - ⚡ **Syntra — Hackathon Management System** (Next.js 15, TypeScript, Prisma ORM, Auth.js) [Team Project] &bull; [Live Demo](https://syntra1331.vercel.app/)
   - 🚖 **OLA Ride-Booking Dashboard** (Power BI, SQL, Excel)
   - 💳 **PhonePe Payment Analytics Dashboard** (Power BI, SQL, Python)
   - 📓 **Python Journey ⭐** (Jupyter Notebooks, Pandas, NumPy)
@@ -18,9 +19,11 @@ Modern, responsive single-page portfolio showcasing data analysis, BI dashboards
 ---
 
 ## 🛠️ Tech Stack
-- **Languages & Analysis**: SQL, Python (Pandas, NumPy, Matplotlib, Seaborn)
-- **BI & Tools**: Microsoft Power BI, Microsoft Excel, Jupyter Notebook
-- **Frontend**: HTML5, Vanilla CSS3, JavaScript (ES6+)
+- **BI & Analytics**: Power BI, Power Query (ETL), DAX Measures, Star Schema Modeling, Excel
+- **Databases & Querying**: SQL, PostgreSQL, MySQL, SQLAlchemy, Prisma ORM
+- **Python & Data Science**: Python, Pandas, NumPy, Matplotlib, Seaborn, Jupyter Notebook, EDA
+- **Web & Full-Stack**: Next.js 15, TypeScript, Tailwind CSS, Flask, HTML5/CSS3, JavaScript, Auth.js
+- **Tools**: Git, GitHub, VS Code, QR Code Integration
 
 ---
 

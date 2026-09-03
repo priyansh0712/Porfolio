@@ -401,44 +401,114 @@ img { max-width: 100%; height: auto; display: block; }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: 2rem;
+  padding: 2.2rem 2rem 1.8rem;
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
   box-shadow: var(--shadow-card);
   animation: float 5s ease-in-out infinite;
   position: relative; z-index: 2;
+  transition: border-color var(--t-med), box-shadow var(--t-med);
+}
+.data-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-hover), var(--shadow-glow);
 }
 
-.data-card-header {
-  display: flex; align-items: center; gap: 1rem;
-  margin-bottom: 1.5rem;
+/* Big Hero Profile Photo */
+.hero-photo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
 }
 
-/* Avatar */
-.avatar-ring {
-  flex-shrink: 0;
-  padding: 2px;
+.hero-photo-ring {
+  width: 140px;
+  height: 140px;
+  padding: 3.5px;
   border-radius: 50%;
-  background: var(--gradient-main);
-  width: 56px; height: 56px;
+  background: linear-gradient(135deg, #6366f1 0%, #f59e0b 50%, #2dd4bf 100%);
+  box-shadow: 0 0 35px rgba(99, 102, 241, 0.4), 0 0 70px rgba(245, 158, 11, 0.2);
+  transition: transform var(--t-med), box-shadow var(--t-med);
+  position: relative;
 }
-.avatar-wrap {
-  width: 100%; height: 100%;
-  border-radius: 50%; overflow: hidden;
-  background: var(--bg-elevated);
-  display: flex; align-items: center; justify-content: center;
-}
-.avatar-img { width: 100%; height: 100%; object-fit: cover; }
-.avatar-fallback {
-  display: none; align-items: center; justify-content: center;
-  font-family: var(--font-head); font-size: 1.2rem; font-weight: 700;
-  background: var(--gradient-main);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+.data-card:hover .hero-photo-ring {
+  transform: scale(1.04);
+  box-shadow: 0 0 45px rgba(99, 102, 241, 0.55), 0 0 90px rgba(245, 158, 11, 0.3);
 }
 
-.data-card-title { flex: 1; }
-.data-card-title strong { display: block; font-size: 0.92rem; font-weight: 700; color: var(--text-primary); }
-.data-card-title span { font-size: 0.78rem; color: var(--accent-indigo-l); }
+.hero-photo-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.hero-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 10%;
+  transform: scale(1.25);
+  transform-origin: 50% 16%;
+  display: block;
+}
+
+.avatar-fallback {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-head);
+  font-size: 2rem;
+  font-weight: 700;
+  background: var(--gradient-main);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-photo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.32rem 0.9rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-elevated);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent-green);
+  margin-top: -14px;
+  position: relative;
+  z-index: 3;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* Profile Info */
+.hero-profile-info {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+.hero-profile-name {
+  font-family: var(--font-head);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.15rem;
+  letter-spacing: -0.01em;
+}
+.hero-profile-title {
+  font-size: 0.8rem;
+  color: var(--accent-indigo-l);
+  font-weight: 500;
+  font-family: var(--font-mono);
+}
 
 .online-dot {
   width: 10px; height: 10px;
@@ -647,6 +717,7 @@ img { max-width: 100%; height: auto; display: block; }
   transform: translateY(-2px);
 }
 .skill-chip i { font-size: 1.15rem; }
+.skill-chip svg { width: 17px; height: 17px; flex-shrink: 0; display: inline-block; vertical-align: middle; }
 
 /* Featured chip — highlights the primary data tools */
 .skill-chip.featured {
@@ -731,6 +802,7 @@ img { max-width: 100%; height: auto; display: block; }
 .badge-data { background: rgba(99,102,241,0.9); color: #fff; }
 .badge-pinned { background: rgba(245,158,11,0.9); color: #0a0e1a; }
 .badge-web { background: rgba(45,212,191,0.85); color: #0a0e1a; }
+.badge-team { background: linear-gradient(135deg, #6366f1, #a855f7); color: #ffffff; box-shadow: 0 2px 10px rgba(168, 85, 247, 0.35); }
 
 .project-body {
   padding: 1.6rem; flex: 1;
